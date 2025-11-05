@@ -37,7 +37,6 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             transition: background-color 0.3s; /* Thêm transition */
         }
-        /* Cập nhật: .warning dùng chung cho hết giờ VÀ rời chuột/tab */
         #timer-bar.warning { 
             background-color: #dc3545; 
         }
@@ -111,17 +110,15 @@
 
         // --- Biến toàn cục ---
         let correctAnswers = []; 
+        let fullQuestionObjects = []; // *** MỚI: Lưu trữ toàn bộ câu hỏi ***
         let timerInterval = null; 
         let daNopBai = false; 
-        
-        // --- Biến toàn cục cho Chống gian lận ---
         let globalTimeLeft = 0; 
-        let isCheating = false; // Cờ theo dõi (Rời chuột HOẶC Chuyển tab)
-        let cheatTimeout = null; // Bộ đếm 4s
+        let isCheating = false; 
+        let cheatTimeout = null; 
 
-        // --- TẢI CÂU HỎI ---
+        // --- TẢI CÂU HỎI (Cập nhật) ---
         async function loadQuiz() {
-            // (Code tải câu hỏi không đổi)
             const testForm = document.getElementById('testForm');
             const loadingDiv = document.getElementById('loading');
             const submitButton = document.getElementById('submitBtn');
@@ -131,10 +128,13 @@
                     loadingDiv.innerText = "Lỗi: Đề thi này chưa có câu hỏi.";
                     return;
                 }
+                
                 let questionIndex = 0;
+                let loadedQuestions = []; // Biến tạm
                 snapshot.forEach(doc => {
                     const q = doc.data();
-                    correctAnswers.push(q.answer); 
+                    loadedQuestions.push(q); // Thêm toàn bộ object câu hỏi
+
                     // (Code hiển thị câu hỏi)
                     let questionDiv = document.createElement('div');
                     questionDiv.className = 'question';
@@ -158,12 +158,14 @@
                     questionIndex++;
                 });
 
+                // *** MỚI: Lưu câu hỏi và đáp án vào biến toàn cục ***
+                fullQuestionObjects = loadedQuestions; // Lưu lại để nộp bài
+                correctAnswers = loadedQuestions.map(q => q.answer); // Tách mảng đáp án
+
                 loadingDiv.style.display = 'none';
                 submitButton.style.display = 'block';
                 
                 startTimer(testTimeMinutes * 60); 
-
-                // Kích hoạt tính năng chống gian lận
                 setupAntiCheat();
 
             } catch (error) {
@@ -171,6 +173,7 @@
             }
         }
         
+        // (Hàm formatTime, startTimer, autoSubmit không đổi)
         // --- Hàm format thời gian ---
         function formatTime(totalSeconds) {
             let minutes = Math.floor(totalSeconds / 60);
@@ -225,47 +228,35 @@
             submitTest(true, "Hết giờ"); 
         }
 
+        // (Hàm chống gian lận v5 không đổi)
         // --- *** HÀM CHỐNG GIAN LẬN (Logic mới v5 - Hybrid) *** ---
-        
-        // Hàm này sẽ bắt đầu bộ đếm 4 giây
         function startCheatWarning(reason) {
-            if (daNopBai || isCheating) return; // Nếu đang đếm rồi thì thôi
-            
-            isCheating = true; // Kích hoạt cờ, bộ đếm (startTimer) sẽ hiển thị cảnh báo
-            
+            if (daNopBai || isCheating) return; 
+            isCheating = true; 
             cheatTimeout = setTimeout(() => {
                 if (daNopBai) return;
-                // Hết 4 giây -> Nộp bài
-                submitTest(true, reason); // Lý do: "Rời khỏi trang"
+                submitTest(true, reason); 
             }, 4000); // 4 giây
         }
-        
-        // Hàm này sẽ hủy bộ đếm 4 giây
         function stopCheatWarning() {
              if (cheatTimeout) {
-                clearTimeout(cheatTimeout); // Hủy bộ đếm 4s
+                clearTimeout(cheatTimeout); 
                 cheatTimeout = null;
             }
-            isCheating = false; // Tắt cờ, bộ đếm (startTimer) sẽ hiển thị lại thời gian
+            isCheating = false; 
         }
-
         function setupAntiCheat() {
-            
-            // 1. Chuyển Tab/Ứng dụng (Tất cả nền tảng) -> NỘP BÀI NGAY LẬP TỨC
+            // 1. Chuyển Tab/Ứng dụng -> NỘP BÀI NGAY LẬP TỨC
             document.addEventListener('visibilitychange', () => {
                 if (daNopBai) return;
-
                 if (document.hidden) {
-                    // Người dùng vừa chuyển tab/ứng dụng -> NỘP BÀI NGAY
                     submitTest(true, "Chuyển tab/ứng dụng");
                 }
             });
-
             // 2. Rời chuột (Chỉ Desktop) -> Cảnh báo 4 giây
             document.body.addEventListener('mouseleave', () => {
                 startCheatWarning("Rời khỏi trang (Desktop)");
             });
-
             // 3. Quay lại bằng chuột (Chỉ Desktop)
             document.body.addEventListener('mouseenter', () => {
                 stopCheatWarning();
@@ -273,7 +264,7 @@
         }
 
 
-        // --- HÀM NỘP BÀI (Không đổi) ---
+        // --- HÀM NỘP BÀI (Cập nhật lớn) ---
         async function submitTest(isAutoSubmit = false, autoSubmitReason = null) {
             if (daNopBai) return; 
 
@@ -291,19 +282,26 @@
             submitButton.disabled = true;
             submitButton.innerText = "Đang nộp bài...";
             
-            // (Phần chấm điểm)
+            // --- Chấm điểm VÀ Lấy câu trả lời của HS ---
             let score = 0;
             const form = document.getElementById('testForm');
+            const userAnswers = []; // *** MỚI: Mảng lưu câu trả lời
+
             correctAnswers.forEach((answer, index) => {
                 const selected = form.querySelector(`input[name="question${index}"]:checked`);
-                if (selected && selected.value === answer) {
-                    score++;
+                let userAnswer = null;
+                if (selected) {
+                    userAnswer = selected.value;
+                    if (userAnswer === answer) {
+                        score++;
+                    }
                 }
+                userAnswers.push(userAnswer); // Lưu câu trả lời (kể cả null)
             });
             const totalQuestions = correctAnswers.length;
             const finalScore = (score / totalQuestions) * 10;
             
-            // Lưu vào localStorage
+            // Lưu vào localStorage (cho trang results)
             localStorage.setItem('score', finalScore.toFixed(2));
             localStorage.setItem('totalQuestions', totalQuestions);
             localStorage.setItem('correctCount', score);
@@ -311,7 +309,8 @@
             // Lưu kết quả lên Firebase
             if (db) {
                 try {
-                    await db.collection("ketqua").add({
+                    // *** MỚI: Thêm userAnswers và quizData ***
+                    const docRef = await db.collection("ketqua").add({
                         hoTen: studentName,
                         lop: studentClass,
                         diemSo: finalScore.toFixed(2),
@@ -321,8 +320,14 @@
                         tenDeThi: selectedTestName,
                         thoiGianNop: firebase.firestore.FieldValue.serverTimestamp(),
                         nopTuDong: isAutoSubmit, 
-                        lyDoNopTuDong: autoSubmitReason 
+                        lyDoNopTuDong: autoSubmitReason,
+                        userAnswers: userAnswers,         // <-- Dữ liệu chi tiết 1
+                        quizData: fullQuestionObjects     // <-- Dữ liệu chi tiết 2
                     });
+
+                    // *** MỚI: Lưu ID bài nộp để trang results.html tải về ***
+                    localStorage.setItem('lastSubmissionId', docRef.id);
+
                 } catch (error) {
                     console.error("Lỗi khi lưu kết quả: ", error);
                 }
