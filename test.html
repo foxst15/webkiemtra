@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài kiểm tra</title>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --secondary-color: #6c757d;
+            --secondary-hover: #5a6268;
+            --success-color: #28a745;
+            --success-hover: #218838;
+            --danger-color: #dc3545;
+            --danger-hover: #c82333;
+            --light-bg: #f0f2f5;
+            --white-bg: #ffffff;
+            --border-color: #dee2e6;
+            --shadow: 0 4px 12px rgba(0,0,0,0.05);
+            --border-radius: 12px;
+        }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background-color: var(--light-bg); 
+            padding-top: 80px; /* Tránh bị che bởi thanh timer */
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--white-bg);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        
+        /* Nút chung */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            text-decoration: none;
+            color: var(--white-bg);
+            transition: background-color 0.2s;
+        }
+        .btn svg { width: 16px; height: 16px; fill: currentColor; }
+        .btn-success { background-color: var(--success-color); }
+        .btn-success:hover { background-color: var(--success-hover); }
+        .btn-secondary { background-color: var(--secondary-color); }
+        .btn-secondary:hover { background-color: var(--secondary-hover); }
+        .btn:disabled { background-color: #aaa; cursor: not-allowed; }
+
+        /* Thanh Timer */
+        #timer-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 0;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: background-color 0.5s;
+        }
+        #timer-bar.warning { background-color: var(--danger-color); }
+
+        /* Header thông tin */
+        #studentInfo {
+            font-size: 1.1em;
+            font-weight: 600;
+            padding: 1rem;
+            background: #e9ecef;
+            border-radius: 8px;
+            color: #333;
+            margin: 1.5rem 0;
+        }
+        #loading { font-size: 1.2em; text-align: center; font-weight: bold; }
+        
+        /* Form câu hỏi */
+        .question {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1.5rem;
+        }
+        .question p {
+            font-weight: 600;
+            font-size: 1.2em;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        .options { margin-left: .5rem; }
+        .options label {
+            display: block;
+            margin-bottom: .75rem;
+            font-size: 1rem;
+            cursor: pointer;
+            padding: .75rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            transition: background-color .2s, border-color .2s;
+        }
+        .options label:hover { background-color: #f8f9fa; }
+        .options input[type=radio] {
+            margin-right: .75rem;
+            accent-color: var(--primary-color);
+        }
+        /* Style khi chọn đáp án */
+        .options input[type=radio]:checked + span {
+            font-weight: 600;
+        }
+        .options input[type=radio]:checked:parent(label) {
+            background-color: #e0eaff;
+            border-color: var(--primary-color);
+        }
+        
+        /* Khu vực nút bấm */
+        .button-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+        }
+
+    </style>
+    <!-- SDK Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+    <div id="timer-bar">
+        Thời gian: <span id="timer">--:--</span>
+    </div>
+
+    <div class="container">
+        <h1 id="testTitle">Bài kiểm tra</h1>
+        <div id="studentInfo"></div>
+
+        <div id="loading">Đang tải đề thi, vui lòng chờ...</div>
+        
+        <form id="testForm"></form>
+        
+        <div class="button-area" id="button-area" style="display: none;">
+            <button id="cancelBtn" class="btn btn-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></svg>
+                Hủy
+            </button>
+            <button id="submitBtn" class="btn btn-success">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg>
+                Nộp bài
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // *** Dán firebaseConfig của bạn vào đây ***
+        const firebaseConfig = {
+          apiKey: "YOUR_API_KEY",
+          authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+          projectId: "YOUR_PROJECT_ID",
+          storageBucket: "YOUR_PROJECT_ID.appspot.com",
+          messagingSenderId: "YOUR_SENDER_ID",
+          appId: "YOUR_APP_ID"
+        };
+        
+        let db;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+        } catch (e) { alert("Lỗi cấu hình Firebase!"); }
+
+        const studentName = localStorage.getItem('studentName');
+        const studentClass = localStorage.getItem('studentClass');
+        const selectedTestId = localStorage.getItem('selectedTestId');
+        const selectedTestName = localStorage.getItem('selectedTestName');
+        const testTimeMinutes = parseInt(localStorage.getItem('selectedTestTime') || 15, 10);
+
+        if (!studentName || !studentClass) window.location.href = 'index.html';
+        if (!selectedTestId) window.location.href = 'select-test.html';
+
+        document.getElementById('studentInfo').innerText = `Thí sinh: ${studentName} - Lớp: ${studentClass}`;
+        document.getElementById('testTitle').innerText = selectedTestName || "Bài kiểm tra";
+
+        let correctAnswers = []; 
+        let timerInterval = null; 
+        let daNopBai = false; 
+
+        async function loadQuiz() {
+            const testForm = document.getElementById('testForm');
+            const loadingDiv = document.getElementById('loading');
+            const buttonArea = document.getElementById('button-area');
+            try {
+                const snapshot = await db.collection("dethi").doc(selectedTestId).collection("cauhoi").get();
+                if (snapshot.empty) {
+                    loadingDiv.innerText = "Lỗi: Đề thi này chưa có câu hỏi.";
+                    return;
+                }
+                let questionIndex = 0;
+                snapshot.forEach(doc => {
+                    const q = doc.data();
+                    correctAnswers.push(q.answer); 
+                    let questionDiv = document.createElement('div');
+                    questionDiv.className = 'question';
+                    let promptP = document.createElement('p');
+                    promptP.innerText = `${questionIndex + 1}. ${q.prompt}`;
+                    questionDiv.appendChild(promptP);
+                    let optionsDiv = document.createElement('div');
+                    optionsDiv.className = 'options';
+                    q.options.forEach(option => {
+                        let label = document.createElement('label');
+                        let input = document.createElement('input');
+                        input.type = 'radio';
+                        input.name = `question${questionIndex}`;
+                        input.value = option;
+                        // Thêm sự kiện onchange để style
+                        input.onchange = handleRadioChange;
+                        let span = document.createElement('span');
+                        span.innerText = ` ${option}`;
+                        label.appendChild(input);
+                        label.appendChild(span);
+                        optionsDiv.appendChild(label);
+                    });
+                    questionDiv.appendChild(optionsDiv);
+                    testForm.appendChild(questionDiv);
+                    questionIndex++;
+                });
+
+                loadingDiv.style.display = 'none';
+                buttonArea.style.display = 'flex'; // Hiển thị khu vực nút
+                
+                startTimer(testTimeMinutes * 60); 
+
+            } catch (error) {
+                console.error("Lỗi khi tải câu hỏi: ", error);
+                loadingDiv.innerText = "Lỗi tải đề. Vui lòng kiểm tra Rules.";
+            }
+        }
+        
+        // Style khi chọn đáp án
+        function handleRadioChange(event) {
+            // Xóa style 'checked' khỏi tất cả label trong cùng 1 câu hỏi
+            const name = event.target.name;
+            document.querySelectorAll(`input[name="${name}"]`).forEach(radio => {
+                radio.parentElement.classList.remove('checked');
+            });
+            // Thêm style 'checked' cho label được chọn
+            event.target.parentElement.classList.add('checked');
+        }
+
+        // Gắn CSS vào Head để style khi chọn
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .options label.checked {
+                background-color: #e0eaff;
+                border-color: var(--primary-color);
+                font-weight: 600;
+            }
+        `;
+        document.head.appendChild(style);
+
+
+        function startTimer(durationInSeconds) {
+            let timeLeft = durationInSeconds;
+            const timerElement = document.getElementById('timer');
+            const timerBarElement = document.getElementById('timer-bar');
+            timerInterval = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerElement.innerText = "HẾT GIỜ";
+                    timerBarElement.classList.add('warning');
+                    autoSubmit();
+                } else {
+                    timeLeft--;
+                    let minutes = Math.floor(timeLeft / 60);
+                    let seconds = timeLeft % 60;
+                    minutes = minutes < 10 ? '0' + minutes : minutes;
+                    seconds = seconds < 10 ? '0' + seconds : seconds;
+                    timerElement.innerText = `${minutes}:${seconds}`;
+                    if (timeLeft <= 60) {
+                        timerBarElement.classList.add('warning');
+                    }
+                }
+            }, 1000);
+        }
+
+        function autoSubmit() {
+            if (daNopBai) return; 
+            alert("Đã hết giờ làm bài! Bài của bạn sẽ được nộp tự động.");
+            submitTest(true); 
+        }
+
+        // Xử lý nút Hủy
+        document.getElementById('cancelBtn').addEventListener('click', () => {
+            if (confirm("Bạn có chắc chắn muốn hủy bài thi này? Toàn bộ kết quả sẽ không được lưu.")) {
+                clearInterval(timerInterval); // Dừng đồng hồ
+                window.location.href = 'select-test.html';
+            }
+        });
+
+        // Xử lý nút Nộp bài
+        document.getElementById('submitBtn').addEventListener('click', () => {
+            submitTest(false);
+        });
+
+        async function submitTest(isAutoSubmit = false) {
+            if (daNopBai) return; 
+            if (!isAutoSubmit) {
+                if (!confirm("Bạn có chắc chắn muốn nộp bài không?")) {
+                    return; 
+                }
+            }
+            daNopBai = true; 
+            clearInterval(timerInterval); 
+            
+            const submitButton = document.getElementById('submitBtn');
+            submitButton.disabled = true;
+            submitButton.innerText = "Đang nộp bài...";
+            document.getElementById('cancelBtn').style.display = 'none'; // Ẩn nút hủy
+            
+            let score = 0;
+            const form = document.getElementById('testForm');
+            correctAnswers.forEach((answer, index) => {
+                const selected = form.querySelector(`input[name="question${index}"]:checked`);
+                if (selected && selected.value === answer) {
+                    score++;
+                }
+            });
+            const totalQuestions = correctAnswers.length;
+            const finalScore = (score / totalQuestions) * 10;
+            
+            localStorage.setItem('score', finalScore.toFixed(2));
+            localStorage.setItem('totalQuestions', totalQuestions);
+            localStorage.setItem('correctCount', score);
+
+            if (db) {
+                try {
+                    await db.collection("ketqua").add({
+                        hoTen: studentName,
+                        lop: studentClass,
+                        diemSo: finalScore.toFixed(2),
+                        soCauDung: score,
+                        tongSoCau: totalQuestions,
+                        deThiId: selectedTestId,
+                        tenDeThi: selectedTestName,
+                        thoiGianNop: firebase.firestore.FieldValue.serverTimestamp(),
+                        nopDoHetGio: isAutoSubmit
+                    });
+                } catch (error) {
+                    console.error("Lỗi khi lưu kết quả: ", error);
+                }
+            }
+            window.location.href = 'results.html';
+        }
+        loadQuiz(); 
+    </script>
+</body>
+</html>

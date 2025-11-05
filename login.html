@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập - Bài kiểm tra Thầy Hải</title>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --light-bg: #f0f2f5;
+            --white-bg: #ffffff;
+            --border-color: #dee2e6;
+            --shadow: 0 4px 12px rgba(0,0,0,0.05);
+            --border-radius: 12px;
+        }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            display: grid; 
+            place-items: center; 
+            min-height: 90vh; 
+            background-color: var(--light-bg); 
+            margin: 0;
+        }
+        .login-container { 
+            background: var(--white-bg); 
+            padding: 40px; 
+            border-radius: var(--border-radius); 
+            box-shadow: var(--shadow); 
+            width: 90%;
+            max-width: 400px;
+            border-top: 5px solid var(--primary-color);
+        }
+        h1 { 
+            text-align: center; 
+            color: #333; 
+            margin-top: 0;
+            margin-bottom: 25px;
+        }
+        div { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; }
+        input[type="text"] { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            font-size: 1em;
+        }
+        input[type="text"]:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
+            outline: none;
+        }
+        button { 
+            background-color: var(--primary-color); 
+            color: white; 
+            padding: 12px 18px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            font-weight: 600;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+        button:hover { background-color: var(--primary-hover); }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <h1>Bài kiểm tra Thầy Hải</h1>
+        <form id="loginForm">
+            <div>
+                <label for="fullName">Họ và Tên:</label>
+                <input type="text" id="fullName" placeholder="Ví dụ: Nguyễn Văn A" required>
+            </div>
+            <div>
+                <label for="className">Lớp:</label>
+                <input type="text" id="className" placeholder="Ví dụ: 10A1" required>
+            </div>
+            <button type="submit">Vào Trang chủ</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault(); 
+            const fullName = document.getElementById('fullName').value;
+            const className = document.getElementById('className').value;
+            localStorage.setItem('studentName', fullName);
+            localStorage.setItem('studentClass', className);
+            window.location.href = 'home.html';
+        });
+    </script>
+
+</body>
+</html>

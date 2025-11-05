@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang chủ - Bài kiểm tra</title>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --success-color: #28a745;
+            --success-hover: #218838;
+            --danger-color: #dc3545;
+            --danger-hover: #c82333;
+            --light-bg: #f0f2f5;
+            --white-bg: #ffffff;
+            --border-color: #dee2e6;
+            --shadow: 0 4px 12px rgba(0,0,0,0.05);
+            --border-radius: 12px;
+        }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background-color: var(--light-bg); 
+            margin: 0; 
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 30px;
+            background: var(--white-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        /* Nút Đăng xuất */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            text-decoration: none;
+            color: var(--white-bg);
+            background-color: var(--danger-color);
+            transition: background-color 0.2s;
+        }
+        .btn svg { width: 16px; height: 16px; fill: currentColor; }
+        .btn:hover { background-color: var(--danger-hover); }
+
+        /* Header trang */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+        #welcome-message {
+            font-size: 1.8em;
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+        }
+        .menu {
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .menu-card {
+            padding: 30px;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            color: white;
+            font-size: 1.3em;
+            font-weight: 600;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        .menu-card svg {
+            width: 40px;
+            height: 40px;
+            fill: currentColor;
+        }
+        .menu-card.do-test {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+        }
+        .menu-card.view-results {
+            background: linear-gradient(135deg, var(--success-color), var(--success-hover));
+        }
+        .menu-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="page-header">
+            <h1 id="welcome-message">Chào mừng, ...</h1>
+            <button id="logout-btn" class="btn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M502.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L402.7 224 192 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l210.7 0-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l128-128zM160 96c17.7 0 32-14.3 32-32s-14.3-32-32-32L96 32C43 32 0 75 0 128L0 384c0 53 43 96 96 96l64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L96 416c-17.7 0-32-14.3-32-32l0-256c0-17.7 14.3-32 32-32l64 0z"/></svg>
+                Đăng xuất
+            </button>
+        </div>
+
+        <div class="menu">
+            <a href="select-test.html" class="menu-card do-test">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M471.6 21.7c-21.9-2.5-43.6 6.1-60.5 23.1L256 188.5 99.9 31.4C83 14.4 61.3 5.8 39.4 8.3S0 28.5 0 51.6V460.4c0 23.1 14.8 43.3 37.8 49.1s47.4-2.1 63.8-18.6L256 312.5l154.4 178.4c16.4 16.5 38.6 24.8 60.5 22.3s41.8-16.7 49.1-37.8c7.3-21.1 2.1-43.8-13.8-59.8L312.5 256l148.2-167.4c16-16.1 21.2-38.2 13.8-59.8C467.1 7.1 447.4 0 424.4 0c-17.7 0-35.3 5.8-49.8 16.9l-4.7 3.8z"/></svg>
+                Làm bài kiểm tra
+            </a>
+            <a href="my-results.html" class="menu-card view-results">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M16 64C16 28.7 44.7 0 80 0H432c35.3 0 64 28.7 64 64V448c0 35.3-28.7 64-64 64H80c-35.3 0-64-28.7-64-64V64zM224 208v192c0 17.7-14.3 32-32 32s-32-14.3-32-32V208c0-17.7 14.3-32 32-32s32 14.3 32 32zm128-64v256c0 17.7-14.3 32-32 32s-32-14.3-32-32V144c0-17.7 14.3-32 32-32s32 14.3 32 32zM448 368v32c0 17.7-14.3 32-32 32s-32-14.3-32-32V368c0-17.7 14.3-32 32-32s32 14.3 32 32z"/></svg>
+                Xem lịch sử kết quả
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const studentName = localStorage.getItem('studentName');
+        const studentClass = localStorage.getItem('studentClass');
+
+        if (!studentName || !studentClass) {
+            alert("Bạn cần đăng nhập trước!");
+            window.location.href = 'index.html';
+        } else {
+            document.getElementById('welcome-message').innerText = `Chào mừng, ${studentName}`;
+        }
+
+        // Xử lý Đăng xuất
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            if (confirm("Bạn có chắc chắn muốn đăng xuất?")) {
+                localStorage.clear(); // Xóa tất cả thông tin
+                window.location.href = 'index.html';
+            }
+        });
+    </script>
+
+</body>
+</html>

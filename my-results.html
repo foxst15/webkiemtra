@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch sử kết quả</title>
+    <style>
+        :root {
+            --secondary-color: #6c757d;
+            --secondary-hover: #5a6268;
+            --light-bg: #f0f2f5;
+            --white-bg: #ffffff;
+            --border-color: #dee2e6;
+            --shadow: 0 4px 12px rgba(0,0,0,0.05);
+            --border-radius: 12px;
+        }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background-color: var(--light-bg); 
+            margin: 0; 
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 30px;
+            background: var(--white-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        /* Nút chung */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            text-decoration: none;
+            color: var(--white-bg);
+            transition: background-color 0.2s;
+        }
+        .btn svg { width: 16px; height: 16px; fill: currentColor; }
+        .btn-secondary { background-color: var(--secondary-color); }
+        .btn-secondary:hover { background-color: var(--secondary-hover); }
+
+        /* Header trang */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .page-header h1 { margin: 0; color: #333; }
+
+        /* Bảng */
+        #results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        #results-table th, #results-table td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: left;
+        }
+        #results-table th { background-color: #f8f9fa; }
+        #results-table tbody tr:nth-child(even) { background-color: #f8f9fa; }
+        #loading { font-style: italic; color: #555; margin-top: 15px; }
+        .score-pass { color: green; font-weight: bold; }
+        .score-fail { color: red; font-weight: bold; }
+        
+    </style>
+    <!-- SDK Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Lịch sử kết quả</h1>
+            <a href="home.html" class="btn btn-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 288 416 288c17.7 0 32-14.3 32-32s-14.3-32-32-32l-306.7 0L214.6 69.4c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg>
+                Quay lại
+            </a>
+        </div>
+        <p>Dưới đây là tất cả các bài kiểm tra bạn (<strong id="studentName"></strong>) đã nộp.</p>
+
+        <div style="overflow-x: auto;">
+            <table id="results-table">
+                <thead>
+                    <tr>
+                        <th>Tên Đề Thi</th>
+                        <th>Điểm</th>
+                        <th>Chi tiết</th>
+                        <th>Thời Gian Nộp</th>
+                    </tr>
+                </thead>
+                <tbody id="results-table-body">
+                </tbody>
+            </table>
+        </div>
+        <div id="loading">Đang tải kết quả...</div>
+        
+    </div>
+
+    <script>
+        // *** Dán firebaseConfig của bạn vào đây ***
+        const firebaseConfig = {
+          apiKey: "YOUR_API_KEY",
+          authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+          projectId: "YOUR_PROJECT_ID",
+          storageBucket: "YOUR_PROJECT_ID.appspot.com",
+          messagingSenderId: "YOUR_SENDER_ID",
+          appId: "YOUR_APP_ID"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const studentName = localStorage.getItem('studentName');
+        const studentClass = localStorage.getItem('studentClass');
+        const loadingDiv = document.getElementById('loading');
+        const resultsTableBody = document.getElementById('results-table-body');
+
+        async function loadMyResults() {
+            if (!studentName || !studentClass) {
+                alert("Bạn cần đăng nhập trước!");
+                window.location.href = 'index.html';
+                return;
+            }
+            document.getElementById('studentName').innerText = studentName;
+
+            try {
+                const querySnapshot = await db.collection("ketqua")
+                    .where("hoTen", "==", studentName)
+                    .where("lop", "==", studentClass)
+                    .get();
+                
+                let results = [];
+                querySnapshot.forEach(doc => {
+                    results.push(doc.data());
+                });
+
+                if (results.length === 0) {
+                    loadingDiv.innerText = "Bạn chưa nộp bài kiểm tra nào.";
+                    return;
+                }
+
+                results.sort((a, b) => {
+                    const timeA = a.thoiGianNop ? a.thoiGianNop.toMillis() : 0;
+                    const timeB = b.thoiGianNop ? b.thoiGianNop.toMillis() : 0;
+                    return timeB - timeA;
+                });
+                
+                resultsTableBody.innerHTML = ''; 
+                results.forEach(res => {
+                    const tr = document.createElement('tr');
+                    let nopLuc = "Không rõ";
+                    if (res.thoiGianNop) {
+                        nopLuc = new Date(res.thoiGianNop.toMillis()).toLocaleString('vi-VN');
+                    }
+                    const diem = parseFloat(res.diemSo);
+                    const diemClass = diem >= 5 ? 'score-pass' : 'score-fail';
+                    
+                    tr.innerHTML = `
+                        <td>${res.tenDeThi || 'N/A'}</td>
+                        <td class="${diemClass}">${res.diemSo || 'N/A'}</td>
+                        <td>${res.soCauDung || 'N/A'} / ${res.tongSoCau || 'N/A'}</td>
+                        <td>${nopLuc}</td>
+                    `;
+                    resultsTableBody.appendChild(tr);
+                });
+                loadingDiv.style.display = 'none'; 
+            } catch (error) {
+                console.error("Lỗi khi tải kết quả: ", error);
+                loadingDiv.innerText = "Lỗi khi tải kết quả. Vui lòng thử lại.";
+            }
+        }
+        loadMyResults();
+    </script>
+</body>
+</html>

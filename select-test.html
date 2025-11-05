@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chọn Đề Kiểm Tra</title>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --secondary-color: #6c757d;
+            --secondary-hover: #5a6268;
+            --light-bg: #f0f2f5;
+            --white-bg: #ffffff;
+            --border-color: #dee2e6;
+            --shadow: 0 4px 12px rgba(0,0,0,0.05);
+            --border-radius: 12px;
+        }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background-color: var(--light-bg); 
+            margin: 0; 
+            padding: 20px;
+        }
+        .container {
+            max-width: 700px;
+            margin: 20px auto;
+            padding: 30px;
+            background: var(--white-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        /* Nút chung */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            text-decoration: none;
+            color: var(--white-bg);
+            transition: background-color 0.2s;
+        }
+        .btn svg { width: 16px; height: 16px; fill: currentColor; }
+        .btn-secondary { background-color: var(--secondary-color); }
+        .btn-secondary:hover { background-color: var(--secondary-hover); }
+
+        /* Header trang */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .page-header h1 { margin: 0; color: #333; }
+        
+        .welcome {
+            font-size: 1.1em;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        /* Danh sách đề thi */
+        #test-list {
+            margin-top: 20px;
+        }
+        .test-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 20px;
+            margin-bottom: 15px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: left;
+            transition: background-color 0.2s, transform 0.2s;
+            box-sizing: border-box;
+        }
+        .test-item:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-3px);
+        }
+        .test-item .time {
+            font-size: 0.9em;
+            font-weight: normal;
+            background-color: rgba(255,255,255,0.2);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        #loading { text-align: center; font-weight: bold; font-size: 1.1em; }
+    </style>
+    <!-- SDK Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1>Chọn Đề Kiểm Tra</h1>
+            <a href="home.html" class="btn btn-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 288 416 288c17.7 0 32-14.3 32-32s-14.3-32-32-32l-306.7 0L214.6 69.4c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg>
+                Quay lại
+            </a>
+        </div>
+
+        <div class="welcome">
+            Chào <strong id="studentName"></strong> (Lớp: <strong id="studentClass"></strong>),
+            vui lòng chọn đề kiểm tra:
+        </div>
+        <div id="test-list">
+            <div id="loading">Đang tải danh sách đề thi...</div>
+        </div>
+    </div>
+
+    <script>
+        // *** Dán firebaseConfig của bạn vào đây ***
+        const firebaseConfig = {
+          apiKey: "YOUR_API_KEY",
+          authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+          projectId: "YOUR_PROJECT_ID",
+          storageBucket: "YOUR_PROJECT_ID.appspot.com",
+          messagingSenderId: "YOUR_SENDER_ID",
+          appId: "YOUR_APP_ID"
+        };
+        
+        let db;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+        } catch (e) { alert("Lỗi cấu hình Firebase!"); }
+        
+        const studentName = localStorage.getItem('studentName');
+        const studentClass = localStorage.getItem('studentClass');
+
+        if (!studentName || !studentClass) {
+            window.location.href = 'index.html';
+        }
+
+        document.getElementById('studentName').innerText = studentName;
+        document.getElementById('studentClass').innerText = studentClass;
+
+        async function loadTestList() {
+            const listDiv = document.getElementById('test-list');
+            const loadingDiv = document.getElementById('loading');
+            try {
+                const snapshot = await db.collection("dethi").get();
+                loadingDiv.style.display = 'none';
+                if (snapshot.empty) {
+                    listDiv.innerHTML = '<p>Chưa có đề thi nào.</p>';
+                    return;
+                }
+                snapshot.forEach(doc => {
+                    const test = doc.data();
+                    const testId = doc.id;
+                    const testName = test.tenDe;
+                    const testTime = test.thoiGianLamBai || 15; 
+                    const button = document.createElement('button');
+                    button.className = 'test-item';
+                    button.innerHTML = `
+                        <span>${testName}</span>
+                        <span class="time">${testTime} phút</span>
+                    `;
+                    button.onclick = () => {
+                        localStorage.setItem('selectedTestId', testId);
+                        localStorage.setItem('selectedTestName', testName);
+                        localStorage.setItem('selectedTestTime', testTime); 
+                        window.location.href = 'test.html';
+                    };
+                    listDiv.appendChild(button);
+                });
+            } catch (error) {
+                console.error("Lỗi tải danh sách đề: ", error);
+                loadingDiv.innerText = "Lỗi tải đề. Vui lòng kiểm tra Rules.";
+            }
+        }
+        
+        loadTestList();
+    </script>
+</body>
+</html>

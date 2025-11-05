@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kết quả bài kiểm tra</title>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --light-bg: #f0f2f5;
+            --white-bg: #ffffff;
+            --border-color: #dee2e6;
+            --shadow: 0 4px 12px rgba(0,0,0,0.05);
+            --border-radius: 12px;
+        }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            display: grid; 
+            place-items: center; 
+            min-height: 90vh; 
+            background-color: var(--light-bg); 
+            text-align: center; 
+            margin: 0;
+            padding: 20px;
+        }
+        .result-container { 
+            background: var(--white-bg); 
+            padding: 30px; 
+            border-radius: var(--border-radius); 
+            box-shadow: var(--shadow); 
+            width: 90%;
+            max-width: 450px; 
+            border-top: 5px solid var(--success-color);
+        }
+        h2 { color: #333; }
+        #score { 
+            font-size: 4.5em; 
+            font-weight: 700; 
+            margin: 10px 0;
+            line-height: 1;
+        }
+        #details { font-size: 1.2em; color: #333; margin-bottom: 20px;}
+        .student-info { 
+            text-align: left; 
+            margin-top: 20px; 
+            border-top: 2px solid var(--border-color); 
+            padding-top: 20px; 
+        }
+        .student-info p { margin: 5px 0; }
+
+        /* Nút */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            text-decoration: none;
+            color: var(--white-bg);
+            background-color: var(--primary-color);
+            transition: background-color 0.2s;
+            margin-top: 20px;
+        }
+        .btn svg { width: 16px; height: 16px; fill: currentColor; }
+        .btn:hover { background-color: var(--primary-hover); }
+
+    </style>
+</head>
+<body>
+
+    <div class="result-container">
+        <h2>Nộp bài thành công!</h2>
+        <p style="color: #555;">Kết quả của bạn là:</p>
+        
+        <div id="score">...</div>
+        <div id="details">...</div>
+
+        <div class="student-info">
+            <h3 style="margin-top: 0;">Thông tin thí sinh</h3>
+            <p><strong>Họ tên:</strong> <span id="studentName"></span></p>
+            <p><strong>Lớp:</strong> <span id="studentClass"></span></p>
+        </div>
+        
+        <a href="home.html" class="btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M575.8 255.5c0 18-15 32.1-32 32.1h-32v.7c0 45.4-36.7 82.1-82.1 82.1H304v112c0 35.3-28.7 64-64 64H160c-35.3 0-64-28.7-64-64v-112H64c-35.3 0-64-28.7-64-64V256c0-35.3 28.7-64 64-64h32v-80C96 42.1 138.1 0 192 0h192c53 0 96 42.1 96 96v80h32c17.7 0 32 14.3 32 32.1z"/></svg>
+            Quay về Trang chủ
+        </a>
+    </div>
+
+    <script>
+        const studentName = localStorage.getItem('studentName');
+        const studentClass = localStorage.getItem('studentClass');
+        const score = localStorage.getItem('score');
+        const totalQuestions = localStorage.getItem('totalQuestions');
+        const correctCount = localStorage.getItem('correctCount');
+
+        if (!studentName || !score) {
+            window.location.href = 'index.html';
+        }
+
+        document.getElementById('studentName').innerText = studentName;
+        document.getElementById('studentClass').innerText = studentClass;
+        
+        const scoreNum = parseFloat(score);
+        document.getElementById('score').innerText = score;
+        if (scoreNum >= 5) {
+            document.getElementById('score').style.color = "var(--success-color)";
+            document.querySelector('.result-container').style.borderColor = "var(--success-color)";
+        } else {
+            document.getElementById('score').style.color = "var(--danger-color)";
+            document.querySelector('.result-container').style.borderColor = "var(--danger-color)";
+        }
+
+        document.getElementById('details').innerText = `Bạn đã trả lời đúng ${correctCount} / ${totalQuestions} câu.`;
+    </script>
+
+</body>
+</html>
