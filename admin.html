@@ -5,217 +5,146 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trang Quản Trị</title>
     <style>
-        :root {
-            --primary-color: #007bff;
-            --primary-hover: #0056b3;
-            --secondary-color: #6c757d;
-            --secondary-hover: #5a6268;
-            --success-color: #28a745;
-            --success-hover: #218838;
-            --danger-color: #dc3545;
-            --danger-hover: #c82333;
-            --light-bg: #f0f2f5;
-            --white-bg: #ffffff;
-            --border-color: #dee2e6;
-            --shadow: 0 4px 12px rgba(0,0,0,0.05);
-            --border-radius: 12px;
-        }
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            background-color: var(--light-bg); 
+            background-color: #f0f2f5; 
             margin: 20px; 
-            font-size: 15px;
-        }
-        h2 { margin-top: 0; color: #333; }
-        
-        /* Box chung */
-        .card { 
-            background: var(--white-bg); 
-            padding: 25px; 
-            border-radius: var(--border-radius); 
-            box-shadow: var(--shadow); 
         }
 
-        /* --- 1. LỚP ĐĂNG NHẬP --- */
+        /* *** 1. LỚP ĐĂNG NHẬP (Cập nhật) *** */
         #login-container { display: grid; place-items: center; min-height: 80vh; }
-        .login-box { 
-            border-top: 5px solid var(--primary-color);
-            text-align: center; 
-            width: 90%; 
-            max-width: 350px; 
-        }
-        .login-box input[type="text"], .login-box input[type="password"] { 
+        .login-box { background: #fff; border: 1px solid #ccc; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center; width: 90%; max-width: 350px; }
+        /* *** CẬP NHẬT: Input cho Email *** */
+        .login-box input[type="email"], .login-box input[type="password"] { 
             width: 100%; 
             padding: 10px; 
             margin-bottom: 10px; 
-            border: 1px solid var(--border-color); 
+            border: 1px solid #ccc; 
             border-radius: 8px; 
             box-sizing: border-box; 
         }
-        #error-msg { color: var(--danger-color); margin-top: 10px; display: none; }
+        .login-box button { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; width: 100%; }
+        #error-msg { color: red; margin-top: 10px; display: none; }
 
-        /* --- 2. LỚP QUẢN LÝ --- */
-        #management-container { display: none; max-width: 1400px; margin: auto; }
-        
-        /* Nút chung */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.95em;
-            font-weight: 600;
-            text-decoration: none;
-            color: var(--white-bg);
-            transition: background-color 0.2s;
+        /* *** 2. LỚP QUẢN LÝ *** */
+        #management-container { display: none; /* Ẩn ban đầu */ max-width: 1600px; margin: auto; } 
+        .card { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        h2 { margin-top: 0; }
+        input[type="text"], input[type="number"], input[type="email"], input[type="password"] { 
+            width: 100%; 
+            padding: 10px; 
+            margin-bottom: 10px; 
+            border: 1px solid #ccc; 
+            border-radius: 8px; 
+            box-sizing: border-box; 
         }
-        .btn svg { width: 16px; height: 16px; fill: currentColor; }
-        .btn-primary { background-color: var(--primary-color); }
-        .btn-primary:hover { background-color: var(--primary-hover); }
-        .btn-success { background-color: var(--success-color); }
-        .btn-success:hover { background-color: var(--success-hover); }
-        .btn-danger { background-color: var(--danger-color); }
-        .btn-danger:hover { background-color: var(--danger-hover); }
-        .btn-small { font-size: 0.8em; padding: 5px 10px; }
-
-        /* Header Admin */
+        button { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.2s; }
+        button:hover { background-color: #0056b3; }
+        
+        /* THANH THÔNG TIN ADMIN */
         #admin-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             margin-bottom: 20px;
         }
-        #admin-info { font-weight: 600; font-size: 1.2em; }
+        #admin-info { font-weight: 600; font-size: 1.1em; }
+        #logout-btn { background-color: #dc3545; }
         
-        /* Tabs */
-        #admin-nav { 
-            display: flex; 
-            gap: 10px; 
-            margin-bottom: 20px; 
-            border-bottom: 2px solid var(--border-color); 
-        }
-        #admin-nav button { 
-            background-color: transparent; 
-            color: var(--text-light); 
-            padding: 10px 20px; 
-            border: none; 
-            border-bottom: 4px solid transparent; 
-            font-size: 1.1em; 
-            font-weight: 600; 
-            cursor: pointer;
-        }
-        #admin-nav button.active { 
-            color: var(--primary-color); 
-            border-bottom-color: var(--primary-color); 
-        }
-
-        /* --- Tab 1: Quản lý Đề --- */
-        #test-manager-view { 
-            display: grid; 
-            grid-template-columns: 350px 1fr; 
-            gap: 20px; 
-        }
-        @media (max-width: 900px) {
-            #test-manager-view { grid-template-columns: 1fr; }
-        }
-        
-        input[type="text"], input[type="number"] { 
-            width: 100%; 
-            padding: 10px; 
-            margin-bottom: 10px; 
-            border: 1px solid var(--border-color); 
-            border-radius: 8px; 
-            box-sizing: border-box; 
-        }
-        
-        .test-list-item { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 12px; 
-            border-bottom: 1px solid var(--border-color); 
-            cursor: pointer; 
-            border-radius: 6px;
-        }
+        /* CSS cho Tabs, Test Manager... */
+        #admin-nav { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #ccc; flex-wrap: wrap; }
+        #admin-nav button { background-color: transparent; color: #555; padding: 10px 20px; border: none; border-bottom: 4px solid transparent; font-size: 1.1em; font-weight: 600; }
+        #admin-nav button.active { color: #007bff; border-bottom-color: #007bff; }
+        #test-manager-view { display: none; grid-template-columns: 350px 1fr; gap: 20px; }
+        button.add-btn { background-color: #28a745; }
+        button.delete-btn { background-color: #dc3545; font-size: 0.8em; padding: 5px 10px; }
+        .test-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; }
         .test-list-item:hover { background-color: #f8f9fa; }
         .test-list-item.active { background-color: #e0eaff; font-weight: bold; }
         .test-item-info span { display: block; }
-        .test-item-info .time { font-size: 0.9em; color: var(--text-light); }
-        .test-item-info .creator { font-size: 0.8em; color: var(--primary-color); font-style: italic; }
+        .test-item-info .time { font-size: 0.9em; color: #555; }
+        .test-item-info .creator { font-size: 0.8em; color: #007bff; font-style: italic; }
         
         #question-manager { display: none; }
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .question-item { 
-            border-bottom: 1px solid var(--border-color); 
-            padding: 15px 5px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-        }
+        .question-item { border-bottom: 1px solid #eee; padding: 15px 0; display: flex; justify-content: space-between; align-items: center; }
         .question-item:last-child { border-bottom: none; }
         .question-prompt { font-weight: 600; }
-        .question-answer { font-style: italic; color: var(--success-color); }
+        .question-answer { font-style: italic; color: #28a745; }
 
-        /* --- Tab 2: Xem Kết Quả --- */
-        #results-view { display: none; }
-        #results-table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-top: 20px; 
-            font-size: 0.95em;
-        }
-        #results-table th, #results-table td { 
-            border: 1px solid var(--border-color); 
-            padding: 10px 12px; 
-            text-align: left; 
-        }
+        #results-view { display: none; /* Ẩn ban đầu */ }
+        
+        /* *** MỚI: TAB QUẢN LÝ TÀI KHOẢN *** */
+        #account-manager-view { display: none; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+        #results-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        #results-table th, #results-table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
         #results-table th { background-color: #f8f9fa; }
         #results-table tbody tr:nth-child(even) { background-color: #f8f9fa; }
         #results-table tbody tr:hover { background-color: #e9ecef; }
-        .score-pass { color: var(--success-color); font-weight: bold; }
-        .score-fail { color: var(--danger-color); font-weight: bold; }
+        .score-pass { color: green; font-weight: bold; }
+        .score-fail { color: red; font-weight: bold; }
+        .reason-cheat { color: #dc3545; font-weight: bold; font-style: italic; }
+        .reason-time { color: #ffc107; font-weight: bold; }
+        .reason-manual { color: #28a745; }
 
+        /* Tương thích điện thoại */
+        @media (max-width: 900px) {
+            #test-manager-view {
+                grid-template-columns: 1fr; /* Xếp chồng 2 cột */
+            }
+            .options-grid {
+                grid-template-columns: 1fr; /* Xếp chồng các lựa chọn */
+            }
+            #account-manager-view {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
     <!-- SDK Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <!-- *** MỚI: Thêm SDK Firebase Auth *** -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 </head>
 <body>
 
-    <!-- *** 1. GIAO DIỆN ĐĂNG NHẬP *** -->
+    <!-- *** 1. GIAO DIỆN ĐĂNG NHẬP (Cập nhật) *** -->
     <div id="login-container">
-        <div class="card login-box">
+        <div class="login-box">
             <h2>Đăng nhập Quản trị</h2>
             <form id="adminLoginForm">
-                <input type="text" id="username" placeholder="Tên đăng nhập" required>
-                <input type="password" id="password" placeholder="Mật khẩu" required>
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Đăng nhập</button>
+                <!-- Đổi sang Email -->
+                <input type="email" id="adminEmail" placeholder="Email" required>
+                <input type="password" id="adminPassword" placeholder="Mật khẩu" required>
+                <button type="submit">Đăng nhập</button>
             </form>
-            <p id="error-msg">Tên đăng nhập hoặc mật khẩu không đúng!</p>
+            <p id="error-msg">Email hoặc mật khẩu không đúng!</p>
         </div>
     </div>
 
-    <!-- *** 2. GIAO DIỆN QUẢN LÝ *** -->
+    <!-- *** 2. GIAO DIỆN QUẢN LÝ (Cập nhật) *** -->
     <div id="management-container">
-        
-        <div class="card" id="admin-header">
+        <!-- Thanh thông tin Admin -->
+        <div id="admin-header">
             <div id="admin-info">Chào mừng, <span id="admin-name"></span>!</div>
-            <button id="logout-btn" class="btn btn-danger">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M502.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L402.7 224 192 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l210.7 0-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l128-128zM160 96c17.7 0 32-14.3 32-32s-14.3-32-32-32L96 32C43 32 0 75 0 128L0 384c0 53 43 96 96 96l64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L96 416c-17.7 0-32-14.3-32-32l0-256c0-17.7 14.3-32 32-32l64 0z"/></svg>
-                Đăng xuất
-            </button>
+            <button id="logout-btn">Đăng xuất</button>
         </div>
 
+        <!-- Thanh điều hướng (Thêm Tab mới) -->
         <div id="admin-nav">
             <button id="nav-tests" class="active">Quản lý Đề Thi</button>
             <button id="nav-results">Xem Kết Quả</button>
+            <button id="nav-account">Quản lý Tài Khoản</button> <!-- TAB MỚI -->
         </div>
 
         <!-- Tab 1: Quản lý Đề Thi -->
         <div id="test-manager-view">
+            <!-- CỘT 1 -->
             <div class="card">
                 <h2>Quản lý Đề Thi</h2>
                 <form id="createTestForm" style="margin-bottom: 20px;">
@@ -223,13 +152,13 @@
                     <input type="text" id="testName" placeholder="Ví dụ: Kiểm tra 15p Toán 10" required>
                     <label>Thời gian làm bài (phút):</label>
                     <input type="number" id="testTime" placeholder="Ví dụ: 15" required min="1">
-                    <button type="submit" class="btn btn-success" style="width: 100%;">Tạo Đề Thi Mới</button>
+                    <button type="submit" class="add-btn" style="width: 100%;">Tạo Đề Thi Mới</button>
                 </form>
                 <div id="test-list">
                     <div id="test-loading">Đang tải danh sách đề...</div>
                 </div>
             </div>
-            
+            <!-- CỘT 2 -->
             <div class="card" id="question-manager">
                  <h2 id="question-manager-title">Chọn một đề thi để thêm câu hỏi</h2>
                  <form id="addQuestionForm" style="display: none;">
@@ -244,7 +173,7 @@
                     </div>
                     <label>Đáp án đúng (Gõ lại y hệt):</label>
                     <input type="text" id="answer" required>
-                    <button type="submit" class="btn btn-success">Thêm câu hỏi</button>
+                    <button type="submit" class="add-btn">Thêm câu hỏi</button>
                 </form>
                 <div id="question-list-container" style="display: none; margin-top: 20px;">
                     <h3>Danh sách câu hỏi</h3>
@@ -267,16 +196,46 @@
                             <th>Điểm</th>
                             <th>Chi tiết</th>
                             <th>Thời Gian Nộp</th>
+                            <th>Lý do nộp</th> 
                         </tr>
                     </thead>
                     <tbody id="results-table-body"></tbody>
                 </table>
             </div>
         </div>
+
+        <!-- *** TAB 3: QUẢN LÝ TÀI KHOẢN (Mới) *** -->
+        <div id="account-manager-view" class="card">
+            <!-- CỘT 1 -->
+            <div>
+                <h2>Tạo Admin Mới</h2>
+                <form id="createAdminForm">
+                    <label>Email Admin Mới:</label>
+                    <input type="email" id="newAdminEmail" placeholder="ví dụ: colan@gmail.com" required>
+                    <label>Mật khẩu:</label>
+                    <input type="password" id="newAdminPass" required>
+                    <button type="submit" class="add-btn">Tạo tài khoản</button>
+                </form>
+                <p id="create-admin-msg" style="display: none;"></p>
+            </div>
+            <!-- CỘT 2 -->
+            <div>
+                <h2>Đổi Mật khẩu Của Bạn</h2>
+                <form id="changePasswordForm">
+                    <label>Mật khẩu mới:</label>
+                    <input type="password" id="newPass" required>
+                    <label>Xác nhận mật khẩu mới:</label>
+                    <input type="password" id="confirmNewPass" required>
+                    <button type="submit">Đổi Mật khẩu</button>
+                </form>
+                <p id="change-pass-msg" style="display: none;"></p>
+            </div>
+        </div>
+
     </div>
 
     <script>
-        // *** Dán firebaseConfig của bạn vào đây ***
+        // *** ĐÃ DÁN firebaseConfig CỦA BẠN ***
         const firebaseConfig = {
           apiKey: "AIzaSyDmRq3djRZHElhC2T_EYsU7v5vrzwRyybY",
           authDomain: "webkiemtra-66cdc.firebaseapp.com",
@@ -286,44 +245,104 @@
           appId: "1:181113887829:web:49535ee20d85b7395948dc"
         };
         
-        // --- 1. KHU VỰC LOGIC QUẢN LÝ ---
+        // --- 1. KHỞI TẠO VÀ XỬ LÝ ĐĂNG NHẬP ---
         let db; 
+        let auth; // *** MỚI: Biến cho Auth ***
         let selectedTestId = null; 
         let questionListener = null;
+        let currentUser = null; // *** MỚI: Lưu admin đang đăng nhập ***
+        
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            db = firebase.firestore();
+            auth = firebase.auth(); // *** MỚI: Khởi tạo Auth ***
+        } catch (e) { alert("Lỗi cấu hình Firebase!"); }
+
+        const loginContainer = document.getElementById('login-container');
+        const managementContainer = document.getElementById('management-container');
+        const loginForm = document.getElementById('adminLoginForm');
+        const errorMsg = document.getElementById('error-msg');
+        
+        // --- Logic Đăng nhập MỚI ---
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('adminEmail').value;
+            const pass = document.getElementById('adminPassword').value;
+            
+            auth.signInWithEmailAndPassword(email, pass)
+                .then((userCredential) => {
+                    // Đăng nhập thành công, (hàm onAuthStateChanged sẽ xử lý)
+                })
+                .catch((error) => {
+                    errorMsg.innerText = "Email hoặc Mật khẩu không đúng!";
+                    errorMsg.style.display = 'block';
+                });
+        });
+
+        // --- Logic Đăng xuất MỚI ---
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            auth.signOut(); // Đăng xuất
+        });
+
+        // --- Hàm Quản lý Trạng thái Đăng nhập (Thay thế sessionStorage) ---
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                // Admin đã đăng nhập
+                currentUser = user;
+                loginContainer.style.display = 'none';
+                managementContainer.style.display = 'block'; 
+                document.getElementById('admin-name').innerText = user.email; // Hiển thị email
+                
+                // Khởi tạo các tab
+                initializeAdminApp(); 
+            } else {
+                // Admin đã đăng xuất
+                currentUser = null;
+                loginContainer.style.display = 'grid';
+                managementContainer.style.display = 'none';
+            }
+        });
+
+        // --- 2. KHU VỰC LOGIC QUẢN LÝ ---
         
         function initializeAdminApp() {
-            try {
-                if (!firebase.apps.length) {
-                    firebase.initializeApp(firebaseConfig);
-                }
-                db = firebase.firestore();
-            } catch (e) { alert("Lỗi cấu hình Firebase!"); return; }
-
-            const adminName = sessionStorage.getItem('adminName');
-            document.getElementById('admin-name').innerText = adminName || 'Admin';
-
-            document.getElementById('logout-btn').addEventListener('click', () => {
-                sessionStorage.clear(); 
-                window.location.reload(); 
-            });
-
-            // (Xử lý Tabs)
+            // (Xử lý Tabs - Thêm Tab mới)
             const navTests = document.getElementById('nav-tests');
             const navResults = document.getElementById('nav-results');
+            const navAccount = document.getElementById('nav-account'); // MỚI
             const testManagerView = document.getElementById('test-manager-view');
             const resultsView = document.getElementById('results-view');
+            const accountManagerView = document.getElementById('account-manager-view'); // MỚI
+
             navTests.addEventListener('click', () => {
                 testManagerView.style.display = 'grid';
                 resultsView.style.display = 'none';
+                accountManagerView.style.display = 'none';
                 navTests.classList.add('active');
                 navResults.classList.remove('active');
+                navAccount.classList.remove('active');
             });
             navResults.addEventListener('click', () => {
                 testManagerView.style.display = 'none';
                 resultsView.style.display = 'block';
+                accountManagerView.style.display = 'none';
                 navTests.classList.remove('active');
                 navResults.classList.add('active');
+                navAccount.classList.remove('active');
             });
+            navAccount.addEventListener('click', () => {
+                testManagerView.style.display = 'none';
+                resultsView.style.display = 'none';
+                accountManagerView.style.display = 'grid';
+                navTests.classList.remove('active');
+                navResults.classList.remove('active');
+                navAccount.classList.add('active');
+            });
+            // Mặc định hiển thị tab 1
+            navTests.click();
+
 
             // --- (A) Logic cho Tab "Quản lý Đề Thi" ---
             const createTestForm = document.getElementById('createTestForm');
@@ -335,61 +354,68 @@
             const qListContainer = document.getElementById('question-list-container');
             const qListDiv = document.getElementById('question-list');
 
-            // 1. TẠO ĐỀ THI MỚI
+            // 1. TẠO ĐỀ THI MỚI (Cập nhật nguoiTao)
             createTestForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const testName = document.getElementById('testName').value;
                 const testTime = document.getElementById('testTime').value;
-                const adminName = sessionStorage.getItem('adminName'); 
+                const adminEmail = currentUser.email; // Lấy email admin đang đăng nhập
                 if (!testName || !testTime) return;
                 try {
                     await db.collection("dethi").add({ 
                         tenDe: testName, 
                         thoiGianLamBai: parseInt(testTime),
-                        nguoiTao: adminName 
+                        nguoiTao: adminEmail // *** LƯU EMAIL ADMIN TẠO ĐỀ ***
                     });
                     createTestForm.reset();
                     alert("Tạo đề thi thành công!");
                 } catch (error) { console.error("Lỗi tạo đề thi: ", error); }
             });
 
-            // 2. TẢI DANH SÁCH ĐỀ THI
-            db.collection("dethi").onSnapshot(snapshot => {
-                testLoadingDiv.style.display = 'none';
-                testListDiv.innerHTML = ''; 
-                if (snapshot.empty) { testListDiv.innerHTML = '<p>Chưa có đề thi nào.</p>'; return; }
-                snapshot.forEach(doc => {
-                    const test = doc.data();
-                    const testId = doc.id;
-                    const item = document.createElement('div');
-                    item.className = 'test-list-item';
-                    item.innerHTML = `
-                        <div class="test-item-info">
-                            <span>${test.tenDe}</span>
-                            <span class="time">${test.thoiGianLamBai || 'N/A'} phút</span>
-                            <span class="creator">Tạo bởi: ${test.nguoiTao || 'Không rõ'}</span>
-                        </div>
-                        <button class="btn btn-danger btn-small" data-id="${testId}">Xóa</button>
-                    `;
-                    // Dùng class để tìm nút xóa
-                    item.querySelector('.btn-danger').addEventListener('click', (e) => {
-                        e.stopPropagation(); 
-                        deleteTest(testId, test.tenDe);
+            // 2. TẢI DANH SÁCH ĐỀ THI (Hiển thị nguoiTao)
+            // (Listener này cần được quản lý để tránh gọi lại nhiều lần)
+            if (!window.testListListener) {
+                window.testListListener = db.collection("dethi").onSnapshot(snapshot => {
+                    testLoadingDiv.style.display = 'none';
+                    testListDiv.innerHTML = ''; 
+                    if (snapshot.empty) { testListDiv.innerHTML = '<p>Chưa có đề thi nào.</p>'; return; }
+                    snapshot.forEach(doc => {
+                        const test = doc.data();
+                        const testId = doc.id;
+                        const item = document.createElement('div');
+                        item.className = 'test-list-item';
+                        
+                        item.innerHTML = `
+                            <div class="test-item-info">
+                                <span>${test.tenDe}</span>
+                                <span class="time">${test.thoiGianLamBai || 'N/A'} phút</span>
+                                <span class="creator">Tạo bởi: ${test.nguoiTao || 'Không rõ'}</span>
+                            </div>
+                            <button class="delete-btn" data-id="${testId}">Xóa</button>
+                        `;
+                        item.querySelector('.delete-btn').addEventListener('click', (e) => {
+                            e.stopPropagation(); 
+                            deleteTest(testId, test.tenDe);
+                        });
+                        item.addEventListener('click', () => {
+                            selectTest(testId, test.tenDe);
+                            document.querySelectorAll('.test-list-item').forEach(el => el.classList.remove('active'));
+                            item.classList.add('active');
+                        });
+                        testListDiv.appendChild(item);
                     });
-                    item.addEventListener('click', () => {
-                        selectTest(testId, test.tenDe);
-                        document.querySelectorAll('.test-list-item').forEach(el => el.classList.remove('active'));
-                        item.classList.add('active');
-                    });
-                    testListDiv.appendChild(item);
-                });
-            }, error => { console.error("Lỗi tải danh sách đề: ", error); });
+                }, error => { console.error("Lỗi tải danh sách đề: ", error); });
+            }
+            
+            // (Các hàm 3, 4, 5, 6, 7, 8: deleteTest, selectTest, loadQuestionList,
+            // addQuestionForm listener, deleteQuestion, resetQuestionManager
+            // giữ nguyên)
             
             // 3. XÓA ĐỀ THI
             async function deleteTest(testId, testName) {
-                if (!confirm(`CẢNH BÁO:\nBạn có chắc chắn muốn XÓA TOÀN BỘ đề thi "${testName}"? \n(Thao tác này sẽ xóa cả câu hỏi bên trong)`)) return;
+                if (!confirm(`CẢNH BÁO:\nBạn có chắc chắn muốn XÓA TOÀN BỘ đề thi "${testName}"?`)) return;
+                // (Thêm code xóa subcollection nếu cần)
                 try {
-                    // TODO: Xóa sub-collection 'cauhoi' trước (hiện tại Firestore rule không cho phép)
                     await db.collection("dethi").doc(testId).delete();
                     alert("Đã xóa đề thi!");
                     if (selectedTestId === testId) resetQuestionManager();
@@ -422,7 +448,7 @@
                                     <div class="question-prompt">${q.prompt}</div>
                                     <div class="question-answer">Đáp án: ${q.answer}</div>
                                 </div>
-                                <button class="btn btn-danger btn-small" onclick="deleteQuestion('${qId}')">Xóa</button>
+                                <button class="delete-btn" onclick="deleteQuestion('${qId}')">Xóa</button>
                             `;
                             qListDiv.appendChild(item);
                         });
@@ -455,16 +481,15 @@
                 selectedTestId = null;
                 if (questionListener) questionListener();
                 qManagerDiv.style.display = 'none';
-                addQuestionForm.style.display = 'none';
-                qListContainer.style.display = 'none';
-                qManagerTitle.innerText = "Chọn một đề thi để thêm câu hỏi";
             }
+
 
             // --- (B) Logic cho Tab "Xem Kết Quả" ---
             const resultsTableBody = document.getElementById('results-table-body');
             const resultsCount = document.getElementById('results-count');
-            function loadResults() {
-                db.collection("ketqua").onSnapshot(snapshot => {
+
+            if (!window.resultsListener) {
+                window.resultsListener = db.collection("ketqua").onSnapshot(snapshot => {
                     let results = [];
                     snapshot.forEach(doc => { results.push(doc.data()); });
                     results.sort((a, b) => {
@@ -478,67 +503,120 @@
                         const tr = document.createElement('tr');
                         let nopLuc = "Không rõ";
                         if (res.thoiGianNop) { nopLuc = new Date(res.thoiGianNop.toMillis()).toLocaleString('vi-VN'); }
+                        
                         const diem = parseFloat(res.diemSo);
                         const diemClass = diem >= 5 ? 'score-pass' : 'score-fail';
+                        
+                        let lyDoText = 'Thủ công';
+                        let lyDoClass = 'reason-manual';
+                        if (res.nopTuDong) {
+                            lyDoText = res.lyDoNopTuDong || 'Tự động';
+                            if (lyDoText === "Hết giờ") {
+                                lyDoClass = 'reason-time';
+                            } else {
+                                lyDoClass = 'reason-cheat'; 
+                            }
+                        }
+
                         tr.innerHTML = `
                             <td>${res.hoTen || 'N/A'}</td>
                             <td>${res.lop || 'N/A'}</td>
                             <td>${res.tenDeThi || 'N/A'}</td>
                             <td class="${diemClass}">${res.diemSo || 'N/A'}</td>
-                            <td>${res.soCauDung || 'N/WELCOME'} / ${res.tongSoCau || 'N/A'}</td>
+                            <td>${res.soCauDung || 'N/A'} / ${res.tongSoCau || 'N/A'}</td>
                             <td>${nopLuc}</td>
+                            <td class="${lyDoClass}">${lyDoText}</td>
                         `;
                         resultsTableBody.appendChild(tr);
                     });
                 }, error => {
                     console.error("Lỗi tải kết quả: ", error);
-                    resultsTableBody.innerHTML = '<tr><td colspan="6">Lỗi tải dữ liệu. Bạn đã cập nhật Rules chưa?</td></tr>';
+                    resultsTableBody.innerHTML = '<tr><td colspan="7">Lỗi tải dữ liệu.</td></tr>'; 
                 });
             }
-            loadResults(); 
+
+            // --- (C) Logic cho Tab "Quản lý Tài Khoản" (Mới) ---
+            const createAdminForm = document.getElementById('createAdminForm');
+            const createAdminMsg = document.getElementById('create-admin-msg');
+            const changePasswordForm = document.getElementById('changePasswordForm');
+            const changePassMsg = document.getElementById('change-pass-msg');
+
+            // 1. TẠO ADMIN MỚI
+            createAdminForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('newAdminEmail').value;
+                const password = document.getElementById('newAdminPass').value;
+
+                // CẢNH BÁO: Hàm này sẽ tạo người dùng trong *dịch vụ Auth chính*
+                // Firebase không có hàm "tạo user" từ phía client mà không cần
+                // đăng nhập với tư cách admin. Đây là một lỗ hổng bảo mật nếu
+                // quy tắc Firestore không chặt chẽ.
+                // Tuy nhiên, vì chúng ta đã bảo vệ trang này bằng đăng nhập,
+                // chỉ admin mới có thể thấy nút này.
+                
+                // Giải pháp đúng đắn hơn là dùng Firebase Admin SDK trên server (Functions)
+                // nhưng với HTML/JS thuần, chúng ta phải chấp nhận rủi ro.
+                
+                // Giải pháp "đỡ": Tạo một "app" Firebase thứ 2 chỉ để tạo user.
+                const secondaryApp = firebase.initializeApp(firebaseConfig, "secondary");
+                
+                secondaryApp.auth().createUserWithEmailAndPassword(email, password)
+                    .then((userCredential) => {
+                        createAdminMsg.innerText = `Tạo thành công admin: ${userCredential.user.email}`;
+                        createAdminMsg.style.color = 'green';
+                        createAdminMsg.style.display = 'block';
+                        createAdminForm.reset();
+                        // Xóa app tạm
+                        secondaryApp.delete();
+                    })
+                    .catch((error) => {
+                        createAdminMsg.innerText = `Lỗi: ${error.message}`;
+                        createAdminMsg.style.color = 'red';
+                        createAdminMsg.style.display = 'block';
+                        secondaryApp.delete();
+                    });
+            });
+
+            // 2. ĐỔI MẬT KHẨU
+            changePasswordForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const newPass = document.getElementById('newPass').value;
+                const confirmNewPass = document.getElementById('confirmNewPass').value;
+
+                if (newPass !== confirmNewPass) {
+                    changePassMsg.innerText = "Mật khẩu xác nhận không khớp!";
+                    changePassMsg.style.color = 'red';
+                    changePassMsg.style.display = 'block';
+                    return;
+                }
+
+                if (newPass.length < 6) {
+                    changePassMsg.innerText = "Mật khẩu phải có ít nhất 6 ký tự.";
+                    changePassMsg.style.color = 'red';
+                    changePassMsg.style.display = 'block';
+                    return;
+                }
+
+                currentUser.updatePassword(newPass)
+                    .then(() => {
+                        changePassMsg.innerText = "Đổi mật khẩu thành công!";
+                        changePassMsg.style.color = 'green';
+                        changePassMsg.style.display = 'block';
+                        changePasswordForm.reset();
+                    })
+                    .catch((error) => {
+                        changePassMsg.innerText = `Lỗi: ${error.message}`;
+                        // Lỗi này thường xảy ra nếu đăng nhập đã quá lâu
+                        if (error.code === 'auth/requires-recent-login') {
+                            changePassMsg.innerText = "Phiên đăng nhập quá cũ. Vui lòng đăng xuất và đăng nhập lại trước khi đổi mật khẩu.";
+                        }
+                        changePassMsg.style.color = 'red';
+                        changePassMsg.style.display = 'block';
+                    });
+            });
 
         } // --- Kết thúc hàm initializeAdminApp ---
 
-        // --- 2. KHU VỰC LOGIC ĐĂNG NHẬP ---
-        const ADMIN_ACCOUNTS = {
-            "thayhai": "matkhau123", 
-            "colan": "cungvan111",   
-            "covan": "toanlyhoa"   
-        };
-        const loginContainer = document.getElementById('login-container');
-        const managementContainer = document.getElementById('management-container');
-        const loginForm = document.getElementById('adminLoginForm');
-        const errorMsg = document.getElementById('error-msg');
-        
-        function showManagement() {
-            loginContainer.style.display = 'none';
-            managementContainer.style.display = 'block'; 
-            initializeAdminApp(); 
-        }
-        function showLogin() {
-            loginContainer.style.display = 'grid';
-            managementContainer.style.display = 'none';
-        }
-
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
-            if (ADMIN_ACCOUNTS[user] && ADMIN_ACCOUNTS[user] === pass) {
-                sessionStorage.setItem('adminLoggedIn', 'true');
-                sessionStorage.setItem('adminName', user); 
-                showManagement(); 
-            } else {
-                errorMsg.style.display = 'block';
-            }
-        });
-
-        if (sessionStorage.getItem('adminLoggedIn') === 'true') {
-            showManagement(); 
-        } else {
-            showLogin(); 
-        }
     </script>
 </body>
-
 </html>
