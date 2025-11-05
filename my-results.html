@@ -131,21 +131,18 @@
 
         async function loadMyResults() {
             if (!studentName || !studentClass) {
+                // SỬA LỖI: Chuyển hướng cho môi trường blob:
                 alert("Bạn cần đăng nhập trước!");
-                // *** SỬA LỖI: Dùng đường dẫn tuyệt đối (absolute path) để fix lỗi blob URL ***
-                // Lỗi này xảy ra do môi trường preview dùng 'blob' URL, khiến nó không
-                // hiểu các đường dẫn tương đối như './index.html' hoặc 'index.html'.
-                // Bằng cách dùng `window.location.origin`, chúng ta tạo ra một URL đầy đủ
-                // (ví dụ: https://.../index.html) mà trình duyệt luôn hiểu.
                 window.location.href = window.location.origin + '/index.html';
                 return;
             }
             document.getElementById('studentName').innerText = studentName;
 
             try {
+                // *** SỬA LỖI INDEX: Chỉ lọc theo hoTen ***
                 const querySnapshot = await db.collection("ketqua")
                     .where("hoTen", "==", studentName)
-                    .where("lop", "==", studentClass)
+                    // .where("lop", "==", studentClass) // <-- ĐÃ XÓA DÒNG NÀY
                     .get();
                 
                 let results = [];
@@ -153,19 +150,23 @@
                     results.push(doc.data());
                 });
 
-                if (results.length === 0) {
+                // *** SỬA LỖI INDEX: Lọc "lop" bằng JavaScript phía client ***
+                const finalResults = results.filter(res => res.lop === studentClass);
+
+                if (finalResults.length === 0) { // <-- Sửa
                     loadingDiv.innerText = "Bạn chưa nộp bài kiểm tra nào.";
                     return;
                 }
 
-                results.sort((a, b) => {
+                // Sắp xếp
+                finalResults.sort((a, b) => { // <-- Sửa
                     const timeA = a.thoiGianNop ? a.thoiGianNop.toMillis() : 0;
                     const timeB = b.thoiGianNop ? b.thoiGianNop.toMillis() : 0;
                     return timeB - timeA;
                 });
                 
                 resultsTableBody.innerHTML = ''; 
-                results.forEach(res => {
+                finalResults.forEach(res => { // <-- Sửa
                     const tr = document.createElement('tr');
                     let nopLuc = "Không rõ";
                     if (res.thoiGianNop) {
