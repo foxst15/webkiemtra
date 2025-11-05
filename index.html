@@ -5,72 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng nhập - Bài kiểm tra Thầy Hải</title>
     <style>
-        :root {
-            --primary-color: #007bff;
-            --primary-hover: #0056b3;
-            --light-bg: #f0f2f5;
-            --white-bg: #ffffff;
-            --border-color: #dee2e6;
-            --shadow: 0 4px 12px rgba(0,0,0,0.05);
-            --border-radius: 12px;
-        }
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
             display: grid; 
             place-items: center; 
             min-height: 90vh; 
-            background-color: var(--light-bg); 
-            margin: 0;
+            background-color: #f0f2f5; 
         }
         .login-container { 
-            background: var(--white-bg); 
-            padding: 40px; 
-            border-radius: var(--border-radius); 
-            box-shadow: var(--shadow); 
+            background: #fff; 
+            border: 1px solid #ccc; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
             width: 90%;
             max-width: 400px;
-            border-top: 5px solid var(--primary-color);
         }
-        h1 { 
-            text-align: center; 
-            color: #333; 
-            margin-top: 0;
-            margin-bottom: 25px;
-        }
+        h1 { text-align: center; color: #333; }
+        h4 { text-align: center; color: #333; }
         div { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: 600; }
         input[type="text"] { 
             width: 100%; 
-            padding: 12px; 
-            border: 1px solid var(--border-color); 
+            padding: 10px; 
+            border: 1px solid #ddd; 
             border-radius: 8px; 
             box-sizing: border-box; 
-            font-size: 1em;
-        }
-        input[type="text"]:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
-            outline: none;
         }
         button { 
-            background-color: var(--primary-color); 
+            background-color: #007bff; 
             color: white; 
             padding: 12px 18px; 
             border: none; 
             border-radius: 8px; 
             cursor: pointer; 
             font-size: 16px; 
-            font-weight: 600;
             width: 100%;
-            transition: background-color 0.2s;
         }
-        button:hover { background-color: var(--primary-hover); }
+        button:hover { background-color: #0056b3; }
     </style>
 </head>
 <body>
 
     <div class="login-container">
-        <h1>Bài kiểm tra Thầy Hải</h1>
+        <h1> MỜI BẠN DĂNG NHẬP </h1>
+        <h4> bản quyền thuộc về THẦY HẢI </h4>
         <form id="loginForm">
             <div>
                 <label for="fullName">Họ và Tên:</label>
@@ -85,12 +64,33 @@
     </div>
 
     <script>
+        // *** CẬP NHẬT: Tự động kiểm tra đăng nhập khi tải trang ***
+        window.onload = function() {
+            const studentName = localStorage.getItem('studentName');
+            const studentClass = localStorage.getItem('studentClass');
+
+            // Nếu đã có thông tin, tự động chuyển vào home
+            if (studentName && studentClass) {
+                // Hiển thị thông báo nhanh và chuyển hướng
+                document.body.innerHTML = '<h1>Đã nhận diện, đang chuyển vào...</h1>';
+                setTimeout(() => {
+                    window.location.href = 'home.html';
+                }, 1000); // Chờ 1 giây
+            }
+            // Nếu không, cứ để form đăng nhập hiển thị
+        }
+
+        // Logic submit form (giữ nguyên)
         document.getElementById('loginForm').addEventListener('submit', function(event) {
             event.preventDefault(); 
+            
             const fullName = document.getElementById('fullName').value;
             const className = document.getElementById('className').value;
+
+            // Lưu thông tin học sinh vào localStorage
             localStorage.setItem('studentName', fullName);
             localStorage.setItem('studentClass', className);
+
             window.location.href = 'home.html';
         });
     </script>
