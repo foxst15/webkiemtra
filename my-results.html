@@ -111,7 +111,7 @@
     </div>
 
     <script>
-        // *** ĐÃ DÁN firebaseConfig CỦA BẠN ***
+        // *** ĐÃ SỬA: Dán firebaseConfig đúng ***
         const firebaseConfig = {
           apiKey: "AIzaSyDmRq3djRZHElhC2T_EYsU7v5vrzwRyybY",
           authDomain: "webkiemtra-66cdc.firebaseapp.com",
@@ -131,18 +131,17 @@
 
         async function loadMyResults() {
             if (!studentName || !studentClass) {
-                // SỬA LỖI: Chuyển hướng cho môi trường blob:
                 alert("Bạn cần đăng nhập trước!");
-                window.location.href = window.location.origin + '/index.html';
+                // *** ĐÃ SỬA: Chuyển hướng về index.html ***
+                window.location.href = 'index.html';
                 return;
             }
             document.getElementById('studentName').innerText = studentName;
 
             try {
-                // *** SỬA LỖI INDEX: Chỉ lọc theo hoTen ***
                 const querySnapshot = await db.collection("ketqua")
                     .where("hoTen", "==", studentName)
-                    // .where("lop", "==", studentClass) // <-- ĐÃ XÓA DÒNG NÀY
+                    .where("lop", "==", studentClass)
                     .get();
                 
                 let results = [];
@@ -150,23 +149,19 @@
                     results.push(doc.data());
                 });
 
-                // *** SỬA LỖI INDEX: Lọc "lop" bằng JavaScript phía client ***
-                const finalResults = results.filter(res => res.lop === studentClass);
-
-                if (finalResults.length === 0) { // <-- Sửa
+                if (results.length === 0) {
                     loadingDiv.innerText = "Bạn chưa nộp bài kiểm tra nào.";
                     return;
                 }
 
-                // Sắp xếp
-                finalResults.sort((a, b) => { // <-- Sửa
+                results.sort((a, b) => {
                     const timeA = a.thoiGianNop ? a.thoiGianNop.toMillis() : 0;
                     const timeB = b.thoiGianNop ? b.thoiGianNop.toMillis() : 0;
                     return timeB - timeA;
                 });
                 
                 resultsTableBody.innerHTML = ''; 
-                finalResults.forEach(res => { // <-- Sửa
+                results.forEach(res => {
                     const tr = document.createElement('tr');
                     let nopLuc = "Không rõ";
                     if (res.thoiGianNop) {
