@@ -111,7 +111,7 @@
     </div>
 
     <script>
-        // *** Dán firebaseConfig của bạn vào đây ***
+        // *** ĐÃ DÁN firebaseConfig CỦA BẠN ***
         const firebaseConfig = {
           apiKey: "AIzaSyDmRq3djRZHElhC2T_EYsU7v5vrzwRyybY",
           authDomain: "webkiemtra-66cdc.firebaseapp.com",
@@ -132,7 +132,12 @@
         async function loadMyResults() {
             if (!studentName || !studentClass) {
                 alert("Bạn cần đăng nhập trước!");
-                window.location.href = 'index.html';
+                // *** SỬA LỖI: Dùng đường dẫn tuyệt đối (absolute path) để fix lỗi blob URL ***
+                // Lỗi này xảy ra do môi trường preview dùng 'blob' URL, khiến nó không
+                // hiểu các đường dẫn tương đối như './index.html' hoặc 'index.html'.
+                // Bằng cách dùng `window.location.origin`, chúng ta tạo ra một URL đầy đủ
+                // (ví dụ: https://.../index.html) mà trình duyệt luôn hiểu.
+                window.location.href = window.location.origin + '/index.html';
                 return;
             }
             document.getElementById('studentName').innerText = studentName;
@@ -186,5 +191,4 @@
         loadMyResults();
     </script>
 </body>
-
 </html>
