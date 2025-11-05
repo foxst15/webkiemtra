@@ -127,6 +127,7 @@
         if (!studentName || !studentClass) {
             // Nếu chưa đăng nhập (vào thẳng trang này), đá về trang index
             // (Không cần alert nữa vì trang index sẽ tự kiểm tra)
+            // *** ĐÃ SỬA: Chuyển hướng về index.html ***
             window.location.href = 'index.html';
         } else {
             document.getElementById('welcome-message').innerText = `Chào mừng, ${studentName} (Lớp ${studentClass})`;
@@ -142,6 +143,7 @@
                 localStorage.removeItem('selectedTestName');
                 localStorage.removeItem('selectedTestTime');
                 
+                // *** ĐÃ SỬA: Chuyển hướng về index.html ***
                 window.location.href = 'index.html'; // Quay về trang đăng nhập
             }
         });
