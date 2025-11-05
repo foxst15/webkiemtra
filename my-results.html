@@ -21,7 +21,7 @@
             padding: 20px;
         }
         .container {
-            max-width: 900px;
+            max-width: 1100px; 
             margin: 20px auto;
             padding: 30px;
             background: var(--white-bg);
@@ -85,7 +85,7 @@
     <div class="container">
         <div class="page-header">
             <h1>Lịch sử kết quả</h1>
-            <a href="home.html" class="btn btn-secondary">
+            <a href="./home.html" class="btn btn-secondary">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 288 416 288c17.7 0 32-14.3 32-32s-14.3-32-32-32l-306.7 0L214.6 69.4c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg>
                 Quay lại
             </a>
@@ -96,7 +96,9 @@
             <table id="results-table">
                 <thead>
                     <tr>
-                        <th>Tên Đề Thi</th>
+                        <th>Họ Tên</th>
+                        <th>Lớp</th>
+                        <th>Bài làm (Tên Đề Thi)</th>
                         <th>Điểm</th>
                         <th>Chi tiết</th>
                         <th>Thời Gian Nộp</th>
@@ -111,7 +113,8 @@
     </div>
 
     <script>
-        // *** ĐÃ SỬA: Dán firebaseConfig đúng ***
+        // *** ĐÂY LÀ BƯỚC QUAN TRỌNG NHẤT ***
+        // *** Đảm bảo firebaseConfig của bạn giống hệt như thế này ***
         const firebaseConfig = {
           apiKey: "AIzaSyDmRq3djRZHElhC2T_EYsU7v5vrzwRyybY",
           authDomain: "webkiemtra-66cdc.firebaseapp.com",
@@ -131,14 +134,14 @@
 
         async function loadMyResults() {
             if (!studentName || !studentClass) {
-                alert("Bạn cần đăng nhập trước!");
-                // *** ĐÃ SỬA: Chuyển hướng về index.html ***
-                window.location.href = 'index.html';
+                console.log("Bạn cần đăng nhập trước!"); 
+                window.location.href = './index.html'; // Sửa lỗi chuyển hướng
                 return;
             }
             document.getElementById('studentName').innerText = studentName;
 
             try {
+                // Truy vấn này đã được Index và Rules (v10) hỗ trợ
                 const querySnapshot = await db.collection("ketqua")
                     .where("hoTen", "==", studentName)
                     .where("lop", "==", studentClass)
@@ -171,6 +174,8 @@
                     const diemClass = diem >= 5 ? 'score-pass' : 'score-fail';
                     
                     tr.innerHTML = `
+                        <td>${res.hoTen || 'N/A'}</td>
+                        <td>${res.lop || 'N/A'}</td>
                         <td>${res.tenDeThi || 'N/A'}</td>
                         <td class="${diemClass}">${res.diemSo || 'N/A'}</td>
                         <td>${res.soCauDung || 'N/A'} / ${res.tongSoCau || 'N/A'}</td>
