@@ -3,39 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trang chủ - Bài kiểm tra</title>
+    <title>Trang chủ - Bài kiểm tra Thầy Hải</title>
     <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --sidebar-bg: #fff;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --shadow: 0 4px 12px rgba(0,0,0,0.05);
+            --border-radius: 12px;
+        }
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            background-color: #f0f2f5; 
+            background-color: var(--bg-color); 
             margin: 0; 
-            padding: 20px;
-        }
-        .container {
-            max-width: 900px;
-            margin: 20px auto;
-            padding: 30px;
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column; /* Cho footer ở cuối trang */
         }
         
-        /* *** MỚI: CSS cho Header và nút Đăng xuất *** */
-        .header {
+        /* *** CẤU TRÚC GRID CHÍNH *** */
+        .grid-container {
+            flex-grow: 1; /* Cho phép container chiếm hết không gian còn lại */
+            display: grid;
+            grid-template-areas:
+                "header header"
+                "sidebar main"
+                "footer footer";
+            grid-template-columns: 300px 1fr; /* Sidebar width: 300px */
+            gap: 20px;
+            max-width: 1200px;
+            margin: 20px auto;
+            width: 95%;
+        }
+
+        /* HEADER */
+        header { 
+            grid-area: header; 
+            background: var(--card-bg);
+            padding: 20px 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 15px;
         }
         #welcome-message {
             font-size: 1.8em;
-            font-weight: 600;
-            color: #333;
-            border-bottom: none; /* Bỏ border cũ */
-            padding-bottom: 0;
-            margin: 0; /* Bỏ margin mặc định */
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 0;
         }
+        
+        /* FOOTER */
+        footer { 
+            grid-area: footer; 
+            background: #333;
+            color: #ccc;
+            padding: 15px 30px;
+            text-align: center;
+            font-size: 0.9em;
+            margin-top: 20px; /* Thêm margin-top để tách biệt */
+        }
+        footer a { color: #fff; text-decoration: none; font-weight: 600; }
+
+        /* MAIN CONTENT */
+        main { 
+            grid-area: main; 
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        .menu {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .menu-card {
+            padding: 30px;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            color: white;
+            font-size: 1.3em;
+            font-weight: 600;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .menu-card.do-test { background: linear-gradient(135deg, #007bff, #0056b3); }
+        .menu-card.view-results { background: linear-gradient(135deg, #28a745, #218838); }
+        .menu-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
+
+        /* ASIDE / SIDEBAR */
+        aside { 
+            grid-area: sidebar; 
+            background: var(--sidebar-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+        #avatar-container { margin-bottom: 20px; }
+        #avatar-img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--primary-color);
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .info-box {
+            text-align: left;
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #e9ecef;
+        }
+        .info-box p { margin: 5px 0; font-weight: 500; }
+        .info-box strong { color: #333; font-weight: 700; }
+        .upload-label {
+            background-color: #6c757d;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            display: inline-block;
+            margin-top: 10px;
+            transition: background-color 0.2s;
+        }
+        .upload-label:hover { background-color: #5a6268; }
+        #avatar-input { display: none; }
+        #upload-status { font-size: 0.8em; color: #28a745; margin-top: 5px; }
+        
+        /* Nút Đăng xuất */
         #logout-btn {
             background-color: #dc3545;
             color: white;
@@ -43,110 +151,175 @@
             padding: 10px 15px;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 0.9em;
+            font-size: 1em;
             font-weight: 600;
         }
-        #logout-btn:hover {
-            background-color: #c82333;
-        }
+        #logout-btn:hover { background-color: #c82333; }
 
-        .menu {
-            margin-top: 30px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        .menu-card {
-            padding: 30px;
-            border-radius: 12px;
-            text-decoration: none;
-            color: white;
-            font-size: 1.3em;
-            font-weight: 600;
-            text-align: center;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .menu-card.do-test {
-            background: linear-gradient(135deg, #007bff, #0056b3);
-        }
-        .menu-card.view-results {
-            background: linear-gradient(135deg, #28a745, #218838);
-        }
-        .menu-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-
-        /* *** CẬP NHẬT: Tương thích điện thoại *** */
-        @media (max-width: 600px) {
-            .header {
-                flex-direction: column; /* Xếp chồng */
+        /* *** MEDIA QUERIES (RESPONSIVE) *** */
+        @media (max-width: 900px) {
+            .grid-container {
+                grid-template-areas:
+                    "header"
+                    "sidebar"
+                    "main"
+                    "footer";
+                grid-template-columns: 1fr;
+                gap: 15px;
+                margin: 10px auto;
+                width: 98%;
+            }
+            header {
+                flex-direction: column;
                 align-items: flex-start;
-                gap: 10px; /* Thêm khoảng cách */
+                gap: 10px;
+                padding: 15px;
             }
-            #logout-btn {
-                width: 100%; /* Nút đăng xuất full-width */
-                text-align: center;
-            }
-            .menu {
-                grid-template-columns: 1fr; /* Xếp chồng 2 nút */
-            }
-            .container {
-                padding: 20px;
-            }
-            #welcome-message {
-                font-size: 1.5em;
-            }
+            #welcome-message { font-size: 1.5em; }
+            aside { order: -1; } /* Đưa sidebar lên đầu trên mobile */
+            .info-box { text-align: center; }
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <!-- *** CẬP NHẬT: Thêm nút Đăng xuất *** -->
-        <div class="header">
-            <h1 id="welcome-message">Chào mừng, ...</h1>
+    <div class="grid-container">
+        
+        <!-- HEADER (Giới thiệu và Chào mừng) -->
+        <header>
+            <h1 id="welcome-message">HỆ THỐNG KIỂM TRA </h1>
             <button id="logout-btn">Đăng xuất</button>
-        </div>
+        </header>
 
-        <div class="menu">
-            <a href="select-test.html" class="menu-card do-test">
-                Làm bài kiểm tra
-            </a>
-            <a href="my-results.html" class="menu-card view-results">
-                Xem lịch sử kết quả
-            </a>
-        </div>
+        <!-- SIDEBAR (Thông tin học sinh và Ảnh đại diện) -->
+        <aside>
+            <h2>Thông tin cá nhân</h2>
+            <div id="avatar-container">
+                <img id="avatar-img" src="" alt="Ảnh đại diện">
+                <label for="avatar-input" class="upload-label">
+                    Chọn Ảnh Đại Diện
+                </label>
+                <input type="file" id="avatar-input" accept="image/*">
+                <div id="upload-status"></div>
+            </div>
+            
+            <div class="info-box">
+                <p><strong> Họ và Tên :</strong> <span id="studentName"></span></p>
+                <p><strong>Lớp:</strong> <span id="studentClass"></span></p>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT (Các lựa chọn) -->
+        <main>
+            <h2>Các tính năng chính</h2>
+            <div class="menu">
+                <a href="select-test.html" class="menu-card do-test">
+                    Làm bài kiểm tra
+                </a>
+                <a href="my-results.html" class="menu-card view-results">
+                    Xem lịch sử kết quả
+                </a>
+            </div>
+        </main>
     </div>
+    
+    <!-- FOOTER (Bản quyền và Liên hệ) -->
+    <footer>
+        Bản quyền thuộc về THẦY HẢI. Mọi thắc mắc xin liên hệ qua email: 
+        <a href="mailto:nguyenvanhai.10a3@gmail.com">nguyenvanhai.10a3@gmail.com</a>
+    </footer>
 
     <script>
-        // Lấy thông tin học sinh từ localStorage để chào mừng
+        const AVATAR_KEY = 'studentAvatar';
+        // *** ĐÃ CẬP NHẬT: URL ảnh đại diện mặc định từ liên kết của bạn ***
+        const DEFAULT_AVATAR = 'https://th.bing.com/th/id/R.f58bd7f73934e1145c97570943087ec6?rik=41HmRGohn%2fnBJg&riu=http%3a%2f%2fwww.acsoft.vn%3a8081%2fresources%2fimages%2favatar.jpg&ehk=4oftGWjeo8XsGu%2fcHG2dUJubsKryVLuNa58H9D3TNKA%3d&risl=&pid=ImgRaw&r=0';
+
+
+        // --- LOGIC TẢI THÔNG TIN VÀ CHÀO MỪNG ---
         const studentName = localStorage.getItem('studentName');
         const studentClass = localStorage.getItem('studentClass');
 
-        if (!studentName || !studentClass) {
-            // Nếu chưa đăng nhập (vào thẳng trang này), đá về trang index
-            // (Không cần alert nữa vì trang index sẽ tự kiểm tra)
-            // *** ĐÃ SỬA: Chuyển hướng về index.html ***
-            window.location.href = 'index.html';
-        } else {
-            document.getElementById('welcome-message').innerText = `Chào mừng, ${studentName} (Lớp ${studentClass})`;
+        function loadStudentInfo() {
+            if (!studentName || !studentClass) {
+                // Nếu chưa đăng nhập, đá về trang index
+                window.location.href = 'index.html';
+                return false;
+            }
+            document.getElementById('welcome-message').innerText = `Chào mừng, ${studentName}!`;
+            document.getElementById('studentName').innerText = studentName;
+            document.getElementById('studentClass').innerText = studentClass;
+            return true;
         }
 
-        // *** MỚI: Logic cho nút Đăng xuất ***
+        // --- LOGIC AVATAR ---
+        function loadAvatar() {
+            const avatarData = localStorage.getItem(AVATAR_KEY);
+            // Ưu tiên ảnh người dùng đã chọn, nếu không có thì dùng ảnh mặc định URL
+            document.getElementById('avatar-img').src = avatarData || DEFAULT_AVATAR;
+            
+            // Xử lý lỗi tải ảnh (chỉ áp dụng nếu đó là ảnh URL, Base64 thì không cần)
+            if (!avatarData) {
+                document.getElementById('avatar-img').onerror = function() {
+                    console.error("Lỗi tải ảnh mặc định từ URL. Dùng placeholder màu.");
+                    // Fallback nếu URL bị lỗi: dùng placeholder màu đơn giản
+                    this.src = "https://placehold.co/150x150/007bff/ffffff?text=AVATAR";
+                    this.onerror = null; // Ngăn ngừa vòng lặp vô tận
+                }
+            }
+        }
+
+        // Xử lý tải ảnh lên
+        document.getElementById('avatar-input').addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                // Kiểm tra kích thước file (ví dụ: tối đa 1MB)
+                if (file.size > 1024 * 1024 * 1) { 
+                    // Sử dụng div thông báo thay vì alert()
+                    const statusDiv = document.getElementById('upload-status');
+                    statusDiv.innerText = 'Lỗi: Kích thước ảnh quá lớn (tối đa 1MB).';
+                    statusDiv.style.color = '#dc3545';
+                    this.value = ''; // Reset input
+                    setTimeout(() => statusDiv.innerText = '', 5000);
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Lưu ảnh dưới dạng Base64 vào localStorage (Tốt nhất cho ảnh người dùng)
+                    localStorage.setItem(AVATAR_KEY, e.target.result);
+                    document.getElementById('avatar-img').src = e.target.result;
+                    
+                    const statusDiv = document.getElementById('upload-status');
+                    statusDiv.style.color = '#28a745';
+                    statusDiv.innerText = 'Đã cập nhật ảnh đại diện.';
+                    setTimeout(() => statusDiv.innerText = '', 3000);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+
+        // --- LOGIC ĐĂNG XUẤT ---
         document.getElementById('logout-btn').addEventListener('click', () => {
-            if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+            if (window.confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+                // Xóa tất cả thông tin liên quan đến phiên và học sinh
                 localStorage.removeItem('studentName');
                 localStorage.removeItem('studentClass');
-                // Xóa cả các mục thi cũ để đảm bảo sạch sẽ
+                localStorage.removeItem(AVATAR_KEY); // Xóa ảnh đại diện
+                
                 localStorage.removeItem('selectedTestId');
                 localStorage.removeItem('selectedTestName');
                 localStorage.removeItem('selectedTestTime');
+                localStorage.removeItem('score');
+                localStorage.removeItem('lastSubmissionId');
                 
-                // *** ĐÃ SỬA: Chuyển hướng về index.html ***
                 window.location.href = 'index.html'; // Quay về trang đăng nhập
             }
         });
+
+        // --- KHỞI CHẠY ---
+        if (loadStudentInfo()) {
+            loadAvatar();
+        }
     </script>
 
 </body>

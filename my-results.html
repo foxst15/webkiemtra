@@ -76,7 +76,6 @@
         .score-fail { color: red; font-weight: bold; }
         
     </style>
-    <!-- SDK Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 </head>
@@ -90,7 +89,7 @@
                 Quay lại
             </a>
         </div>
-        <p>Dưới đây là tất cả các bài kiểm tra bạn (<strong id="studentName"></strong>) đã nộp.</p>
+        <p>Dưới đây là tất cả các bài kiểm tra bạn (<strong id="studentName"></strong> - Lớp: <strong id="studentClass"></strong>) đã nộp.</p>
 
         <div style="overflow-x: auto;">
             <table id="results-table">
@@ -139,6 +138,7 @@
                 return;
             }
             document.getElementById('studentName').innerText = studentName;
+            document.getElementById('studentClass').innerText = studentClass; // *** ĐÃ SỬA LỖI: Hiển thị tên lớp ***
 
             try {
                 // Truy vấn này đã được Index và Rules (v10) hỗ trợ

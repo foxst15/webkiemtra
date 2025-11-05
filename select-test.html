@@ -94,6 +94,26 @@
             background-color: var(--primary-hover);
             transform: translateY(-3px);
         }
+        .test-item.disabled { /* Thêm style cho bài đã làm */
+            background-color: #adb5bd;
+            cursor: not-allowed;
+            opacity: 0.7;
+            transform: none;
+            position: relative;
+        }
+        .test-item.disabled::after {
+            content: "ĐÃ HOÀN THÀNH";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #dc3545;
+            font-weight: bold;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
         .test-item .time {
             font-size: 0.9em;
             font-weight: normal;
@@ -124,6 +144,10 @@
         <div id="test-list">
             <div id="loading">Đang tải danh sách đề thi...</div>
         </div>
+        <div id="no-test-message" style="text-align: center; margin-top: 20px; display: none;">
+            <p style="font-size: 1.2em; color: #333;">🎉 Bạn đã hoàn thành tất cả các bài kiểm tra hiện có!</p>
+            <p style="color: #6c757d;">Vui lòng chờ admin thêm đề mới hoặc xóa kết quả cũ để làm lại.</p>
+        </div>
     </div>
 
     <script>
@@ -141,12 +165,11 @@
         try {
             firebase.initializeApp(firebaseConfig);
             db = firebase.firestore();
-        } catch (e) { alert("Lỗi cấu hình Firebase!"); }
+        } catch (e) { console.error("Lỗi cấu hình Firebase:", e); }
         
         const studentName = localStorage.getItem('studentName');
         const studentClass = localStorage.getItem('studentClass');
 
-        // *** ĐÃ SỬA: Chuyển hướng về index.html ***
         if (!studentName || !studentClass) {
             window.location.href = 'index.html';
         }
@@ -154,38 +177,83 @@
         document.getElementById('studentName').innerText = studentName;
         document.getElementById('studentClass').innerText = studentClass;
 
+        // --- HÀM TẢI DANH SÁCH ĐỀ THI (ĐÃ CẬP NHẬT LỌC BÀI ĐÃ NỘP) ---
         async function loadTestList() {
             const listDiv = document.getElementById('test-list');
             const loadingDiv = document.getElementById('loading');
+            const noTestMessage = document.getElementById('no-test-message');
+            listDiv.innerHTML = '';
+            loadingDiv.style.display = 'block';
+
             try {
-                const snapshot = await db.collection("dethi").get();
+                // 1. Tải danh sách TẤT CẢ đề thi có sẵn
+                const testsSnapshot = await db.collection("dethi").get();
+                const allTests = [];
+                testsSnapshot.forEach(doc => {
+                    allTests.push({ id: doc.id, data: doc.data() });
+                });
+
+                // 2. Tải danh sách BÀI ĐÃ NỘP của học sinh này
+                // *Lưu ý: Query này đòi hỏi Firestore Index, nếu lỗi phải tạo Index*
+                const submissionsSnapshot = await db.collection("ketqua")
+                    .where("hoTen", "==", studentName)
+                    .where("lop", "==", studentClass)
+                    .get();
+                
+                // Tạo một Set chứa ID của các bài thi đã nộp
+                const completedTestIds = new Set();
+                submissionsSnapshot.forEach(doc => {
+                    const submission = doc.data();
+                    completedTestIds.add(submission.deThiId);
+                });
+
                 loadingDiv.style.display = 'none';
-                if (snapshot.empty) {
-                    listDiv.innerHTML = '<p>Chưa có đề thi nào.</p>';
-                    return;
-                }
-                snapshot.forEach(doc => {
-                    const test = doc.data();
-                    const testId = doc.id;
-                    const testName = test.tenDe;
-                    const testTime = test.thoiGianLamBai || 15; 
+
+                let availableTestsCount = 0;
+                
+                // 3. Lọc và hiển thị
+                allTests.forEach(test => {
+                    const testId = test.id;
+                    const testName = test.data.tenDe;
+                    const testTime = test.data.thoiGianLamBai || 15;
+                    const isCompleted = completedTestIds.has(testId);
+
                     const button = document.createElement('button');
                     button.className = 'test-item';
                     button.innerHTML = `
                         <span>${testName}</span>
                         <span class="time">${testTime} phút</span>
                     `;
-                    button.onclick = () => {
-                        localStorage.setItem('selectedTestId', testId);
-                        localStorage.setItem('selectedTestName', testName);
-                        localStorage.setItem('selectedTestTime', testTime); 
-                        window.location.href = 'test.html';
-                    };
+                    
+                    if (isCompleted) {
+                        // Nếu đã làm, thêm class disabled và ngăn chặn chuyển trang
+                        button.classList.add('disabled');
+                        button.disabled = true;
+                    } else {
+                        // Nếu chưa làm, cho phép làm bài
+                        availableTestsCount++;
+                        button.onclick = () => {
+                            localStorage.setItem('selectedTestId', testId);
+                            localStorage.setItem('selectedTestName', testName);
+                            localStorage.setItem('selectedTestTime', testTime); 
+                            window.location.href = 'test.html';
+                        };
+                    }
+                    
                     listDiv.appendChild(button);
                 });
+
+                // 4. Hiển thị thông báo nếu không còn bài nào để làm
+                if (availableTestsCount === 0 && allTests.length > 0) {
+                    noTestMessage.style.display = 'block';
+                } else if (allTests.length === 0) {
+                    listDiv.innerHTML = '<p>Chưa có đề thi nào được tạo bởi admin.</p>';
+                }
+
+
             } catch (error) {
-                console.error("Lỗi tải danh sách đề: ", error);
-                loadingDiv.innerText = "Lỗi tải đề. Vui lòng kiểm tra Rules.";
+                console.error("Lỗi tải danh sách đề hoặc kết quả: ", error);
+                loadingDiv.innerText = "Lỗi tải đề. Vui lòng kiểm tra Rules và Index trong Firestore.";
             }
         }
         

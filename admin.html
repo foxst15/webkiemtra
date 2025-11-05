@@ -32,17 +32,38 @@
         button { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.2s; }
         button:hover { background-color: #0056b3; }
         
-        /* (CSS cho Header, Tabs, Manager... giữ nguyên) */
-        #admin-header { display: flex; justify-content: space-between; align-items: center; padding: 10px; background-color: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        /* HEADER ADMIN (CẬP NHẬT CHO AVATAR) */
+        #admin-header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 10px 20px; background-color: #fff; border-radius: 12px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; 
+        }
+        #admin-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        #admin-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #007bff;
+        }
         #admin-info { font-weight: 600; font-size: 1.1em; }
         #logout-btn { background-color: #dc3545; }
+        
         #admin-nav { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #ccc; flex-wrap: wrap; }
         #admin-nav button { background-color: transparent; color: #555; padding: 10px 20px; border: none; border-bottom: 4px solid transparent; font-size: 1.1em; font-weight: 600; }
         #admin-nav button.active { color: #007bff; border-bottom-color: #007bff; }
         #test-manager-view { display: none; grid-template-columns: 350px 1fr; gap: 20px; }
         button.add-btn { background-color: #28a745; }
         button.delete-btn { background-color: #dc3545; font-size: 0.8em; padding: 5px 10px; }
-        button.detail-btn { background-color: #17a2b8; font-size: 0.8em; padding: 5px 10px; } /* *** MỚI: Nút xem chi tiết *** */
+        button.detail-btn { background-color: #17a2b8; font-size: 0.8em; padding: 5px 10px; } 
+        /* *** MỚI: CSS cho nút xóa bài làm (áp dụng cho nút đơn và nút hàng loạt) *** */
+        .action-btn-delete { background-color: #dc3545; color: white; padding: 5px 10px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8em; margin-left: 5px;}
+        .action-btn-delete:hover { background-color: #c82333; }
+        
         .test-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; }
         .test-list-item:hover { background-color: #f8f9fa; }
         .test-list-item.active { background-color: #e0eaff; font-weight: bold; }
@@ -102,6 +123,36 @@
         .review-option { display: block; padding: 8px; border-radius: 5px; margin: 5px 0; }
         .review-option.correct { background-color: #d4edda; border: 1px solid #c3e6cb; font-weight: bold; }
         .review-option.wrong { background-color: #f8d7da; border: 1px solid #f5c6cb; text-decoration: line-through; }
+        
+        /* CSS cho khu vực đổi ảnh đại diện */
+        .avatar-upload-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            text-align: center;
+        }
+        #current-admin-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #007bff;
+            margin-bottom: 10px;
+        }
+        .upload-label-admin {
+            background-color: #28a745;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            display: inline-block;
+            margin-top: 10px;
+            transition: background-color 0.2s;
+        }
+        .upload-label-admin:hover { background-color: #218838; }
+        #admin-avatar-input { display: none; }
+        #avatar-upload-status { font-size: 0.8em; color: #28a745; margin-top: 5px; }
 
 
         /* Tương thích điện thoại */
@@ -109,6 +160,11 @@
             #test-manager-view { grid-template-columns: 1fr; }
             .options-grid { grid-template-columns: 1fr; }
             #account-manager-view { grid-template-columns: 1fr; }
+            #admin-profile {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
         }
     </style>
     <!-- SDK Firebase -->
@@ -134,11 +190,16 @@
 
     <!-- *** 2. GIAO DIỆN QUẢN LÝ *** -->
     <div id="management-container">
-        <!-- (Header và Tabs không đổi) -->
+        <!-- HEADER (ĐÃ CẬP NHẬT) -->
         <div id="admin-header">
-            <div id="admin-info">Chào mừng, <span id="admin-name"></span>!</div>
+            <div id="admin-profile">
+                <!-- Vị trí hiển thị Avatar Admin (Header nhỏ) -->
+                <img id="admin-avatar" src="" alt="Avatar Admin"> 
+                <div id="admin-info">Chào mừng, <span id="admin-name"></span>!</div>
+            </div>
             <button id="logout-btn">Đăng xuất</button>
         </div>
+        
         <div id="admin-nav">
             <button id="nav-tests" class="active">Quản lý Đề Thi</button>
             <button id="nav-results">Xem Kết Quả</button>
@@ -147,7 +208,6 @@
 
         <!-- Tab 1: Quản lý Đề Thi -->
         <div id="test-manager-view">
-            <!-- (HTML Quản lý đề thi không đổi) -->
             <!-- CỘT 1 -->
             <div class="card">
                 <h2>Quản lý Đề Thi</h2>
@@ -203,14 +263,21 @@ D. Lựa chọn D
             </div>
         </div>
 
-        <!-- Tab 2: Xem Kết Quả (Cập nhật Bảng) -->
+        <!-- Tab 2: Xem Kết Quả -->
         <div id="results-view" class="card">
             <h2>Danh sách Kết Quả</h2>
-            <p>Tổng số bài nộp: <strong id="results-count">0</strong></p>
+            
+            <!-- BATCH ACTION BAR -->
+            <div id="batch-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <p>Tổng số bài nộp: <strong id="results-count">0</strong></p>
+                <button id="delete-selected-btn" class="action-btn-delete" style="display: none;">Xóa Bài Đã Chọn (<span id="selected-count">0</span>)</button>
+            </div>
+
             <div style="overflow-x: auto;">
                 <table id="results-table">
                     <thead>
                         <tr>
+                            <th><input type="checkbox" id="select-all-checkbox"></th> <!-- CHECKBOX SELECT ALL -->
                             <th>Họ Tên</th>
                             <th>Lớp</th>
                             <th>Tên Đề Thi</th>
@@ -218,7 +285,7 @@ D. Lựa chọn D
                             <th>Chi tiết</th>
                             <th>Thời Gian Nộp</th>
                             <th>Lý do nộp</th>
-                            <th>Hành động</th> <!-- *** MỚI: Cột Hành động *** -->
+                            <th>Hành động</th> 
                         </tr>
                     </thead>
                     <tbody id="results-table-body"></tbody>
@@ -226,9 +293,22 @@ D. Lựa chọn D
             </div>
         </div>
 
-        <!-- (Tab 3: Quản lý Tài Khoản không đổi) -->
+        <!-- Tab 3: Quản lý Tài Khoản (ĐÃ CẬP NHẬT) -->
         <div id="account-manager-view" class="card">
-             <!-- CỘT 1 -->
+            
+            <!-- KHU VỰC ĐỔI AVATAR -->
+            <div class="avatar-upload-section">
+                <h3>Đổi Ảnh Đại Diện Cá Nhân</h3>
+                <img id="current-admin-avatar" src="" alt="Avatar hiện tại">
+                <p style="font-size: 0.9em; color: #555;">Ảnh này chỉ hiển thị cho bạn.</p>
+                <label for="admin-avatar-input" class="upload-label-admin">
+                    Tải Ảnh Mới
+                </label>
+                <input type="file" id="admin-avatar-input" accept="image/*">
+                <div id="avatar-upload-status"></div>
+            </div>
+            
+             <!-- CỘT 1 (TẠO ADMIN MỚI) -->
             <div>
                 <h2>Tạo Admin Mới</h2>
                 <form id="createAdminForm">
@@ -240,7 +320,7 @@ D. Lựa chọn D
                 </form>
                 <p id="create-admin-msg" style="display: none;"></p>
             </div>
-            <!-- CỘT 2 -->
+            <!-- CỘT 2 (ĐỔI MẬT KHẨU) -->
             <div>
                 <h2>Đổi Mật khẩu Của Bạn</h2>
                 <form id="changePasswordForm">
@@ -255,7 +335,7 @@ D. Lựa chọn D
         </div>
     </div>
 
-    <!-- *** MỚI: MODAL XEM LẠI BÀI *** -->
+    <!-- *** MODAL XEM LẠI BÀI *** -->
     <div id="modal-backdrop">
         <div id="modal-content">
             <button id="modal-close">&times;</button>
@@ -276,6 +356,8 @@ D. Lựa chọn D
           appId: "1:181113887829:web:49535ee20d85b7395948dc"
         };
         
+        const ADMIN_AVATAR_KEY = 'adminAvatar'; // Key lưu avatar của Admin trong localStorage
+
         // --- 1. KHỞI TẠO VÀ XỬ LÝ ĐĂNG NHẬP ---
         let db; 
         let auth; 
@@ -296,7 +378,6 @@ D. Lựa chọn D
         const loginForm = document.getElementById('adminLoginForm');
         const errorMsg = document.getElementById('error-msg');
         
-        // (Logic Đăng nhập, Đăng xuất, onAuthStateChanged không đổi)
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const email = document.getElementById('adminEmail').value;
@@ -308,15 +389,39 @@ D. Lựa chọn D
                 });
         });
         document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem(ADMIN_AVATAR_KEY); // Xóa avatar local khi đăng xuất
             auth.signOut();
         });
+
+        // *** HÀM LẤY AVATAR MẶC ĐỊNH DỰA TRÊN EMAIL ***
+        function getAdminAvatarUrl(email) {
+            const savedAvatar = localStorage.getItem(ADMIN_AVATAR_KEY);
+            if (savedAvatar) return savedAvatar;
+            
+            if (!email) return "https://placehold.co/40x40/007bff/ffffff?text=AD";
+            const initial = email.charAt(0).toUpperCase();
+            return `https://placehold.co/40x40/007bff/ffffff?text=${initial}`;
+        }
+        
+        // *** HÀM CẬP NHẬT AVATAR TẠI CẢ HAI VỊ TRÍ ***
+        function updateAllAvatars(url) {
+            document.getElementById('admin-avatar').src = url;
+            const largeAvatar = document.getElementById('current-admin-avatar');
+            if (largeAvatar) largeAvatar.src = url;
+        }
+
         auth.onAuthStateChanged(user => {
             if (user) {
                 currentUser = user;
                 loginContainer.style.display = 'none';
                 managementContainer.style.display = 'block'; 
                 document.getElementById('admin-name').innerText = user.email;
+                
+                // *** CẬP NHẬT: Hiển thị Avatar Admin (Load từ LocalStorage) ***
+                updateAllAvatars(getAdminAvatarUrl(user.email));
+                
                 initializeAdminApp(); 
+                setupAvatarUpload(); // Khởi tạo logic đổi ảnh
             } else {
                 currentUser = null;
                 loginContainer.style.display = 'grid';
@@ -327,14 +432,20 @@ D. Lựa chọn D
 
         // --- 2. KHU VỰC LOGIC QUẢN LÝ ---
         
+        // *** BIẾN TOÀN CỤC CHO XÓA HÀNG LOẠT ***
+        let selectedSubmissionIds = new Set();
+        const selectAllCheckbox = document.getElementById('select-all-checkbox');
+        const deleteSelectedBtn = document.getElementById('delete-selected-btn');
+        const selectedCountSpan = document.getElementById('selected-count');
+        
         function initializeAdminApp() {
             // (Xử lý Tabs không đổi)
             const navTests = document.getElementById('nav-tests');
             const navResults = document.getElementById('nav-results');
-            const navAccount = document.getElementById('nav-account'); // MỚI
+            const navAccount = document.getElementById('nav-account'); 
             const testManagerView = document.getElementById('test-manager-view');
             const resultsView = document.getElementById('results-view');
-            const accountManagerView = document.getElementById('account-manager-view'); // MỚI
+            const accountManagerView = document.getElementById('account-manager-view'); 
             navTests.addEventListener('click', () => {
                 testManagerView.style.display = 'grid';
                 resultsView.style.display = 'none';
@@ -350,6 +461,9 @@ D. Lựa chọn D
                 navTests.classList.remove('active');
                 navResults.classList.add('active');
                 navAccount.classList.remove('active');
+                
+                // Đảm bảo cập nhật UI khi chuyển tab
+                updateBatchActionsUI();
             });
             navAccount.addEventListener('click', () => {
                 testManagerView.style.display = 'none';
@@ -362,9 +476,7 @@ D. Lựa chọn D
             navTests.click();
 
 
-            // --- (A) Logic cho Tab "Quản lý Đề Thi" ---
-            // (Toàn bộ logic của Tab 1: Tạo đề, Tải đề, Xóa đề, Thêm câu, Thêm hàng loạt...
-            // giữ nguyên, không cần thay đổi.)
+            // --- (A) Logic cho Tab "Quản lý Đề Thi" (Giữ nguyên) ---
             const createTestForm = document.getElementById('createTestForm');
             const testListDiv = document.getElementById('test-list');
             const testLoadingDiv = document.getElementById('test-loading');
@@ -560,19 +672,84 @@ D. Lựa chọn D
             }
 
 
-            // --- (B) Logic cho Tab "Xem Kết Quả" (Cập nhật) ---
+            // --- (B) Logic cho Tab "Xem Kết Quả" ---
             const resultsTableBody = document.getElementById('results-table-body');
             const resultsCount = document.getElementById('results-count');
+
+            // --- Cập nhật UI hàng loạt ---
+            function updateBatchActionsUI() {
+                selectedCountSpan.innerText = selectedSubmissionIds.size;
+                deleteSelectedBtn.style.display = selectedSubmissionIds.size > 0 ? 'inline-block' : 'none';
+            }
+
+            // --- HÀM XÓA HÀNG LOẠT ---
+            async function deleteSelectedSubmissions() {
+                if (selectedSubmissionIds.size === 0) return;
+
+                if (!confirm(`BẠN CÓ CHẮC CHẮN muốn XÓA ${selectedSubmissionIds.size} bài làm đã chọn? Hành động này không thể hoàn tác.`)) {
+                    return;
+                }
+
+                deleteSelectedBtn.disabled = true;
+                deleteSelectedBtn.innerText = `Đang xóa ${selectedSubmissionIds.size} bài...`;
+                
+                const batch = db.batch();
+                let deleteCount = 0;
+                
+                selectedSubmissionIds.forEach(id => {
+                    const docRef = db.collection("ketqua").doc(id);
+                    batch.delete(docRef);
+                    deleteCount++;
+                });
+
+                try {
+                    await batch.commit();
+                    alert(`Đã xóa thành công ${deleteCount} bài làm!`);
+                    
+                    // Reset UI (onSnapshot listener sẽ cập nhật bảng)
+                    selectedSubmissionIds.clear();
+                    selectAllCheckbox.checked = false;
+                    
+                } catch (error) {
+                    console.error("Lỗi khi xóa hàng loạt: ", error);
+                    alert(`Lỗi khi xóa ${deleteCount} bài làm. Vui lòng kiểm tra lại quyền (Rules).`);
+                } finally {
+                    deleteSelectedBtn.disabled = false;
+                }
+            }
+            
+            // --- Event Listener Xóa hàng loạt ---
+            deleteSelectedBtn.addEventListener('click', deleteSelectedSubmissions);
+
+            // --- Event Listener Chọn Tất Cả ---
+            selectAllCheckbox.addEventListener('change', (e) => {
+                const isChecked = e.target.checked;
+                const checkboxes = resultsTableBody.querySelectorAll('.row-checkbox');
+                selectedSubmissionIds.clear();
+
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                    if (isChecked) {
+                        selectedSubmissionIds.add(checkbox.dataset.id);
+                    }
+                });
+                updateBatchActionsUI();
+            });
+
 
             if (!window.resultsListener) {
                 window.resultsListener = db.collection("ketqua").onSnapshot(snapshot => {
                     let results = [];
-                    // *** MỚI: Lấy cả ID ***
+                    // Đảm bảo xóa selection khi dữ liệu load lại
+                    selectedSubmissionIds.clear(); 
+                    selectAllCheckbox.checked = false; 
+
                     snapshot.forEach(doc => { 
                         let data = doc.data();
-                        data.id = doc.id; // Gắn ID vào object data
+                        data.id = doc.id; 
                         results.push(data); 
                     });
+                    
                     results.sort((a, b) => {
                         const timeA = a.thoiGianNop ? a.thoiGianNop.toMillis() : 0;
                         const timeB = b.thoiGianNop ? b.thoiGianNop.toMillis() : 0;
@@ -580,6 +757,7 @@ D. Lựa chọn D
                     });
                     resultsCount.innerText = results.length;
                     resultsTableBody.innerHTML = '';
+                    
                     results.forEach(res => {
                         const tr = document.createElement('tr');
                         let nopLuc = "Không rõ";
@@ -593,8 +771,12 @@ D. Lựa chọn D
                             if (lyDoText === "Hết giờ") { lyDoClass = 'reason-time'; }
                             else { lyDoClass = 'reason-cheat'; }
                         }
+                        
+                        // Kiểm tra xem bài làm này có nằm trong danh sách đang được chọn trước đó không (để giữ trạng thái checked)
+                        const isSelected = selectedSubmissionIds.has(res.id);
 
                         tr.innerHTML = `
+                            <td><input type="checkbox" class="row-checkbox" data-id="${res.id}" ${isSelected ? 'checked' : ''}></td>
                             <td>${res.hoTen || 'N/A'}</td>
                             <td>${res.lop || 'N/A'}</td>
                             <td>${res.tenDeThi || 'N/A'}</td>
@@ -602,30 +784,67 @@ D. Lựa chọn D
                             <td>${res.soCauDung || 'N/A'} / ${res.tongSoCau || 'N/A'}</td>
                             <td>${nopLuc}</td>
                             <td class="${lyDoClass}">${lyDoText}</td>
-                            <!-- *** MỚI: Thêm nút Xem *** -->
                             <td>
                                 <button class="detail-btn" data-id="${res.id}">Xem</button>
+                                <button class="action-btn-delete single-delete-btn" data-id="${res.id}" data-name="${res.hoTen}">Xóa</button>
                             </td>
                         `;
                         resultsTableBody.appendChild(tr);
                     });
+                    
+                    // Cần kiểm tra lại trạng thái "Chọn tất cả" sau khi reload
+                    const totalCheckboxes = resultsTableBody.querySelectorAll('.row-checkbox').length;
+                    selectAllCheckbox.checked = (totalCheckboxes > 0 && selectedSubmissionIds.size === totalCheckboxes);
+                    
+                    updateBatchActionsUI();
                 }, error => {
                     console.error("Lỗi tải kết quả: ", error);
-                    resultsTableBody.innerHTML = '<tr><td colspan="8">Lỗi tải dữ liệu.</td></tr>'; // Tăng colspan
+                    resultsTableBody.innerHTML = '<tr><td colspan="9">Lỗi tải dữ liệu.</td></tr>'; // Cập nhật colspan lên 9
                 });
             }
 
-            // *** MỚI: Thêm Event Listener cho nút "Xem" (Dùng Event Delegation) ***
+            // --- Hàm xóa bài làm ĐƠN LẺ ---
+            async function deleteSubmission(submissionId, studentName) {
+                if (window.confirm(`BẠN CÓ CHẮC CHẮN muốn XÓA bài làm của ${studentName} (ID: ${submissionId})? Hành động này không thể hoàn tác.`)) {
+                    try {
+                        await db.collection("ketqua").doc(submissionId).delete();
+                    } catch (error) {
+                        console.error("Lỗi khi xóa bài làm: ", error);
+                        alert("Lỗi khi xóa bài làm. Vui lòng kiểm tra lại quyền (Rules) hoặc kết nối.");
+                    }
+                }
+            }
+
+
+            // --- Event Listener cho các nút trong bảng (Dùng Event Delegation) ---
+            resultsTableBody.addEventListener('change', (e) => {
+                if (e.target.classList.contains('row-checkbox')) {
+                    const id = e.target.dataset.id;
+                    if (e.target.checked) {
+                        selectedSubmissionIds.add(id);
+                    } else {
+                        selectedSubmissionIds.delete(id);
+                        // Nếu bất kỳ ô nào bị bỏ chọn, bỏ chọn "Chọn tất cả"
+                        selectAllCheckbox.checked = false;
+                    }
+                    updateBatchActionsUI();
+                }
+            });
+
             resultsTableBody.addEventListener('click', (e) => {
+                const submissionId = e.target.dataset.id;
+                if (!submissionId) return;
+
                 if (e.target.classList.contains('detail-btn')) {
-                    const submissionId = e.target.dataset.id;
                     showSubmissionDetail(submissionId);
+                } else if (e.target.classList.contains('single-delete-btn')) { 
+                    const studentName = e.target.dataset.name || 'Học sinh này';
+                    deleteSubmission(submissionId, studentName);
                 }
             });
 
 
-            // --- (C) Logic cho Tab "Quản lý Tài Khoản" ---
-            // (Không đổi)
+            // --- (C) Logic cho Tab "Quản lý Tài Khoản" (Giữ nguyên) ---
             const createAdminForm = document.getElementById('createAdminForm');
             const createAdminMsg = document.getElementById('create-admin-msg');
             const changePasswordForm = document.getElementById('changePasswordForm');
@@ -640,7 +859,6 @@ D. Lựa chọn D
                         createAdminMsg.innerText = `Tạo thành công admin: ${userCredential.user.email}`;
                         createAdminMsg.style.color = 'green';
                         createAdminMsg.style.display = 'block';
-                        createAdminForm.reset();
                         secondaryApp.delete();
                     })
                     .catch((error) => {
@@ -683,10 +901,49 @@ D. Lựa chọn D
                     });
             });
 
+            // --- *** LOGIC ĐỔI AVATAR ADMIN (NEW) *** ---
+            function setupAvatarUpload() {
+                const avatarInput = document.getElementById('admin-avatar-input');
+                const statusDiv = document.getElementById('avatar-upload-status');
+                const largeAvatar = document.getElementById('current-admin-avatar');
+
+                // Đồng bộ hóa ảnh lớn
+                largeAvatar.src = getAdminAvatarUrl(currentUser.email);
+
+
+                avatarInput.addEventListener('change', function() {
+                    const file = this.files[0];
+                    if (file) {
+                        // Kiểm tra kích thước file (tối đa 1MB)
+                        if (file.size > 1024 * 1024 * 1) { 
+                            statusDiv.innerText = 'Lỗi: Kích thước ảnh quá lớn (tối đa 1MB).';
+                            statusDiv.style.color = '#dc3545';
+                            this.value = ''; 
+                            setTimeout(() => statusDiv.innerText = '', 5000);
+                            return;
+                        }
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const newAvatarUrl = e.target.result;
+                            // 1. Lưu ảnh Base64 vào localStorage
+                            localStorage.setItem(ADMIN_AVATAR_KEY, newAvatarUrl);
+                            
+                            // 2. Cập nhật giao diện (cả header và tab)
+                            updateAllAvatars(newAvatarUrl);
+                            
+                            statusDiv.style.color = '#28a745';
+                            statusDiv.innerText = 'Đã cập nhật ảnh đại diện thành công!';
+                            setTimeout(() => statusDiv.innerText = '', 3000);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
 
         } // --- Kết thúc hàm initializeAdminApp ---
         
-        // --- *** 3. LOGIC CHO MODAL (MỚI) *** ---
+        // --- *** 3. LOGIC CHO MODAL *** ---
         const modalBackdrop = document.getElementById('modal-backdrop');
         const modalClose = document.getElementById('modal-close');
         const modalTitle = document.getElementById('modal-title');
@@ -756,6 +1013,13 @@ D. Lựa chọn D
         });
         modalBackdrop.addEventListener('click', (e) => {
             if (e.target === modalBackdrop) {
+                modalBackdrop.style.display = 'none';
+            }
+        });
+        
+        // Thêm đóng modal bằng phím ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modalBackdrop.style.display === 'block') {
                 modalBackdrop.style.display = 'none';
             }
         });

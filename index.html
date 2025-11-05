@@ -5,93 +5,209 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng nhập - Bài kiểm tra Thầy Hải</title>
     <style>
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #55a8f5;
+            --bg-color: #f0f2f5;
+            --text-color: #333;
+            --card-bg: #ffffff;
+            --border-radius: 15px;
+            --shadow-light: 0 4px 15px rgba(0, 0, 0, 0.1);
+            --shadow-deep: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+        
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            display: grid; 
-            place-items: center; 
-            min-height: 90vh; 
-            background-color: #f0f2f5; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            background: linear-gradient(135deg, var(--bg-color) 0%, #e9eef2 100%);
+            padding: 20px;
+            box-sizing: border-box;
         }
+
+        .main-container {
+            display: flex;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-deep);
+            max-width: 900px;
+            width: 100%;
+            overflow: hidden;
+            transition: all 0.3s ease-in-out;
+        }
+        
+        /* CỘT 1: GIỚI THIỆU */
+        .intro-panel {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 40px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .intro-panel h2 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .intro-panel p {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        .intro-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* CỘT 2: FORM ĐĂNG NHẬP */
         .login-container { 
-            background: #fff; 
-            border: 1px solid #ccc; 
-            padding: 30px; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
-            width: 90%;
-            max-width: 400px;
+            padding: 40px; 
+            flex: 1;
         }
-        h1 { text-align: center; color: #333; }
-        h4 { text-align: center; color: #333; }
-        div { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: 600; }
+        h1 { 
+            text-align: center; 
+            color: var(--primary-color);
+            margin-bottom: 5px;
+            font-size: 1.8em;
+        }
+        h4 { 
+            text-align: center; 
+            color: var(--text-color);
+            margin-top: 0;
+            margin-bottom: 30px;
+            font-size: 1em;
+        }
+        
+        label { 
+            display: block; 
+            margin-bottom: 5px; 
+            font-weight: 600; 
+            color: var(--text-color);
+        }
         input[type="text"] { 
             width: 100%; 
-            padding: 10px; 
+            padding: 12px; 
             border: 1px solid #ddd; 
             border-radius: 8px; 
             box-sizing: border-box; 
+            margin-bottom: 20px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input[type="text"]:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+            outline: none;
         }
         button { 
-            background-color: #007bff; 
+            background-color: var(--primary-color); 
             color: white; 
-            padding: 12px 18px; 
+            padding: 14px 20px; 
             border: none; 
             border-radius: 8px; 
             cursor: pointer; 
-            font-size: 16px; 
+            font-size: 1.1em; 
             width: 100%;
+            transition: background-color 0.2s, transform 0.1s;
+            font-weight: 600;
         }
-        button:hover { background-color: #0056b3; }
+        button:hover { 
+            background-color: var(--primary-hover); 
+            transform: translateY(-1px);
+        }
+        
+        /* Responsive (Mobile view) */
+        @media (max-width: 650px) {
+            .main-container {
+                flex-direction: column;
+                max-width: 450px;
+            }
+            .intro-panel {
+                order: -1; /* Đưa giới thiệu lên trên */
+                padding: 30px 20px;
+            }
+            .login-container {
+                padding: 30px 20px;
+            }
+            .intro-panel h2 { font-size: 1.5em; }
+            .intro-icon { font-size: 3em; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="login-container">
-        <h1> MỜI BẠN DĂNG NHẬP </h1>
-        <h4> bản quyền thuộc về THẦY HẢI </h4>
-        <form id="loginForm">
-            <div>
-                <label for="fullName">Họ và Tên:</label>
-                <input type="text" id="fullName" placeholder="Ví dụ: Nguyễn Văn A" required>
+    <div class="main-container">
+        <!-- CỘT 1: GIỚI THIỆU HỆ THỐNG (đỡ trống) -->
+        <div class="intro-panel">
+            <span class="intro-icon">💡</span>
+            <h2>Chào mừng đến với Hệ thống Kiểm tra Thầy Hải</h2>
+            <p>Nền tảng giúp học sinh tự kiểm tra, đánh giá kiến thức một cách nhanh chóng và chính xác. Tự tin làm bài, nắm vững kiến thức ngay hôm nay!</p>
+            <div style="font-size: 0.9em; font-style: italic; opacity: 0.8;">
+                <p>Học tập nghiêm túc là chìa khóa thành công.</p>
             </div>
-            <div>
-                <label for="className">Lớp:</label>
-                <input type="text" id="className" placeholder="Ví dụ: 10A1" required>
-            </div>
-            <button type="submit">Vào Trang chủ</button>
-        </form>
+        </div>
+
+        <!-- CỘT 2: FORM ĐĂNG NHẬP -->
+        <div class="login-container">
+            <h1>ĐĂNG NHẬP</h1>
+            <h4>Vui lòng nhập thông tin để bắt đầu kiểm tra</h4>
+            <form id="loginForm">
+                <div>
+                    <label for="fullName">Họ và Tên:</label>
+                    <input type="text" id="fullName" placeholder="Ví dụ: Nguyễn Văn A" required>
+                </div>
+                <div>
+                    <label for="className">Lớp:</label>
+                    <input type="text" id="className" placeholder="Ví dụ: 10A3" required>
+                </div>
+                <button type="submit">Vào Trang chủ</button>
+            </form>
+        </div>
     </div>
 
     <script>
-        // *** CẬP NHẬT: Tự động kiểm tra đăng nhập khi tải trang ***
+        // Tự động kiểm tra đăng nhập khi tải trang (giữ nguyên logic)
         window.onload = function() {
             const studentName = localStorage.getItem('studentName');
             const studentClass = localStorage.getItem('studentClass');
 
-            // Nếu đã có thông tin, tự động chuyển vào home
             if (studentName && studentClass) {
                 // Hiển thị thông báo nhanh và chuyển hướng
-                document.body.innerHTML = '<h1>Đã nhận diện, đang chuyển vào...</h1>';
+                document.body.innerHTML = '<div style="text-align: center; padding: 50px;"><h1>Đã nhận diện! Đang chuyển vào hệ thống...</h1></div>';
                 setTimeout(() => {
                     window.location.href = 'home.html';
-                }, 1000); // Chờ 1 giây
+                }, 1000); 
             }
-            // Nếu không, cứ để form đăng nhập hiển thị
         }
 
         // Logic submit form (giữ nguyên)
         document.getElementById('loginForm').addEventListener('submit', function(event) {
             event.preventDefault(); 
             
-            const fullName = document.getElementById('fullName').value;
-            const className = document.getElementById('className').value;
+            const fullName = document.getElementById('fullName').value.trim();
+            const className = document.getElementById('className').value.trim();
+            
+            if (fullName && className) {
+                // Lưu thông tin học sinh vào localStorage
+                localStorage.setItem('studentName', fullName);
+                localStorage.setItem('studentClass', className);
 
-            // Lưu thông tin học sinh vào localStorage
-            localStorage.setItem('studentName', fullName);
-            localStorage.setItem('studentClass', className);
-
-            window.location.href = 'home.html';
+                window.location.href = 'home.html';
+            } else {
+                // Thông báo lỗi nếu thiếu thông tin
+                alert('Vui lòng điền đầy đủ Họ và Tên cùng với Lớp.');
+            }
         });
     </script>
 
