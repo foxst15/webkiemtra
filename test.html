@@ -38,7 +38,7 @@
         }
         #timer-bar.warning { background-color: #dc3545; } /* Đổi màu khi sắp hết giờ */
 
-        /* *** MỚI: Tương thích điện thoại (Responsive) *** */
+        /* Tương thích điện thoại (Responsive) */
         @media (max-width: 600px) {
             body {
                 padding: 1rem;
@@ -110,8 +110,8 @@
         let correctAnswers = []; 
         let timerInterval = null; 
         let daNopBai = false; 
-        let leaveTimeout = null; 
-        let visibilityTimeout = null; // *** MỚI: Biến đếm thời gian chuyển tab ***
+        // *** SỬA LỖI: Gỡ bỏ leaveTimeout ***
+        let visibilityTimeout = null; 
 
         // --- TẢI CÂU HỎI ---
         async function loadQuiz() {
@@ -156,7 +156,7 @@
                 
                 startTimer(testTimeMinutes * 60); 
 
-                // *** CẬP NHẬT: Kích hoạt tính năng chống gian lận ***
+                // Kích hoạt tính năng chống gian lận
                 setupAntiCheat();
 
             } catch (error) {
@@ -200,28 +200,12 @@
             submitTest(true, "Hết giờ"); 
         }
 
-        // --- *** HÀM CẬP NHẬT: Chống Gian Lận (Đa nền tảng) *** ---
+        // --- *** HÀM CẬP NHẬT: Chống Gian Lận (Đã sửa lỗi) *** ---
         function setupAntiCheat() {
-            // 1. Chống gian lận cho Desktop (Đưa chuột ra ngoài)
-            document.documentElement.addEventListener('mouseleave', () => {
-                if (daNopBai) return; 
-                leaveTimeout = setTimeout(() => {
-                    if (daNopBai) return; 
-                    alert("Bạn bị nộp bài tự động vì đã rời khỏi trang quá 10 giây!");
-                    submitTest(true, "Rời khỏi trang (Desktop)");
-                }, 10000); // 10 giây
-            });
-
-            document.documentElement.addEventListener('mouseenter', () => {
-                // Quay lại, huỷ nộp bài
-                if (leaveTimeout) {
-                    clearTimeout(leaveTimeout);
-                    leaveTimeout = null;
-                }
-            });
+            // *** SỬA LỖI: Đã gỡ bỏ 'mouseleave' (rời chuột) vì quá nhạy ***
 
             // 2. Chống gian lận cho Mobile & Desktop (Chuyển Tab/Ứng dụng)
-            // Sử dụng Page Visibility API
+            // Đây là cách chống gian lận chính xác và công bằng nhất
             document.addEventListener('visibilitychange', () => {
                 if (daNopBai) return;
 
@@ -256,8 +240,7 @@
             
             daNopBai = true; // Đánh dấu đã nộp
             clearInterval(timerInterval); // Dừng đồng hồ
-            // *** CẬP NHẬT: Dừng tất cả các bộ đếm giờ gian lận ***
-            if (leaveTimeout) clearTimeout(leaveTimeout); 
+            // *** SỬA LỖI: Dừng bộ đếm giờ gian lận ***
             if (visibilityTimeout) clearTimeout(visibilityTimeout);
 
             const submitButton = document.getElementById('submitBtn');
