@@ -102,6 +102,7 @@
         const selectedTestName = localStorage.getItem('selectedTestName');
         const testTimeMinutes = parseInt(localStorage.getItem('selectedTestTime') || 15, 10);
 
+        // *** ĐÃ SỬA: Chuyển hướng về index.html ***
         if (!studentName || !studentClass) window.location.href = 'index.html';
         if (!selectedTestId) window.location.href = 'select-test.html';
 
