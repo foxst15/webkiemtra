@@ -35,8 +35,12 @@
             font-weight: bold;
             z-index: 1000;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: background-color 0.3s; /* Thêm transition */
         }
-        #timer-bar.warning { background-color: #dc3545; } /* Đổi màu khi sắp hết giờ */
+        /* Cập nhật: .warning dùng chung cho hết giờ VÀ rời chuột/tab */
+        #timer-bar.warning { 
+            background-color: #dc3545; 
+        }
 
         /* Tương thích điện thoại (Responsive) */
         @media (max-width: 600px) {
@@ -97,7 +101,6 @@
         const studentClass = localStorage.getItem('studentClass');
         const selectedTestId = localStorage.getItem('selectedTestId');
         const selectedTestName = localStorage.getItem('selectedTestName');
-        
         const testTimeMinutes = parseInt(localStorage.getItem('selectedTestTime') || 15, 10);
 
         if (!studentName || !studentClass) window.location.href = 'index.html';
@@ -110,11 +113,15 @@
         let correctAnswers = []; 
         let timerInterval = null; 
         let daNopBai = false; 
-        // *** SỬA LỖI: Gỡ bỏ leaveTimeout ***
-        let visibilityTimeout = null; 
+        
+        // --- Biến toàn cục cho Chống gian lận ---
+        let globalTimeLeft = 0; 
+        let isCheating = false; // Cờ theo dõi (Rời chuột HOẶC Chuyển tab)
+        let cheatTimeout = null; // Bộ đếm 4s
 
         // --- TẢI CÂU HỎI ---
         async function loadQuiz() {
+            // (Code tải câu hỏi không đổi)
             const testForm = document.getElementById('testForm');
             const loadingDiv = document.getElementById('loading');
             const submitButton = document.getElementById('submitBtn');
@@ -164,84 +171,121 @@
             }
         }
         
-        // --- HÀM ĐẾM NGƯỢC ---
+        // --- Hàm format thời gian ---
+        function formatTime(totalSeconds) {
+            let minutes = Math.floor(totalSeconds / 60);
+            let seconds = totalSeconds % 60;
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+            return `${minutes}:${seconds}`;
+        }
+
+        // --- Hàm Đếm ngược ---
         function startTimer(durationInSeconds) {
-            let timeLeft = durationInSeconds;
+            globalTimeLeft = durationInSeconds;
             const timerElement = document.getElementById('timer');
             const timerBarElement = document.getElementById('timer-bar');
 
             timerInterval = setInterval(() => {
-                if (timeLeft <= 0) {
+                if (daNopBai) { 
+                    clearInterval(timerInterval);
+                    return;
+                }
+
+                if (globalTimeLeft <= 0) {
                     clearInterval(timerInterval);
                     timerElement.innerText = "HẾT GIỜ";
                     timerBarElement.classList.add('warning');
                     autoSubmit();
                 } else {
-                    timeLeft--;
-                    let minutes = Math.floor(timeLeft / 60);
-                    let seconds = timeLeft % 60;
-                    
-                    minutes = minutes < 10 ? '0' + minutes : minutes;
-                    seconds = seconds < 10 ? '0' + seconds : seconds;
-                    
-                    timerElement.innerText = `${minutes}:${seconds}`;
-                    
-                    if (timeLeft <= 60) {
-                        timerBarElement.classList.add('warning');
-                    }
+                    globalTimeLeft--; // Giảm thời gian
                 }
+
+                // Cập nhật giao diện (hiển thị)
+                if (isCheating) {
+                    // Ưu tiên hiển thị cảnh báo
+                    timerElement.innerText = "CẢNH BÁO: QUAY LẠI NGAY!";
+                    timerBarElement.classList.add('warning');
+                } else if (globalTimeLeft <= 60) {
+                    // Cảnh báo hết giờ
+                    timerElement.innerText = formatTime(globalTimeLeft);
+                    timerBarElement.classList.add('warning');
+                } else {
+                    // Bình thường
+                    timerElement.innerText = formatTime(globalTimeLeft);
+                    timerBarElement.classList.remove('warning');
+                }
+                
             }, 1000);
         }
 
         // --- HÀM TỰ ĐỘNG NỘP BÀI (Hết giờ) ---
         function autoSubmit() {
             if (daNopBai) return; 
-            alert("Đã hết giờ làm bài! Bài của bạn sẽ được nộp tự động.");
             submitTest(true, "Hết giờ"); 
         }
 
-        // --- *** HÀM CẬP NHẬT: Chống Gian Lận (Đã sửa lỗi) *** ---
-        function setupAntiCheat() {
-            // *** SỬA LỖI: Đã gỡ bỏ 'mouseleave' (rời chuột) vì quá nhạy ***
+        // --- *** HÀM CHỐNG GIAN LẬN (Logic mới v5 - Hybrid) *** ---
+        
+        // Hàm này sẽ bắt đầu bộ đếm 4 giây
+        function startCheatWarning(reason) {
+            if (daNopBai || isCheating) return; // Nếu đang đếm rồi thì thôi
+            
+            isCheating = true; // Kích hoạt cờ, bộ đếm (startTimer) sẽ hiển thị cảnh báo
+            
+            cheatTimeout = setTimeout(() => {
+                if (daNopBai) return;
+                // Hết 4 giây -> Nộp bài
+                submitTest(true, reason); // Lý do: "Rời khỏi trang"
+            }, 4000); // 4 giây
+        }
+        
+        // Hàm này sẽ hủy bộ đếm 4 giây
+        function stopCheatWarning() {
+             if (cheatTimeout) {
+                clearTimeout(cheatTimeout); // Hủy bộ đếm 4s
+                cheatTimeout = null;
+            }
+            isCheating = false; // Tắt cờ, bộ đếm (startTimer) sẽ hiển thị lại thời gian
+        }
 
-            // 2. Chống gian lận cho Mobile & Desktop (Chuyển Tab/Ứng dụng)
-            // Đây là cách chống gian lận chính xác và công bằng nhất
+        function setupAntiCheat() {
+            
+            // 1. Chuyển Tab/Ứng dụng (Tất cả nền tảng) -> NỘP BÀI NGAY LẬP TỨC
             document.addEventListener('visibilitychange', () => {
                 if (daNopBai) return;
 
                 if (document.hidden) {
-                    // Người dùng vừa chuyển tab/ứng dụng
-                    visibilityTimeout = setTimeout(() => {
-                        if (daNopBai) return;
-                        alert("Bạn bị nộp bài tự động vì đã chuyển tab/ứng dụng quá 10 giây!");
-                        submitTest(true, "Chuyển tab/ứng dụng");
-                    }, 10000); // 10 giây
-                } else {
-                    // Người dùng vừa quay lại
-                    if (visibilityTimeout) {
-                        clearTimeout(visibilityTimeout);
-                        visibilityTimeout = null;
-                    }
+                    // Người dùng vừa chuyển tab/ứng dụng -> NỘP BÀI NGAY
+                    submitTest(true, "Chuyển tab/ứng dụng");
                 }
+            });
+
+            // 2. Rời chuột (Chỉ Desktop) -> Cảnh báo 4 giây
+            document.body.addEventListener('mouseleave', () => {
+                startCheatWarning("Rời khỏi trang (Desktop)");
+            });
+
+            // 3. Quay lại bằng chuột (Chỉ Desktop)
+            document.body.addEventListener('mouseenter', () => {
+                stopCheatWarning();
             });
         }
 
 
-        // --- HÀM NỘP BÀI (Cập nhật) ---
+        // --- HÀM NỘP BÀI (Không đổi) ---
         async function submitTest(isAutoSubmit = false, autoSubmitReason = null) {
             if (daNopBai) return; 
 
-            // Hỏi xác nhận nếu là nộp thủ công
             if (!isAutoSubmit) {
                 if (!confirm("Bạn có chắc chắn muốn nộp bài không?")) {
                     return; 
                 }
             }
             
-            daNopBai = true; // Đánh dấu đã nộp
-            clearInterval(timerInterval); // Dừng đồng hồ
-            // *** SỬA LỖI: Dừng bộ đếm giờ gian lận ***
-            if (visibilityTimeout) clearTimeout(visibilityTimeout);
+            daNopBai = true; 
+            clearInterval(timerInterval); 
+            if (cheatTimeout) clearTimeout(cheatTimeout);
 
             const submitButton = document.getElementById('submitBtn');
             submitButton.disabled = true;
@@ -276,7 +320,6 @@
                         deThiId: selectedTestId,
                         tenDeThi: selectedTestName,
                         thoiGianNop: firebase.firestore.FieldValue.serverTimestamp(),
-                        // *** CẬP NHẬT: Lưu lý do nộp tự động ***
                         nopTuDong: isAutoSubmit, 
                         lyDoNopTuDong: autoSubmitReason 
                     });
