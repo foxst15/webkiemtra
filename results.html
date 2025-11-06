@@ -139,6 +139,14 @@
             db = firebase.firestore();
         } catch (e) { console.error("Lỗi cấu hình Firebase!"); }
 
+        // *** NEW: Chặn nút quay lại của trình duyệt ***
+        // Ghi đè lịch sử duyệt web để nút back không còn dẫn về trang test.html
+        history.pushState(null, null, location.href);
+        window.onpopstate = function() {
+            // Khi người dùng bấm nút back, chuyển hướng thẳng về trang chủ
+            window.location.replace('home.html'); 
+        };
+
 
         // --- Hiển thị thông tin cơ bản (Từ localStorage) ---
         const studentName = localStorage.getItem('studentName');

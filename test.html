@@ -318,7 +318,22 @@
 
         document.getElementById('studentInfo').innerText = `Thí sinh: ${studentName} - Lớp: ${studentClass}`;
         document.getElementById('testTitle').innerText = selectedTestName || "Bài kiểm tra";
-
+        
+        // *** NEW: Xử lý lịch sử duyệt web để chặn quay lại sau khi đã nộp ***
+        // Thay thế trạng thái hiện tại bằng chính nó. Điều này giúp ngăn người dùng quay lại
+        // trang làm bài khi đã nộp xong và xem kết quả.
+        history.replaceState(null, null, location.href);
+        window.onpopstate = function() {
+            // Khi người dùng bấm nút back, nó sẽ chuyển hướng thẳng đến trang chọn đề,
+            // tránh quay lại trạng thái trước khi replaceState.
+            if (!daNopBai) {
+                // Nếu chưa nộp, có thể là thoát giữa chừng (tùy thuộc vào quy tắc của bạn)
+                // Hiện tại, ta sẽ cho phép người dùng thoát (và coi là chưa nộp nếu thoát trước khi hết giờ/vi phạm)
+            } else {
+                // Nếu đã nộp rồi mà cố gắng quay lại, chuyển thẳng về trang chủ (hoặc trang chọn đề)
+                window.location.replace('select-test.html'); 
+            }
+        };
 
         // --- HÀM FORMAT THỜI GIAN ---
         function formatTime(totalSeconds) {
@@ -640,19 +655,15 @@
         async function submitTest(isAutoSubmit = false, autoSubmitReason = null) {
             if (daNopBai) return; 
 
-            // Kiểm tra nộp thủ công và chưa hoàn thành
-            if (!isAutoSubmit && userSelections.includes(null)) {
-                // Thay window.confirm bằng modal
-                const confirmNopBai = window.confirm("Vẫn còn câu chưa trả lời. Bạn có chắc chắn muốn nộp bài không?");
-                if (!confirmNopBai) {
-                    return; 
-                }
-            } else if (!isAutoSubmit) {
-                // Thay window.confirm bằng modal
-                const confirmNopBai = window.confirm("Bạn có chắc chắn muốn nộp bài không?");
-                if (!confirmNopBai) {
-                    return; 
-                }
+            // Thay window.confirm bằng modal
+            if (!isAutoSubmit) {
+                 let confirmMsg = "Bạn có chắc chắn muốn nộp bài không?";
+                 if (userSelections.includes(null)) {
+                     confirmMsg = "Vẫn còn câu chưa trả lời. Bạn có chắc chắn muốn nộp bài không?";
+                 }
+                 if (!window.confirm(confirmMsg)) {
+                     return; 
+                 }
             }
             
             daNopBai = true; 
@@ -710,7 +721,7 @@
             }
             
             // Chuyển sang trang kết quả
-            window.location.href = 'results.html';
+            window.location.replace('results.html'); // Dùng replace để thay thế lịch sử
         }
 
         // --- KHỞI ĐỘNG ---
