@@ -179,7 +179,7 @@
         const totalQuestions = localStorage.getItem('totalQuestions');
         const correctCount = localStorage.getItem('correctCount');
         
-        const lastSubmissionId = localStorage.getItem('lastSubmissionId');
+        let lastSubmissionId = localStorage.getItem('lastSubmissionId'); // *** THAY ĐỔI: Chuyển từ const sang let ***
 
         if (!studentName || !score) {
             window.location.href = 'index.html';
@@ -196,14 +196,51 @@
 
         document.getElementById('details').innerText = `Bạn đã trả lời đúng ${correctCount} / ${totalQuestions} câu.`;
 
+        // *** MỚI: HÀM XỬ LÝ BÀI NỘP CHỜ (TỪ LOCALSTORAGE) ***
+        async function handlePendingSubmission() {
+            const pendingDataString = localStorage.getItem('pendingSubmission');
+            if (pendingDataString && db) {
+                console.log("Phát hiện bài nộp đang chờ xử lý...");
+                document.getElementById('details').innerText = "Đang đồng bộ kết quả nộp tự động, vui lòng chờ...";
+                
+                try {
+                    const pendingData = JSON.parse(pendingDataString);
+                    
+                    // Thêm thời gian nộp thực tế
+                    const submissionData = {
+                        ...pendingData,
+                        thoiGianNop: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+
+                    // Gửi lên Firebase
+                    const docRef = await db.collection("ketqua").add(submissionData);
+                    
+                    // Lưu ID mới để loadReview
+                    lastSubmissionId = docRef.id;
+                    localStorage.setItem('lastSubmissionId', docRef.id);
+                    
+                    // Xóa khỏi localStorage
+                    localStorage.removeItem('pendingSubmission');
+                    console.log("Đã đồng bộ bài nộp thành công!", docRef.id);
+                    document.getElementById('details').innerText = `Bạn đã trả lời đúng ${correctCount} / ${totalQuestions} câu. (Đã đồng bộ)`;
+
+                } catch (error) {
+                    console.error("Lỗi khi đồng bộ bài nộp chờ: ", error);
+                    document.getElementById('details').innerText = "Lỗi khi đồng bộ kết quả. Vui lòng báo cho admin.";
+                }
+            }
+        }
+
+
         // --- *** MỚI: Tải chi tiết bài làm từ Firebase (ĐÃ CẬP NHẬT) *** ---
         async function loadReview() {
             const loadingDiv = document.getElementById('review-loading');
             const contentDiv = document.getElementById('review-content');
             const answeredCountDiv = document.getElementById('answered-count-details');
 
+            // *** THAY ĐỔI: Kiểm tra lastSubmissionId sau khi hàm handlePendingSubmission chạy ***
             if (!lastSubmissionId || !db) {
-                loadingDiv.innerText = "Không tìm thấy chi tiết bài làm.";
+                loadingDiv.innerText = "Không tìm thấy chi tiết bài làm (ID bài nộp không có).";
                 return;
             }
 
@@ -290,8 +327,11 @@
             }
         }
 
-        // Chạy hàm
-        loadReview();
+        // *** THAY ĐỔI: Chạy hàm đồng bộ trước, sau đó mới tải review ***
+        (async () => {
+            await handlePendingSubmission(); // Chờ xử lý bài nộp chờ (nếu có)
+            loadReview(); // Tải review (với lastSubmissionId đúng)
+        })();
 
     </script>
 

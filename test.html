@@ -278,6 +278,16 @@
             db = firebase.firestore();
         } catch (e) { alert("Lỗi cấu hình Firebase!"); }
 
+        // *** MỚI: KIỂM TRA BÀI NỘP CHỜ (DO RELOAD/UNLOAD) ***
+        // Phải thực hiện trước khi làm bất cứ điều gì khác
+        if (localStorage.getItem('pendingSubmission')) {
+            // Nếu có, chuyển ngay đến trang kết quả để xử lý
+            console.log("Phát hiện bài nộp đang chờ, đang chuyển hướng...");
+            window.location.replace('results.html');
+            // Dừng script ngay lập tức để tránh chạy code bên dưới
+            throw new Error("Chuyển hướng đến kết quả."); 
+        }
+
         // --- Lấy thông tin ---
         const studentName = localStorage.getItem('studentName');
         const studentClass = localStorage.getItem('studentClass');
@@ -325,16 +335,19 @@
         // Thêm một mục giả vào lịch sử để "bẫy" nút back
         history.pushState(null, null, location.href); 
         
+        /* *** CẬP NHẬT: Kích hoạt onpopstate để bắt nút Back/Forward *** */
+        // (Trước đó bị comment out)
         window.onpopstate = function() {
             // Đẩy lại lịch sử một lần nữa để "khóa" người dùng
             history.pushState(null, null, location.href); 
             
             if (!daNopBai) {
                 // Nếu chưa nộp bài, đây là hành vi gian lận
-                submitTest(true, "Bấm nút 'Back/Forward' của trình duyệt");
+                // *** CẬP NHẬT: Gọi hàm đồng bộ & chuyển hướng ***
+                synchronousSubmitOnUnload("Bấm nút 'Back/Forward' của trình duyệt");
+                // Sau khi lưu, *bây giờ* mới chuyển hướng
+                window.location.replace('results.html'); 
             }
-            // Nếu đã nộp rồi (ở trang results), trình duyệt sẽ tự xử lý
-            // (vì trang results cũng có bẫy onpopstate riêng)
         };
 
 
@@ -630,7 +643,9 @@
             document.addEventListener('visibilitychange', () => {
                 if (daNopBai) return;
                 if (document.hidden) {
-                    submitTest(true, "Chuyển tab/ứng dụng");
+                    // *** CẬP NHẬT: Gọi hàm đồng bộ & chuyển hướng ***
+                    synchronousSubmitOnUnload("Chuyển tab/ứng dụng");
+                    window.location.replace('results.html');
                 }
             });
             
@@ -638,7 +653,9 @@
             window.addEventListener('blur', () => {
                 if (daNopBai) return;
                 if (!document.hidden) {
-                     submitTest(true, "Mất tập trung/App đè lên");
+                     // *** CẬP NHẬT: Gọi hàm đồng bộ & chuyển hướng ***
+                    synchronousSubmitOnUnload("Mất tập trung/App đè lên");
+                    window.location.replace('results.html');
                 }
             });
 
@@ -657,24 +674,85 @@
                     if (!daNopBai) {
                         e.preventDefault(); // Ngăn F5/Ctrl+R
                         // Tự động nộp bài
-                        submitTest(true, "Gian lận (Bấm F5/Reload)");
+                        // *** CẬP NHẬT: Gọi hàm đồng bộ & chuyển hướng ***
+                        synchronousSubmitOnUnload("Gian lận (Bấm F5/Reload)");
+                        window.location.replace('results.html');
                     }
                 }
             });
 
-            // *** MỚI: 6. Chặn Reload bằng click chuột hoặc đóng tab ***
+            // *** CẬP NHẬT: 6. Tự động nộp bài khi Reload/Đóng tab ***
             // Bẫy sự kiện 'beforeunload'
             window.onbeforeunload = function(e) {
                 // Nếu bài chưa được nộp (daNopBai === false)
                 if (!daNopBai) {
+                    // *** CẬP NHẬT: Chỉ gọi hàm ĐỒNG BỘ ***
+                    // Chúng ta không thể `await` hoặc `location.replace` ở đây.
+                    // Chúng ta chỉ có thể lưu dữ liệu vào localStorage một cách đồng bộ.
+                    synchronousSubmitOnUnload("Tải lại / Rời khỏi trang");
+                    
                     // Hiển thị thông báo xác nhận của trình duyệt
-                    // (Lưu ý: Trình duyệt sẽ hiển thị thông báo chung, không phải message này)
-                    const confirmationMessage = 'Bạn có chắc chắn muốn rời khỏi? Mọi tiến trình sẽ bị mất.';
+                    const confirmationMessage = 'Bài làm của bạn đã được tự động lưu. Rời khỏi trang?';
                     e.returnValue = confirmationMessage; // (Cho các trình duyệt cũ)
                     return confirmationMessage;        // (Cho các trình duyệt mới)
                 }
                 // Nếu daNopBai === true, không làm gì cả, cho phép rời đi
             };
+        }
+
+
+        // *** MỚI: HÀM NỘP BÀI ĐỒNG BỘ KHI UNLOAD ***
+        // Hàm này chỉ chạy đồng bộ, không `async`, không `await`
+        function synchronousSubmitOnUnload(autoSubmitReason = null) {
+            if (daNopBai) return;
+            daNopBai = true; // Ngăn chạy lại
+            clearInterval(timerInterval); 
+            
+            // --- Chấm điểm (Đồng bộ) ---
+            let score = 0;
+            const userAnswers = userSelections; 
+            const totalQuestions = correctAnswers.length;
+
+            correctAnswers.forEach((answer, index) => {
+                const userAnswer = userAnswers[index];
+                if (userAnswer === answer) {
+                    score++;
+                }
+            });
+            
+            const finalScore = (totalQuestions > 0) ? (score / totalQuestions) * 10 : 0;
+            
+            // --- Lưu vào localStorage (Đồng bộ) ---
+            // Đây là phần quan trọng nhất, vì nó chạy ngay lập tức
+            localStorage.setItem('score', finalScore.toFixed(2));
+            localStorage.setItem('totalQuestions', totalQuestions);
+            localStorage.setItem('correctCount', score);
+            localStorage.setItem('answeredCount', globalAnsweredCount); 
+            localStorage.setItem('isAutoSubmit', true);
+            
+            // *** CẬP NHẬT: Lưu cả thông tin để trang results.html tự submit lên CSDL ***
+            // Vì không thể `await` ở đây, ta sẽ lưu dữ liệu thô
+            // để trang results.html đọc và gửi lên Firebase.
+            const resultData = {
+                hoTen: studentName,
+                lop: studentClass,
+                diemSo: finalScore.toFixed(2),
+                soCauDung: score,
+                tongSoCau: totalQuestions,
+                deThiId: selectedTestId,
+                tenDeThi: selectedTestName,
+                // thoiGianNop: sẽ được thêm bởi results.html
+                nopTuDong: true, 
+                lyDoNopTuDong: autoSubmitReason,
+                answeredCount: globalAnsweredCount,
+                userAnswers: userAnswers,         
+                quizData: fullQuestionObjects     
+            };
+            // Lưu bộ dữ liệu này để trang results.html xử lý
+            localStorage.setItem('pendingSubmission', JSON.stringify(resultData));
+
+            // KHÔNG GỌI window.location.replace (vì trình duyệt đang tự làm)
+            // KHÔNG GỌI async submitTest
         }
 
 
@@ -723,6 +801,9 @@
             // Cập nhật: Lưu số câu đã chọn (cho trang results)
             localStorage.setItem('answeredCount', globalAnsweredCount); 
             localStorage.setItem('isAutoSubmit', isAutoSubmit);
+
+            // *** CẬP NHẬT: Xóa pendingSubmission nếu nộp bài bình thường ***
+            localStorage.removeItem('pendingSubmission');
 
             // Lưu kết quả lên Firebase
             if (db) {
