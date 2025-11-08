@@ -201,7 +201,6 @@
         }
         #loading { text-align: center; font-weight: bold; font-size: 1.1em; }
     </style>
-    <!-- SDK Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 </head>
@@ -377,11 +376,12 @@
                     if (isDisabled) {
                         button.disabled = true;
                     } else {
+                        // *** THAY ĐỔI: Chuyển hướng sang rules.html ***
                         button.onclick = () => {
                             localStorage.setItem('selectedTestId', testId);
                             localStorage.setItem('selectedTestName', testName);
                             localStorage.setItem('selectedTestTime', testTime); 
-                            window.location.href = 'test.html';
+                            window.location.href = 'rules.html'; // SỬA Ở ĐÂY
                         };
                     }
                     
@@ -416,7 +416,7 @@
                 const testId = button.dataset.testId;
                 if (!testId) return;
 
-                const test = allTestsData.find(function(t) { return t.id === testId; }); // SỬA LỖI: Thay arrow function
+                const test = allTestsData.find(function(t) { return t.id === testId; }); 
                 if (!test) return;
 
                 const isCompleted = completedTestIdsData.has(testId);
@@ -478,13 +478,13 @@
                             overlay.remove();
                         }
                         
-                        // Gán lại sự kiện click
-                        button.onclick = (function(testId, testName, testTime) { // SỬA LỖI: Dùng closure để gán sự kiện
+                        // *** THAY ĐỔI: Gán lại sự kiện click sang rules.html ***
+                        button.onclick = (function(testId, testName, testTime) { 
                             return function() {
                                 localStorage.setItem('selectedTestId', testId);
                                 localStorage.setItem('selectedTestName', testName);
                                 localStorage.setItem('selectedTestTime', testTime); 
-                                window.location.href = 'test.html';
+                                window.location.href = 'rules.html'; // SỬA Ở ĐÂY
                             };
                         })(testId, test.tenDe, test.thoiGianLamBai || 15); // SỬA LỖI: Bỏ .data
                     }

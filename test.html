@@ -29,6 +29,21 @@
         /* Ẩn tất cả câu hỏi, chỉ hiển thị câu hỏi hiện tại */
         .question { display: none; }
         .question.active { display: block; }
+
+        /* *** THÊM MỚI: CSS Cho đoạn văn bản *** */
+        .comprehension-text {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 1.05em;
+            line-height: 1.6;
+            text-align: left;
+            /* Giữ nguyên định dạng xuống dòng và khoảng trắng */
+            white-space: pre-wrap; 
+        }
+        
         .question-image { 
             max-width: 100%; 
             max-height: 350px; 
@@ -42,6 +57,9 @@
             display: flex;
             justify-content: space-between;
             margin-top: 20px;
+            /* *** THÊM: Cho phép xuống hàng trên mobile *** */
+            flex-wrap: wrap;
+            gap: 10px; /* Thêm khoảng cách nếu xuống hàng */
         }
         .nav-btn {
             background-color: #6c757d;
@@ -52,6 +70,9 @@
             cursor: pointer;
             font-weight: 600;
             transition: background-color 0.2s;
+            /* *** THÊM: Thiết lập cơ bản cho mobile *** */
+            flex-grow: 1; /* Cho phép nút dãn ra */
+            min-width: 150px; /* Độ rộng tối thiểu */
         }
         .nav-btn:hover:not(:disabled) {
             background-color: #5a6268;
@@ -191,6 +212,16 @@
             .container {
                 padding: 1.5rem;
             }
+            /* *** THAY ĐỔI: CSS nút điều hướng trên mobile *** */
+            .nav-btn {
+                min-width: calc(50% - 5px); /* Cho 2 nút nằm cạnh nhau */
+            }
+            /* Nếu màn hình quá hẹp, 2 nút tự xuống hàng 100% nhờ flex-wrap */
+             @media (max-width: 350px) {
+                .nav-btn {
+                    min-width: 100%;
+                }
+             }
         }
     </style>
     <!-- SDK Firebase -->
@@ -277,7 +308,7 @@
             firebase.initializeApp(firebaseConfig);
             db = firebase.firestore();
         } catch (e) { alert("Lỗi cấu hình Firebase!"); }
-
+        
         // *** MỚI: KIỂM TRA BÀI NỘP CHỜ (DO RELOAD/UNLOAD) ***
         // Phải thực hiện trước khi làm bất cứ điều gì khác
         if (localStorage.getItem('pendingSubmission')) {
@@ -310,6 +341,10 @@
         let userSelections = []; // Mảng theo dõi câu trả lời của HS (null hoặc giá trị)
         let currentQuestionIndex = 0; // Câu hỏi hiện tại
 
+        // --- MỚI: BIẾN THEO DÕI NÂNG CAO (ĐÃ PHỤC HỒI) ---
+        let checkFocusInterval = null; 
+        let isFocused = true; // Theo dõi trạng thái focus của cửa sổ
+
         // --- DOM Elements ---
         const testForm = document.getElementById('testForm');
         const loadingDiv = document.getElementById('loading');
@@ -331,21 +366,18 @@
         document.getElementById('testTitle').innerText = selectedTestName || "Bài kiểm tra";
         
         
-        // *** CẬP NHẬT: Chặn nút Back/Forward ***
+        // *** CẬP NHẬT: Chặn nút Back/Forward (PHỤC HỒI LOGIC NỘP BÀI NGAY) ***
         // Thêm một mục giả vào lịch sử để "bẫy" nút back
         history.pushState(null, null, location.href); 
         
-        /* *** CẬP NHẬT: Kích hoạt onpopstate để bắt nút Back/Forward *** */
-        // (Trước đó bị comment out)
+        /* *** CẬP NHẬT: Kích hoạt onpopstate để bắt nút Back/Forward (PHỤC HỒI) *** */
         window.onpopstate = function() {
             // Đẩy lại lịch sử một lần nữa để "khóa" người dùng
             history.pushState(null, null, location.href); 
             
             if (!daNopBai) {
-                // Nếu chưa nộp bài, đây là hành vi gian lận
-                // *** CẬP NHẬT: Gọi hàm đồng bộ & chuyển hướng ***
-                synchronousSubmitOnUnload("Bấm nút 'Back/Forward' của trình duyệt");
-                // Sau khi lưu, *bây giờ* mới chuyển hướng
+                // Nếu chưa nộp bài, đây là hành vi gian lận -> NỘP NGAY
+                synchronousSubmitOnUnload(true, "Bấm nút 'Back/Forward' của trình duyệt");
                 window.location.replace('results.html'); 
             }
         };
@@ -395,8 +427,10 @@
             qBoxes.forEach(box => box.classList.remove('current'));
             qBoxes[index].classList.add('current');
             
-            // 4. Kéo màn hình lên đầu câu hỏi
-            questions[index].scrollIntoView({ behavior: 'auto', block: 'start' });
+            // 4. Kéo màn hình lên đầu câu hỏi (chỉ trên desktop)
+            if (window.innerWidth > 900) { // 900px là breakpoint grid
+                questions[index].scrollIntoView({ behavior: 'auto', block: 'start' });
+            }
         }
 
 
@@ -469,6 +503,41 @@
             updateProgress();
         }
 
+        // --- HÀM KIỂM TRA TẬP TRUNG NÂNG CAO (PHÁT HIỆN LỚP PHỦ AI) ---
+        function startAdvancedFocusCheck() {
+            if (checkFocusInterval) return; 
+
+            checkFocusInterval = setInterval(() => {
+                if (daNopBai) {
+                    clearInterval(checkFocusInterval);
+                    checkFocusInterval = null;
+                    return;
+                }
+
+                // Kiểm tra 1: Mất tiêu điểm (focus) không đồng bộ
+                if (!document.hasFocus()) {
+                    if (!isFocused) return; 
+                    isFocused = false;
+                    console.warn("CẢNH BÁO: Phát hiện mất tiêu điểm không đồng bộ (Lớp phủ AI)");
+                    
+                    // Thực hiện nộp bài ngay lập tức
+                    synchronousSubmitOnUnload(true, "Gian lận (Mất tiêu điểm do Lớp phủ/Trợ lý AI)");
+                    window.location.replace('results.html');
+                    return;
+                } else {
+                    isFocused = true;
+                }
+                
+                // Kiểm tra 2 (Desktop/Cửa sổ): Phát hiện thay đổi kích thước/chia màn hình
+                if (window.innerWidth < 400 || window.innerHeight < 300) { 
+                    console.warn("CẢNH BÁO: Phát hiện thay đổi kích thước cửa sổ bất thường!");
+                    synchronousSubmitOnUnload(true, "Gian lận (Thay đổi kích thước cửa sổ)");
+                    window.location.replace('results.html');
+                }
+
+            }, 500); // Kiểm tra mỗi 500ms (0.5 giây)
+        }
+        
         // --- TẢI CÂU HỎI (Cập nhật logic tạo HTML) ---
         async function loadQuiz() {
             loadingDiv.style.display = 'block';
@@ -499,8 +568,15 @@
                     questionDiv.className = 'question';
                     questionDiv.id = `question${questionIndex}`; 
                     
-                    // Thêm hình ảnh nếu có
-                    if (q.imageUrl) {
+                    // *** THÊM MỚI: Hiển thị Đoạn văn (Chữ) nếu có ***
+                    if (q.comprehensionText) {
+                        const textPassage = document.createElement('div');
+                        textPassage.className = 'comprehension-text';
+                        textPassage.innerText = q.comprehensionText; // Dùng innerText để giữ xuống dòng
+                        questionDiv.appendChild(textPassage);
+                    } 
+                    // Thêm hình ảnh nếu có (VÀ không có đoạn văn chữ)
+                    else if (q.imageUrl) {
                         const image = document.createElement('img');
                         image.src = q.imageUrl; // Đây có thể là Base64 hoặc URL
                         image.className = 'question-image';
@@ -542,6 +618,9 @@
                 startTimer(testTimeMinutes * 60); 
                 setupAntiCheat();
 
+                // *** KÍCH HOẠT KIỂM TRA NÂNG CAO SAU KHI TẢI ***
+                startAdvancedFocusCheck();
+
             } catch (error) {
                 console.error("Lỗi khi tải câu hỏi: ", error);
                 loadingDiv.innerText = "Lỗi khi tải đề thi. Vui lòng kiểm tra lại.";
@@ -554,6 +633,7 @@
             showQuestion(currentQuestionIndex - 1);
         });
         nextBtn.addEventListener('click', () => {
+            // *** Đảm bảo logic +1 là chính xác ***
             showQuestion(currentQuestionIndex + 1);
         });
 
@@ -606,23 +686,40 @@
             submitTest(true, "Hết giờ"); 
         }
 
-        // --- HÀM CHỐNG GIAN LẬN (CẬP NHẬT) ---
+        // --- HÀM CHỐNG GIAN LẬN (ĐÃ KHẮC PHỤC LỖI LOGIC NỘP BÀI) ---
         function startCheatWarning(reason) {
             if (daNopBai || isCheating) return; 
             isCheating = true; 
-            cheatCountDown = 4; 
+            cheatCountDown = 3; 
 
+            // Cập nhật text ngay lập tức
+            document.getElementById('timer').innerText = `CẢNH BÁO: QUAY LẠI! (${cheatCountDown}s)`;
+            document.getElementById('timer-bar').classList.add('warning');
+
+            // Xóa bộ đếm giây cũ (nếu có)
+            if (cheatTimerInterval) clearInterval(cheatTimerInterval);
+            
             cheatTimerInterval = setInterval(() => {
                 cheatCountDown--;
                 if (cheatCountDown < 0) {
                     cheatCountDown = 0; 
                 }
+                // Cập nhật text trên thanh timer
+                if(isCheating) { 
+                    document.getElementById('timer').innerText = `CẢNH BÁO: QUAY LẠI! (${cheatCountDown}s)`;
+                }
             }, 1000);
 
+            // Xóa timeout cũ (nếu có)
+            if (cheatTimeout) clearTimeout(cheatTimeout);
+            
             cheatTimeout = setTimeout(() => {
                 if (daNopBai) return;
-                submitTest(true, reason); 
-            }, 4000); 
+                // Chỉ nộp bài nếu vẫn đang trong trạng thái gian lận (Rời chuột desktop)
+                if(isCheating) {
+                    submitTest(true, reason); 
+                }
+            }, 3000);
         }
         
         function stopCheatWarning() {
@@ -636,127 +733,131 @@
             }
             isCheating = false;
             cheatCountDown = 0; 
+            
+            // Khôi phục lại thanh timer
+            if (!daNopBai) {
+                const timerBarElement = document.getElementById('timer-bar');
+                if (globalTimeLeft > 60) {
+                    timerBarElement.classList.remove('warning');
+                }
+                document.getElementById('timer').innerText = formatTime(globalTimeLeft);
+            }
         }
         
         function setupAntiCheat() {
-            // 1. Chuyển Tab/Ứng dụng (visibilitychange)
+            
+            // 1. Chuyển Tab/Ứng dụng (visibilitychange) -> NỘP NGAY
             document.addEventListener('visibilitychange', () => {
                 if (daNopBai) return;
                 if (document.hidden) {
-                    // *** CẬP NHẬT: Gọi hàm đồng bộ & chuyển hướng ***
-                    synchronousSubmitOnUnload("Chuyển tab/ứng dụng");
+                    synchronousSubmitOnUnload(true, "Chuyển tab/ứng dụng");
                     window.location.replace('results.html');
+                } else {
+                    // HỦY BẤT KỲ CẢNH BÁO NÀO KHÁC (ví dụ: cảnh báo rời chuột)
+                    stopCheatWarning();
                 }
             });
             
-            // 2. Mất Tập trung (Blur Event)
+            // 2. Mất Tập trung (Blur Event - Lớp phủ AI) -> NỘP NGAY
             window.addEventListener('blur', () => {
                 if (daNopBai) return;
+                // Chỉ kích hoạt nếu tab không bị ẩn (vì visibilitychange đã xử lý)
                 if (!document.hidden) {
-                     // *** CẬP NHẬT: Gọi hàm đồng bộ & chuyển hướng ***
-                    synchronousSubmitOnUnload("Mất tập trung/App đè lên");
-                    window.location.replace('results.html');
+                     synchronousSubmitOnUnload(true, "Mất tập trung (Lớp phủ Blur)");
+                     window.location.replace('results.html');
                 }
             });
-
-            // 3. Rời chuột (Chỉ Desktop)
-            document.body.addEventListener('mouseleave', () => {
-                startCheatWarning("Rời khỏi trang (Desktop)");
+            
+            // 3. Quay lại (Focus Event) - HỦY CẢNH BÁO RỜI CHUỘT
+            window.addEventListener('focus', () => {
+                 if (daNopBai) return;
+                 stopCheatWarning();
             });
-            // 4. Quay lại bằng chuột (Chỉ Desktop)
+
+            // 4. Rời chuột (Chỉ Desktop) -> CẢNH BÁO 3 GIÂY
+            document.body.addEventListener('mouseleave', () => {
+                if(window.innerWidth > 900) { // Chỉ chạy trên Desktop
+                    startCheatWarning("Rời khỏi trang (Desktop)");
+                }
+            });
+            // 5. Quay lại bằng chuột (Chỉ Desktop)
             document.body.addEventListener('mouseenter', () => {
-                stopCheatWarning();
+                 if(window.innerWidth > 900) {
+                    stopCheatWarning();
+                 }
             });
             
-            // 5. Chặn F5 và Ctrl+R
+            // 6. Chặn F5 và Ctrl+R (Nộp bài ngay lập tức)
             document.addEventListener('keydown', function(e) {
                 if ((e.key === 'r' && e.ctrlKey) || e.key === 'F5') {
                     if (!daNopBai) {
-                        e.preventDefault(); // Ngăn F5/Ctrl+R
-                        // Tự động nộp bài
-                        // *** CẬP NHẬT: Gọi hàm đồng bộ & chuyển hướng ***
-                        synchronousSubmitOnUnload("Gian lận (Bấm F5/Reload)");
-                        window.location.replace('results.html');
+                        e.preventDefault(); 
+                        synchronousSubmitOnUnload(true, "Gian lận (Bấm F5/Reload)");
+                        window.location.replace('results.html'); // Chuyển đi ngay
                     }
                 }
             });
 
-            // *** CẬP NHẬT: 6. Tự động nộp bài khi Reload/Đóng tab ***
-            // Bẫy sự kiện 'beforeunload'
+            // 7. Chặn Reload bằng click chuột hoặc đóng tab (Nộp bài ngay lập tức)
             window.onbeforeunload = function(e) {
-                // Nếu bài chưa được nộp (daNopBai === false)
                 if (!daNopBai) {
-                    // *** CẬP NHẬT: Chỉ gọi hàm ĐỒNG BỘ ***
-                    // Chúng ta không thể `await` hoặc `location.replace` ở đây.
-                    // Chúng ta chỉ có thể lưu dữ liệu vào localStorage một cách đồng bộ.
-                    synchronousSubmitOnUnload("Tải lại / Rời khỏi trang");
-                    
-                    // Hiển thị thông báo xác nhận của trình duyệt
-                    const confirmationMessage = 'Bài làm của bạn đã được tự động lưu. Rời khỏi trang?';
-                    e.returnValue = confirmationMessage; // (Cho các trình duyệt cũ)
-                    return confirmationMessage;        // (Cho các trình duyệt mới)
+                    // Chỉ lưu dữ liệu đồng bộ, không return thông báo để trình duyệt đóng nhanh
+                    synchronousSubmitOnUnload(true, "Tải lại / Rời khỏi trang");
                 }
-                // Nếu daNopBai === true, không làm gì cả, cho phép rời đi
             };
         }
 
-
-        // *** MỚI: HÀM NỘP BÀI ĐỒNG BỘ KHI UNLOAD ***
-        // Hàm này chỉ chạy đồng bộ, không `async`, không `await`
-        function synchronousSubmitOnUnload(autoSubmitReason = null) {
-            if (daNopBai) return;
-            daNopBai = true; // Ngăn chạy lại
+        // *** HÀM NỘP BÀI ĐỒNG BỘ (CHO F5/RELOAD/BACK) ***
+        function synchronousSubmitOnUnload(isAutoSubmit = true, autoSubmitReason = "Rời khỏi trang") {
+            if (daNopBai) return; 
+            daNopBai = true; 
             clearInterval(timerInterval); 
+            if (cheatTimeout) clearTimeout(cheatTimeout);
+            if (cheatTimerInterval) clearInterval(cheatTimerInterval); 
+            if (checkFocusInterval) clearInterval(checkFocusInterval); // DỪNG KIỂM TRA NÂNG CAO
             
-            // --- Chấm điểm (Đồng bộ) ---
+            // --- Chấm điểm (đồng bộ) ---
             let score = 0;
             const userAnswers = userSelections; 
-            const totalQuestions = correctAnswers.length;
-
             correctAnswers.forEach((answer, index) => {
                 const userAnswer = userAnswers[index];
                 if (userAnswer === answer) {
                     score++;
                 }
             });
+            const totalQuestions = correctAnswers.length;
+            const finalScore = (score / totalQuestions) * 10;
             
-            const finalScore = (totalQuestions > 0) ? (score / totalQuestions) * 10 : 0;
-            
-            // --- Lưu vào localStorage (Đồng bộ) ---
-            // Đây là phần quan trọng nhất, vì nó chạy ngay lập tức
-            localStorage.setItem('score', finalScore.toFixed(2));
-            localStorage.setItem('totalQuestions', totalQuestions);
-            localStorage.setItem('correctCount', score);
-            localStorage.setItem('answeredCount', globalAnsweredCount); 
-            localStorage.setItem('isAutoSubmit', true);
-            
-            // *** CẬP NHẬT: Lưu cả thông tin để trang results.html tự submit lên CSDL ***
-            // Vì không thể `await` ở đây, ta sẽ lưu dữ liệu thô
-            // để trang results.html đọc và gửi lên Firebase.
-            const resultData = {
+            // --- Tạo đối tượng lưu trữ (đồng bộ) ---
+            const submissionData = {
                 hoTen: studentName,
                 lop: studentClass,
                 diemSo: finalScore.toFixed(2),
                 soCauDung: score,
-                tongSoCau: totalQuestions,
+                tongSoCau: totalQuestions, 
                 deThiId: selectedTestId,
                 tenDeThi: selectedTestName,
-                // thoiGianNop: sẽ được thêm bởi results.html
-                nopTuDong: true, 
+                // thoiGianNop SẼ ĐƯỢC THÊM BỞI results.html
+                nopTuDong: isAutoSubmit, 
                 lyDoNopTuDong: autoSubmitReason,
                 answeredCount: globalAnsweredCount,
-                userAnswers: userAnswers,         
-                quizData: fullQuestionObjects     
+                userAnswers: userAnswers,         
+                quizData: fullQuestionObjects     
             };
-            // Lưu bộ dữ liệu này để trang results.html xử lý
-            localStorage.setItem('pendingSubmission', JSON.stringify(resultData));
 
-            // KHÔNG GỌI window.location.replace (vì trình duyệt đang tự làm)
-            // KHÔNG GỌI async submitTest
+            // --- Lưu vào localStorage (đồng bộ) ---
+            localStorage.setItem('pendingSubmission', JSON.stringify(submissionData));
+            
+            // Lưu các thông tin cơ bản để results.html hiển thị ngay
+            localStorage.setItem('score', finalScore.toFixed(2));
+            localStorage.setItem('totalQuestions', totalQuestions);
+            localStorage.setItem('correctCount', score);
+            localStorage.setItem('answeredCount', globalAnsweredCount); 
+            localStorage.setItem('isAutoSubmit', isAutoSubmit);
         }
 
 
-        // --- HÀM NỘP BÀI (CẬP NHẬT) ---
+        // --- HÀM NỘP BÀI (BẤM NÚT) ---
         async function submitTest(isAutoSubmit = false, autoSubmitReason = null) {
             if (daNopBai) return; 
 
@@ -775,6 +876,7 @@
             clearInterval(timerInterval); 
             if (cheatTimeout) clearTimeout(cheatTimeout);
             if (cheatTimerInterval) clearInterval(cheatTimerInterval); 
+            if (checkFocusInterval) clearInterval(checkFocusInterval); // DỪNG KIỂM TRA NÂNG CAO
 
             const submitButton = document.getElementById('submitBtn');
             submitButton.disabled = true;
@@ -798,11 +900,10 @@
             localStorage.setItem('score', finalScore.toFixed(2));
             localStorage.setItem('totalQuestions', totalQuestions);
             localStorage.setItem('correctCount', score);
-            // Cập nhật: Lưu số câu đã chọn (cho trang results)
             localStorage.setItem('answeredCount', globalAnsweredCount); 
             localStorage.setItem('isAutoSubmit', isAutoSubmit);
-
-            // *** CẬP NHẬT: Xóa pendingSubmission nếu nộp bài bình thường ***
+            
+            // Xóa bài nộp chờ (nếu có)
             localStorage.removeItem('pendingSubmission');
 
             // Lưu kết quả lên Firebase
@@ -813,15 +914,15 @@
                         lop: studentClass,
                         diemSo: finalScore.toFixed(2),
                         soCauDung: score,
-                        tongSoCau: totalQuestions,
+                        tongSoCau: totalQuestions, 
                         deThiId: selectedTestId,
                         tenDeThi: selectedTestName,
                         thoiGianNop: firebase.firestore.FieldValue.serverTimestamp(),
                         nopTuDong: isAutoSubmit, 
                         lyDoNopTuDong: autoSubmitReason,
-                        answeredCount: globalAnsweredCount, // *** LƯU SỐ CÂU ĐÃ CHỌN ***
-                        userAnswers: userAnswers,         
-                        quizData: fullQuestionObjects     
+                        answeredCount: globalAnsweredCount, 
+                        userAnswers: userAnswers,         
+                        quizData: fullQuestionObjects     
                     });
 
                     // Lưu ID bài nộp để trang results.html tải về 
@@ -837,7 +938,12 @@
         }
 
         // --- KHỞI ĐỘNG ---
-        loadQuiz(); 
+        // *** Đảm bảo kiểm tra bài nộp chờ luôn nằm ở đầu script ***
+        if (localStorage.getItem('pendingSubmission')) {
+            window.location.replace('results.html');
+        } else {
+            loadQuiz(); 
+        }
     </script>
 </body>
 </html>

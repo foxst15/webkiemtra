@@ -95,9 +95,26 @@
         .reason-time { color: #ffc107; font-weight: bold; }
         .reason-manual { color: #28a745; }
 
-        .toggle-buttons { display: flex; gap: 10px; margin-bottom: 15px; }
-        .toggle-buttons button { flex: 1; background-color: #eee; color: #333; border: 1px solid #ccc; }
-        .toggle-buttons button.active { background-color: #007bff; color: white; border-color: #007bff; }
+        /* THAY ĐỔI: Thêm flex-wrap cho .toggle-buttons */
+        .toggle-buttons { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .toggle-buttons button { 
+            flex: 1; 
+            background-color: #eee; 
+            color: #333; 
+            border: 1px solid #ccc;
+            /* THÊM: Đồng bộ style với tab chính */
+            border-bottom: 4px solid transparent;
+            font-size: 1em; /* Giảm 1 chút */
+            padding: 10px 5px; /* Giảm padding */
+            min-width: 100px; /* Thêm min-width */
+        }
+        /* THAY ĐỔI: Cập nhật CSS cho .active */
+        #admin-nav button.active, .toggle-buttons button.active { 
+            color: #007bff; 
+            border-bottom-color: #007bff; 
+            background-color: #fff; /* Thêm nền trắng */
+        }
+        
         pre { background-color: #f8f9fa; border: 1px solid #eee; padding: 10px; border-radius: 8px; white-space: pre-wrap; word-wrap: break-word; font-family: monospace; }
 
         /* Tab 3: Học Sinh */
@@ -311,10 +328,15 @@
             <!-- CỘT 2 -->
             <div class="card" id="question-manager">
                  <h2 id="question-manager-title">Chọn một đề thi để thêm câu hỏi</h2>
+                 
+                 <!-- THAY ĐỔI: Thêm tab Đọc-Hiểu -->
                  <div class="toggle-buttons">
                     <button id="toggle-add-single" class="active">Thêm từng câu</button>
-                    <button id="toggle-add-bulk">Thêm hàng loạt (50+)</button>
+                    <button id="toggle-add-bulk">Thêm hàng loạt (Bulk)</button>
+                    <button id="toggle-add-comprehension">Thêm Đọc-Hiểu (TV/Anh)</button>
                  </div>
+                 
+                 <!-- Form 1: Thêm từng câu -->
                  <form id="addQuestionForm" style="display: block;">
                     <h3>Thêm câu hỏi mới</h3>
                     
@@ -337,6 +359,8 @@
                     <input type="text" id="answer" required>
                     <button type="submit" class="add-btn">Thêm câu hỏi</button>
                 </form>
+                
+                <!-- Form 2: Thêm hàng loạt (Bulk) -->
                 <form id="addBulkQuestionForm" style="display: none;">
                     <h3>Thêm hàng loạt câu hỏi</h3>
                     <p>Dán nội dung vào đây. Mỗi câu hỏi phải theo định dạng (tối thiểu 6 dòng):</p>
@@ -351,6 +375,36 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                     <textarea id="bulkQuestionsText" rows="20" style="width: 100%; font-family: monospace;"></textarea>
                     <button type="submit" class="add-btn" style="width: 100%;">Lưu hàng loạt câu hỏi</button>
                 </form>
+                
+                <!-- THÊM MỚI: Form 3: Thêm Đọc-Hiểu (Cập nhật) -->
+                <form id="addComprehensionForm" style="display: none;">
+                    <h3>Thêm Đọc-Hiểu (Tiếng Việt/Anh)</h3>
+                    <p>Dùng cho các bài có <strong>một đoạn văn chung</strong> và nhiều câu hỏi.
+                       <br><strong>Lưu ý:</strong> Hệ thống ưu tiên Tệp ảnh > Đoạn văn bản > URL ảnh.
+                    </p>
+                    
+                    <label>1. Tải Tệp Ảnh Đoạn Văn (Ưu tiên cao nhất, Max 500KB):</label>
+                    <input type="file" id="comprehensionImageFile" accept="image/*">
+                    <div id="comprehension-upload-status" style="font-size: 0.9em; margin-bottom: 10px;"></div>
+
+                    <label>2. HOẶC Dán Đoạn Văn (Chữ) (Ưu tiên nhì):</label>
+                    <textarea id="comprehensionText" rows="5" placeholder="Dán đoạn văn bản (chữ) vào đây..."></textarea>
+                    
+                    <label>3. HOẶC Dán URL Ảnh (Ưu tiên thấp nhất):</label>
+                    <input type="text" id="comprehensionImageUrl" placeholder="https://i.imgur.com/...">
+                    
+                    <label style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">4. Dán hàng loạt câu hỏi (BỎ qua dòng "Image:"):</label>
+                    <pre><code>Nội dung câu hỏi...
+A. Lựa chọn A
+B. Lựa chọn B
+C. Lựa chọn C
+D. Lựa chọn D
+Đáp án: Lựa chọn A (hoặc A, B, C, D)</code></pre>
+                    <textarea id="comprehensionBulkText" rows="15" style="width: 100%; font-family: monospace;"></textarea>
+                    <button type="submit" class="add-btn" style="width: 100%;">Lưu Đề Đọc-Hiểu</button>
+                </form>
+
+
                 <div id="question-list-container" style="display: none; margin-top: 20px;">
                     <h3>Danh sách câu hỏi</h3>
                     <div id="question-list"></div>
@@ -679,9 +733,13 @@ HS003,Lê Văn C,10A1</code></pre>
             const addQuestionForm = document.getElementById('addQuestionForm');
             const qListContainer = document.getElementById('question-list-container');
             const qListDiv = document.getElementById('question-list');
+            
+            // THÊM: DOM cho 3 tab câu hỏi
             const toggleAddSingle = document.getElementById('toggle-add-single');
             const toggleAddBulk = document.getElementById('toggle-add-bulk');
+            const toggleAddComprehension = document.getElementById('toggle-add-comprehension');
             const addBulkQuestionForm = document.getElementById('addBulkQuestionForm');
+            const addComprehensionForm = document.getElementById('addComprehensionForm'); // THÊM
 
             const createStudentForm = document.getElementById('createStudentForm');
             const createStudentMsg = document.getElementById('create-student-msg');
@@ -812,11 +870,15 @@ HS003,Lê Văn C,10A1</code></pre>
                             const qId = doc.id;
                             const item = document.createElement('div');
                             item.className = 'question-item';
-                            const imageHtml = q.imageUrl ? `<img src="${q.imageUrl}" style="max-width: 100px; max-height: 100px; margin-bottom: 5px; border-radius: 4px;">` : '';
+                            
+                            // THÊM: Hiển thị đoạn văn text nếu có
+                            const passageHtml = q.comprehensionText 
+                                ? `<pre style="font-size: 0.9em; color: #555; max-height: 100px; overflow-y: auto;">${q.comprehensionText}</pre>`
+                                : (q.imageUrl ? `<img src="${q.imageUrl}" style="max-width: 100px; max-height: 100px; margin-bottom: 5px; border-radius: 4px;">` : '');
 
                             item.innerHTML = `
                                 <div>
-                                    ${imageHtml}
+                                    ${passageHtml}
                                     <div class="question-prompt">${count++}. ${q.prompt}</div>
                                     <div class="question-answer">Đáp án: ${q.answer}</div>
                                 </div>
@@ -873,6 +935,13 @@ HS003,Lê Văn C,10A1</code></pre>
                     document.getElementById('opt3').value = q.options[2];
                     document.getElementById('opt4').value = q.options[3];
                     document.getElementById('answer').value = q.answer;
+                    
+                    // THÊM: Xử lý đoạn văn text khi Sửa
+                    // (Chỉ cho phép sửa ảnh/text trong form "Thêm từng câu", không cho sửa passage chung)
+                    if(q.comprehensionText) {
+                        alert("Lưu ý: Đây là câu hỏi Đọc-Hiểu. Bạn chỉ có thể sửa nội dung câu hỏi/đáp án. Để sửa đoạn văn chung, vui lòng xóa và tạo lại cụm câu hỏi.");
+                    }
+                    
                     const isBase64 = q.imageUrl && q.imageUrl.startsWith('data:image');
                     document.getElementById('questionImageUrl').value = isBase64 ? '' : q.imageUrl || '';
                     const statusDiv = document.getElementById('image-upload-status');
@@ -1155,19 +1224,34 @@ HS003,Lê Văn C,10A1</code></pre>
                 });
             }
 
+            // *** THAY ĐỔI: Cập nhật logic 3 tab câu hỏi ***
             toggleAddSingle.addEventListener('click', () => {
                 addQuestionForm.style.display = 'block';
                 addBulkQuestionForm.style.display = 'none';
+                addComprehensionForm.style.display = 'none'; // ẨN
                 toggleAddSingle.classList.add('active');
                 toggleAddBulk.classList.remove('active');
+                toggleAddComprehension.classList.remove('active'); // TẮT
                 resetQuestionFormState(); 
             });
             toggleAddBulk.addEventListener('click', () => {
                 addQuestionForm.style.display = 'none';
                 addBulkQuestionForm.style.display = 'block';
+                addComprehensionForm.style.display = 'none'; // ẨN
                 toggleAddSingle.classList.remove('active');
                 toggleAddBulk.classList.add('active');
+                toggleAddComprehension.classList.remove('active'); // TẮT
             });
+            // THÊM: Listener cho tab Đọc-Hiểu
+            toggleAddComprehension.addEventListener('click', () => {
+                addQuestionForm.style.display = 'none';
+                addBulkQuestionForm.style.display = 'none';
+                addComprehensionForm.style.display = 'block'; // HIỆN
+                toggleAddSingle.classList.remove('active');
+                toggleAddBulk.classList.remove('active');
+                toggleAddComprehension.classList.add('active'); // BẬT
+            });
+            
             
             addQuestionForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -1206,7 +1290,8 @@ HS003,Lê Văn C,10A1</code></pre>
                     alert("Lỗi: Đáp án đúng phải là 1 trong 4 lựa chọn A, B, C, D (Gõ y hệt nội dung lựa chọn)."); 
                     return; 
                 }
-                const questionData = { prompt: prompt, options: options, answer: answer, imageUrl: finalImageUrl };
+                // *** THAY ĐỔI: Thêm comprehensionText: null ***
+                const questionData = { prompt: prompt, options: options, answer: answer, imageUrl: finalImageUrl, comprehensionText: null };
                 try {
                     if (isEditingQuestionId) {
                         await db.collection("dethi").doc(selectedTestId).collection("cauhoi").doc(isEditingQuestionId).update(questionData);
@@ -1254,7 +1339,8 @@ HS003,Lê Văn C,10A1</code></pre>
                         else if (letter === 'D' && options[3]) finalAnswer = options[3];
                         else { errorList.push(`Lỗi đáp án: "${answerText}" không khớp với câu hỏi "${prompt}"`); continue; }
                     }
-                    questionsToAdd.push({ prompt: prompt, options: options, answer: finalAnswer, imageUrl: imageUrl });
+                    // *** THAY ĐỔI: Thêm comprehensionText: null ***
+                    questionsToAdd.push({ prompt: prompt, options: options, answer: finalAnswer, imageUrl: imageUrl, comprehensionText: null });
                 }
                 if (questionsToAdd.length > 0) {
                     try {
@@ -1270,6 +1356,142 @@ HS003,Lê Văn C,10A1</code></pre>
                 } else {
                     let message = "Không thêm được câu hỏi nào.";
                     if (errorList.length > 0) { message += `\n\nPhát hiện ${errorList.length} lỗi:\n- ${errorList.join('\n- ')}`; }
+                    alert(message);
+                }
+            });
+
+            // *** THÊM MỚI: Listener cho form Đọc-Hiểu (Cập nhật) ***
+            addComprehensionForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!selectedTestId) return;
+
+                const fileInput = document.getElementById('comprehensionImageFile');
+                const textInput = document.getElementById('comprehensionText');
+                const imageUrlInput = document.getElementById('comprehensionImageUrl');
+                const bulkTextInput = document.getElementById('comprehensionBulkText');
+                const statusDiv = document.getElementById('comprehension-upload-status');
+                
+                statusDiv.innerText = '';
+                
+                const text = bulkTextInput.value;
+                if (!text) {
+                    alert('Lỗi: Bạn chưa nhập danh sách câu hỏi.');
+                    return;
+                }
+
+                // *** BẮT ĐẦU: Logic ưu tiên đoạn văn ***
+                let finalPassageData = { imageUrl: null, comprehensionText: null };
+                let promptPrefix = "";
+                const file = fileInput.files[0];
+
+                if (file) {
+                    // 1. Ưu tiên TỆP ẢNH
+                    if (file.size > MAX_IMAGE_SIZE_KB * 1024) {
+                        statusDiv.innerText = `Lỗi: Tệp quá lớn. Max: ${MAX_IMAGE_SIZE_KB} KB.`;
+                        statusDiv.style.color = 'red';
+                        return;
+                    }
+                    try {
+                        statusDiv.innerText = 'Đang mã hóa ảnh đoạn văn...';
+                        statusDiv.style.color = 'blue';
+                        finalPassageData.imageUrl = await fileToBase64(file); 
+                        promptPrefix = "(Đọc đoạn văn trong ảnh) ";
+                        statusDiv.innerText = 'Mã hóa ảnh thành công!';
+                        statusDiv.style.color = 'green';
+                    } catch (error) {
+                        statusDiv.innerText = 'Lỗi mã hóa tệp ảnh.';
+                        statusDiv.style.color = 'red';
+                        console.error("Lỗi mã hóa Base64: ", error);
+                        return;
+                    }
+                } else if (textInput.value.trim()) {
+                    // 2. Ưu tiên DÁN CHỮ
+                    finalPassageData.comprehensionText = textInput.value.trim();
+                    promptPrefix = "(Đọc đoạn văn bản) ";
+                } else if (imageUrlInput.value.trim()) {
+                    // 3. Ưu tiên LINK ẢNH
+                    finalPassageData.imageUrl = imageUrlInput.value.trim();
+                    promptPrefix = "(Đọc đoạn văn trong ảnh) ";
+                }
+                // *** KẾT THÚC: Logic ưu tiên đoạn văn ***
+
+
+                const blocks = text.split(/\n\s*\n/); 
+                let questionsToAdd = [];
+                let errorList = [];
+                
+                for (const block of blocks) {
+                    const lines = block.split('\n').map(l => l.trim()).filter(l => l !== "");
+                    if (lines.length === 0) continue; 
+                    if (lines.length < 6) { 
+                        errorList.push(`Lỗi định dạng khối: "${lines[0]}..." (Không đủ 6 dòng cơ bản).`); 
+                        continue; 
+                    }
+                    
+                    const prompt = `${promptPrefix}${lines[0]}`; 
+                    
+                    const options = [ 
+                        lines[1].substring(lines[1].indexOf(".") + 1).trim(), 
+                        lines[2].substring(lines[2].indexOf(".") + 1).trim(), 
+                        lines[3].substring(lines[3].indexOf(".") + 1).trim(), 
+                        lines[4].substring(lines[4].indexOf(".") + 1).trim() 
+                    ];
+                    
+                    const answerLine = lines[5];
+                    const answerText = answerLine.substring(answerLine.indexOf(":") + 1).trim();
+                    
+                    let finalAnswer = "";
+                    if (options.includes(answerText)) { 
+                        finalAnswer = answerText; 
+                    } else {
+                        const letter = answerText.toUpperCase();
+                        if (letter === 'A' && options[0]) finalAnswer = options[0];
+                        else if (letter === 'B' && options[1]) finalAnswer = options[1];
+                        else if (letter === 'C' && options[2]) finalAnswer = options[2];
+                        else if (letter === 'D' && options[3]) finalAnswer = options[3];
+                        else { 
+                            errorList.push(`Lỗi đáp án: "${answerText}" không khớp với câu hỏi "${lines[0]}"`); 
+                            continue; 
+                        }
+                    }
+                    
+                    // Gắn đoạn văn (ảnh hoặc text) vào từng câu hỏi
+                    questionsToAdd.push({ 
+                        prompt: prompt, 
+                        options: options, 
+                        answer: finalAnswer, 
+                        imageUrl: finalPassageData.imageUrl, // Hoặc null
+                        comprehensionText: finalPassageData.comprehensionText // Hoặc null
+                    });
+                }
+                
+                if (questionsToAdd.length > 0) {
+                    try {
+                        const batch = db.batch();
+                        const collectionRef = db.collection("dethi").doc(selectedTestId).collection("cauhoi");
+                        questionsToAdd.forEach(q => { 
+                            const docRef = collectionRef.doc(); 
+                            batch.set(docRef, q); 
+                        });
+                        
+                        await batch.commit();
+                        
+                        let message = `Đã thêm thành công ${questionsToAdd.length} câu hỏi đọc-hiểu!`;
+                        if (errorList.length > 0) { 
+                            message += `\n\nPhát hiện ${errorList.length} lỗi (đã bỏ qua):\n- ${errorList.join('\n- ')}`; 
+                        }
+                        alert(message);
+                        addComprehensionForm.reset();
+                        statusDiv.innerText = '';
+                    } catch (error) { 
+                        console.error("Lỗi khi commit batch đọc-hiểu: ", error); 
+                        alert("Lỗi khi lưu vào cơ sở dữ liệu. Vui lòng thử lại."); 
+                    }
+                } else {
+                    let message = "Không thêm được câu hỏi nào.";
+                    if (errorList.length > 0) { 
+                        message += `\n\nPhát hiện ${errorList.length} lỗi:\n- ${errorList.join('\n- ')}`; 
+                    }
                     alert(message);
                 }
             });
@@ -1479,7 +1701,7 @@ HS003,Lê Văn C,10A1</code></pre>
                     .catch((error) => {
                         changePassMsg.innerText = `Lỗi: ${error.message}`;
                         if (error.code === 'auth/requires-recent-login') {
-                            changePassMsg.innerText = "Phiên đăng nhập quá cũ. Vui lòng đăng xuất và đăng nhập lại trước khi đổi mật khẩu.";
+                            changePassMsg.innerText = "Phiên đăng nhập quá cũ. Vui lòng đăng xuất và đăng nhập lại trước khi đổi mậtK khẩu.";
                         }
                         changePassMsg.style.color = 'red';
                         changePassMsg.style.display = 'block';
@@ -1699,7 +1921,17 @@ HS003,Lê Văn C,10A1</code></pre>
                     const questionDiv = document.createElement('div');
                     questionDiv.className = 'review-question';
                     
-                    if (q.imageUrl) {
+                    // *** THAY ĐỔI: Hiển thị đoạn văn (chữ) hoặc ảnh ***
+                    if (q.comprehensionText) {
+                        const textPassage = document.createElement('pre'); // Dùng pre để giữ định dạng
+                        textPassage.style.backgroundColor = '#f8f9fa';
+                        textPassage.style.border = '1px solid #eee';
+                        textPassage.style.padding = '10px';
+                        textPassage.style.borderRadius = '8px';
+                        textPassage.style.whiteSpace = 'pre-wrap';
+                        textPassage.innerText = q.comprehensionText;
+                        questionDiv.appendChild(textPassage);
+                    } else if (q.imageUrl) {
                         const image = document.createElement('img');
                         image.src = q.imageUrl;
                         image.style.maxWidth = '100%';

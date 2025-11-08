@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nội quy thi</title>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --success-color: #28a745;
+            --success-hover: #218838;
+            --danger-color: #6c757d;
+            --danger-hover: #5a6268;
+            --warning-color: #dc3545; /* Màu đỏ cảnh báo */
+            --light-bg: #f0f2f5;
+            --white-bg: #ffffff;
+            --shadow: 0 4px 12px rgba(0,0,0,0.05);
+            --border-radius: 12px;
+        }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background-color: var(--light-bg); 
+            margin: 0; 
+            padding: 20px;
+            display: flex; /* THAY ĐỔI: Dùng flex */
+            flex-direction: column; /* THAY ĐỔI: Xếp chồng */
+            align-items: center; /* THAY ĐỔI: Căn giữa */
+            min-height: 90vh;
+        }
+        .container {
+            max-width: 700px;
+            margin: 20px auto;
+            padding: 30px;
+            background: var(--white-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            width: 100%; /* THÊM: Đảm bảo container chiếm độ rộng */
+        }
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-top: 0;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+        }
+        
+        /* Thông tin bài thi */
+        .test-info {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        .test-info p {
+            margin: 5px 0;
+            font-size: 1.1em;
+        }
+        
+        /* Danh sách nội quy */
+        .rules-list {
+            text-align: left;
+            padding-left: 20px; 
+            margin-bottom: 30px;
+            line-height: 1.6;
+            list-style: none; /* THÊM: Tắt dấu chấm tròn mặc định */
+            padding-left: 30px; /* THÊM: Tăng padding cho icon */
+        }
+        .rules-list li {
+            margin-bottom: 12px; /* Tăng khoảng cách */
+            position: relative; /* Cho phép định vị icon */
+        }
+        
+        /* THÊM: CSS cho các mục cảnh báo */
+        .rules-list li.warning {
+            color: var(--warning-color);
+            font-weight: 600; /* Đậm hơn */
+        }
+        
+        /* THÊM: Icon cho các mục cảnh báo */
+        .rules-list li.warning::before {
+            content: '⚠️'; /* Icon cảnh báo */
+            position: absolute;
+            left: -30px; /* Đặt icon ra ngoài lề */
+            top: 1px;
+            font-size: 1.1em;
+        }
+        
+        /* Giữ lại <strong> cho mục cuối */
+        .rules-list li strong {
+            color: var(--warning-color);
+        }
+
+        /* Nút */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            text-decoration: none;
+            color: var(--white-bg);
+            transition: background-color 0.2s;
+            flex-grow: 1;
+            text-align: center;
+        }
+        .btn-agree {
+            background-color: var(--success-color);
+        }
+        .btn-agree:hover {
+            background-color: var(--success-hover);
+        }
+        .btn-disagree {
+            background-color: var(--danger-color);
+        }
+        .btn-disagree:hover {
+            background-color: var(--danger-hover);
+        }
+        
+        @media (max-width: 500px) {
+            .btn {
+                width: 100%;
+                flex-grow: 0;
+            }
+        }
+        
+        /* THÊM: CSS cho Footer */
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #6c757d;
+            font-size: 0.9em;
+            width: 100%;
+        }
+        footer a {
+            color: var(--primary-color);
+            font-weight: 600;
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Nội quy và Xác nhận</h1>
+        
+        <div class="test-info">
+            <p><strong>Thí sinh:</strong> <span id="studentName"></span> - <span id="studentClass"></span></p>
+            <p><strong>Bài thi:</strong> <span id="testName"></span></p>
+            <p><strong>Thời gian:</strong> <span id="testTime"></span> phút</p>
+        </div>
+
+        <h3>Vui lòng đọc kỹ nội quy trước khi bắt đầu:</h3>
+        <ul class="rules-list">
+            <li>Thí sinh phải đọc kỹ đề bài và các lựa chọn trước khi trả lời.</li>
+            <li>Đảm bảo thời gian làm bài, hệ thống sẽ tự động nộp bài khi hết giờ.</li>
+            <!-- THAY ĐỔI: Thêm class="warning" và bỏ <strong> -->
+            <li class="warning">Tuyệt đối không được chuyển tab, chuyển ứng dụng (kể cả xem thông báo) trong suốt quá trình làm bài.</li>
+            <li class="warning">Nghiêm cấm sử dụng bất kỳ lớp phủ nào (bao gồm Trợ lý AI, Gemini, Hyper AI, Google Assistant...).</li>
+            <li class="warning">Hệ thống sẽ cảnh báo 3 giây khi phát hiện hành vi gian lận (chuyển tab, mất tập trung). Nếu không quay lại, bài thi sẽ tự động bị nộp.</li>
+            <li class="warning">Không sử dụng nút "Back/Forward" của trình duyệt.</li>
+            <li class="warning">Không F5 hoặc tải lại trang (Reload). Bài thi sẽ bị nộp ngay lập tức.</li>
+            <li>Bài thi chỉ được làm <strong>một (01) lần duy nhất</strong>.</li>
+        </ul>
+
+        <div class="button-group">
+            <a href="select-test.html" id="disagreeBtn" class="btn btn-disagree">Không đồng ý - Quay lại</a>
+            <a href="test.html" id="agreeBtn" class="btn btn-agree">Tôi đã hiểu và Đồng ý</a>
+        </div>
+    </div>
+
+    <!-- THÊM: Footer -->
+    <footer>
+        <p>Mọi thắc mắc vui lòng liên hệ Admin qua Gmail: 
+            <a href="mailto:nguyenvanhai.10a3@gmail.com">nguyenvanhai.10a3@gmail.com</a>
+        </p>
+    </footer>
+
+    <script>
+        // Lấy thông tin từ localStorage để hiển thị
+        const studentName = localStorage.getItem('studentName');
+        const studentClass = localStorage.getItem('studentClass');
+        const selectedTestId = localStorage.getItem('selectedTestId');
+        const selectedTestName = localStorage.getItem('selectedTestName');
+        const selectedTestTime = localStorage.getItem('selectedTestTime');
+
+        // Bảo mật: Nếu không có thông tin học sinh hoặc chưa chọn đề, đá về trang chọn đề
+        if (!studentName || !selectedTestId) {
+            window.location.replace('select-test.html');
+        }
+
+        // Hiển thị thông tin
+        document.getElementById('studentName').innerText = studentName;
+        document.getElementById('studentClass').innerText = `Lớp ${studentClass}`;
+        document.getElementById('testName').innerText = selectedTestName;
+        document.getElementById('testTime').innerText = selectedTestTime;
+
+        // Chặn nút back trên trang này
+        history.pushState(null, null, location.href);
+        window.onpopstate = function() {
+            history.pushState(null, null, location.href);
+            // Thay vì nộp bài, chỉ chuyển hướng về trang chọn đề
+            window.location.replace('select-test.html');
+        };
+
+    </script>
+</body>
+</html>
