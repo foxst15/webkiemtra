@@ -79,7 +79,17 @@
         .question-answer { font-style: italic; color: #28a745; }
 
         #results-view { display: none; }
-        #account-manager-view { display: none; grid-template-columns: 1fr 1fr; gap: 20px; }
+        
+        /* CẬP NHẬT GRID CHO QUẢN LÝ TÀI KHOẢN */
+        #account-manager-view { display: none; grid-template-columns: 1fr 1fr; gap: 20px; } 
+        .student-list-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 10px; 
+            border-bottom: 1px solid #eee; 
+        }
+        .student-list-item:hover { background-color: #f8f9fa; }
 
         #results-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         #results-table th, #results-table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
@@ -153,7 +163,7 @@
         .upload-label-admin:hover { background-color: #218838; }
         #admin-avatar-input { display: none; }
         #avatar-upload-status { font-size: 0.8em; color: #28a745; margin-top: 5px; }
-
+        
         /* Tương thích điện thoại */
         @media (max-width: 900px) {
             #test-manager-view { grid-template-columns: 1fr; }
@@ -323,7 +333,27 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                 <div id="avatar-upload-status"></div>
             </div>
             
-             <!-- CỘT 1 (TẠO ADMIN MỚI) -->
+             <!-- CỘT 1 (QUẢN LÝ MÃ HỌC SINH) -->
+            <div>
+                <h2>Quản lý Mã Học Sinh</h2>
+                <form id="createStudentForm">
+                    <label>Mã HS (ID đăng nhập):</label>
+                    <input type="text" id="studentCodeId" placeholder="Ví dụ: L10A3_001" required>
+                    <label>Họ và Tên Học Sinh:</label>
+                    <input type="text" id="studentNameNew" placeholder="Ví dụ: Nguyễn Văn A" required>
+                    <label>Lớp Học:</label>
+                    <input type="text" id="studentClassNew" placeholder="Ví dụ: 10A3" required>
+                    <button type="submit" class="add-btn">Tạo Mã HS</button>
+                </form>
+                <p id="create-student-msg" style="display: none;"></p>
+                
+                <h3 style="margin-top: 20px;">Danh sách Mã HS</h3>
+                <div id="student-list">
+                    <p>Đang tải danh sách học sinh...</p>
+                </div>
+            </div>
+            
+            <!-- CỘT 2 (TẠO ADMIN MỚI & ĐỔI MẬT KHẨU) -->
             <div>
                 <h2>Tạo Admin Mới</h2>
                 <form id="createAdminForm">
@@ -334,10 +364,8 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                     <button type="submit" class="add-btn">Tạo tài khoản</button>
                 </form>
                 <p id="create-admin-msg" style="display: none;"></p>
-            </div>
-            <!-- CỘT 2 (ĐỔI MẬT KHẨU) -->
-            <div>
-                <h2>Đổi Mật khẩu Của Bạn</h2>
+                
+                <h2 style="margin-top: 30px;">Đổi Mật khẩu Của Bạn</h2>
                 <form id="changePasswordForm">
                     <label>Mật khẩu mới:</label>
                     <input type="password" id="newPass" required>
@@ -427,6 +455,60 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
             if (largeAvatar) largeAvatar.src = url;
         }
 
+        // --- HÀM HỖ TRỢ CHUYỂN FILE SANG BASE64 ---
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+        
+        // --- LOGIC ĐỔI AVATAR ADMIN (ĐƯỢC DI CHUYỂN RA NGOÀI) ---
+        function setupAvatarUpload() {
+            const avatarInput = document.getElementById('admin-avatar-input');
+            const statusDiv = document.getElementById('avatar-upload-status');
+            const largeAvatar = document.getElementById('current-admin-avatar');
+
+            // Đồng bộ hóa ảnh lớn
+            // Cần phải có currentUser trước khi gọi hàm này, nhưng hàm onAuthStateChanged đã đảm bảo điều đó.
+            if (currentUser) {
+                largeAvatar.src = getAdminAvatarUrl(currentUser.email);
+            }
+
+
+            avatarInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    // Kiểm tra kích thước file (tối đa 1MB)
+                    if (file.size > 1024 * 1024 * 1) { 
+                        statusDiv.innerText = 'Lỗi: Kích thước ảnh quá lớn (tối đa 1MB).';
+                        statusDiv.style.color = '#dc3545';
+                        this.value = ''; 
+                        setTimeout(() => statusDiv.innerText = '', 5000);
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const newAvatarUrl = e.target.result;
+                        // 1. Lưu ảnh Base64 vào localStorage
+                        localStorage.setItem(ADMIN_AVATAR_KEY, newAvatarUrl);
+                        
+                        // 2. Cập nhật giao diện (cả header và tab)
+                        updateAllAvatars(newAvatarUrl);
+                        
+                        statusDiv.style.color = '#28a745';
+                        statusDiv.innerText = 'Đã cập nhật ảnh đại diện thành công!';
+                        setTimeout(() => statusDiv.innerText = '', 3000);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+        // --- KẾT THÚC LOGIC ĐỔI AVATAR ADMIN ---
+
+
         auth.onAuthStateChanged(user => {
             if (user) {
                 currentUser = user;
@@ -437,7 +519,7 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                 updateAllAvatars(getAdminAvatarUrl(user.email));
                 
                 initializeAdminApp(); 
-                setupAvatarUpload(); // Khởi tạo logic đổi ảnh
+                setupAvatarUpload(); // KHẮC PHỤC LỖI: Hàm này đã được di chuyển ra ngoài và gọi tại đây
             } else {
                 currentUser = null;
                 loginContainer.style.display = 'grid';
@@ -446,19 +528,9 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
         });
 
 
-        // --- HÀM HỖ TRỢ CHUYỂN FILE SANG BASE64 ---
-        function fileToBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = error => reject(error);
-            });
-        }
-
         // --- 2. KHU VỰC LOGIC QUẢN LÝ ---
         
-        // BIẾN TOÀN CỤC CHO XÓA HÀNG LOẠT
+        // BIẾN TOÀN CỤC CHO XÓA HÀNG LOẠAT
         let selectedSubmissionIds = new Set();
         const selectAllCheckbox = document.getElementById('select-all-checkbox');
         const deleteSelectedBtn = document.getElementById('delete-selected-btn');
@@ -472,6 +544,8 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
             const testManagerView = document.getElementById('test-manager-view');
             const resultsView = document.getElementById('results-view');
             const accountManagerView = document.getElementById('account-manager-view'); 
+            const studentListDiv = document.getElementById('student-list'); // NEW
+
             navTests.addEventListener('click', () => {
                 testManagerView.style.display = 'grid';
                 resultsView.style.display = 'none';
@@ -497,6 +571,9 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                 navTests.classList.remove('active');
                 navResults.classList.remove('active');
                 navAccount.classList.add('active');
+                
+                // NEW: Tải danh sách học sinh khi vào tab
+                loadStudentList();
             });
             navTests.click();
 
@@ -525,7 +602,8 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                 if (!testName || !testTime) return;
                 
                 if (startTime && endTime && startTime >= endTime) {
-                    alert('Lỗi: Thời gian BẮT ĐẦU phải trước thời gian KẾT THÚC.');
+                    // Thay alert bằng window.confirm
+                    window.confirm('Lỗi: Thời gian BẮT ĐẦU phải trước thời gian KẾT THÚC.');
                     return;
                 }
 
@@ -539,7 +617,13 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                         thoiGianDong: endTime || null 
                     });
                     createTestForm.reset();
-                    alert("Tạo đề thi thành công!");
+                    // Thay alert bằng thông báo không chặn UI (sử dụng element sẵn có của form khác)
+                    const statusDiv = document.getElementById('create-student-msg');
+                    statusDiv.innerText = "Tạo đề thi thành công!";
+                    statusDiv.style.color = 'green';
+                    statusDiv.style.display = 'block';
+                    setTimeout(() => statusDiv.style.display = 'none', 3000);
+
                 } catch (error) { console.error("Lỗi tạo đề thi: ", error); }
             });
 
@@ -578,7 +662,10 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                         `;
                         item.querySelector('.delete-btn').addEventListener('click', (e) => {
                             e.stopPropagation(); 
-                            deleteTest(testId, test.tenDe);
+                            // Thay alert bằng window.confirm
+                            if (window.confirm(`CẢNH BÁO:\nBạn có chắc chắn muốn XÓA TOÀN BỘ đề thi "${test.tenDe}"?`)) {
+                                deleteTest(testId, test.tenDe);
+                            }
                         });
                         // NEW: Listener cho nút Sửa đề thi
                         item.querySelector('.edit-test-btn').addEventListener('click', (e) => {
@@ -598,10 +685,17 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
             
             // 3. XÓA ĐỀ THI
             async function deleteTest(testId, testName) {
-                if (!confirm(`CẢNH BÁO:\nBạn có chắc chắn muốn XÓA TOÀN BỘ đề thi "${testName}"?`)) return;
+                // Đã chuyển confirm ra ngoài
                 try {
                     await db.collection("dethi").doc(testId).delete();
-                    alert("Đã xóa đề thi!");
+                    
+                    // Sử dụng div thông báo không chặn UI
+                    const statusDiv = document.getElementById('create-student-msg');
+                    statusDiv.innerText = `Đã xóa đề thi "${testName}"!`;
+                    statusDiv.style.color = 'red';
+                    statusDiv.style.display = 'block';
+                    setTimeout(() => statusDiv.style.display = 'none', 3000);
+
                     if (selectedTestId === testId) resetQuestionManager();
                 } catch (error) { console.error("Lỗi xóa đề thi: ", error); }
             }
@@ -713,7 +807,8 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                 const answer = document.getElementById('answer').value;
                 // Kiểm tra đáp án đúng (Phải là 1 trong 4 lựa chọn)
                 if (!options.includes(answer)) { 
-                    alert("Lỗi: Đáp án đúng phải là 1 trong 4 lựa chọn A, B, C, D (Gõ y hệt nội dung lựa chọn)."); 
+                    // Thay alert bằng window.confirm để không chặn UI
+                    window.confirm("Lỗi: Đáp án đúng phải là 1 trong 4 lựa chọn A, B, C, D (Gõ y hệt nội dung lựa chọn)."); 
                     return; 
                 }
                 
@@ -744,13 +839,14 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
 
                 } catch (error) { 
                     console.error("Lỗi thêm/cập nhật câu hỏi: ", error); 
-                    alert("Lỗi khi thêm/cập nhật câu hỏi!"); 
+                    // Thay alert bằng window.confirm
+                    window.confirm("Lỗi khi thêm/cập nhật câu hỏi!"); 
                     statusDiv.innerText = 'Lỗi khi lưu vào CSDL.';
                     statusDiv.style.color = 'red';
                 }
             });
 
-            // 6C. THÊM HÀNG LOẠT (Giữ nguyên logic cũ)
+            // 6C. THÊM HÀNG LOẠT (Giữ nguyên logic cũ, thay alert bằng window.confirm)
             addBulkQuestionForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 if (!selectedTestId) return;
@@ -792,19 +888,22 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                         await batch.commit();
                         let message = `Đã thêm thành công ${questionsToAdd.length} câu hỏi!`;
                         if (errorList.length > 0) { message += `\n\nPhát hiện ${errorList.length} lỗi (đã bỏ qua):\n- ${errorList.join('\n- ')}`; }
-                        alert(message);
+                        window.confirm(message); // Thay alert
                         addBulkQuestionForm.reset();
-                    } catch (error) { console.error("Lỗi khi commit batch: ", error); alert("Lỗi khi lưu vào cơ sở dữ liệu. Vui lòng thử lại."); }
+                    } catch (error) { 
+                        console.error("Lỗi khi commit batch: ", error); 
+                        window.confirm("Lỗi khi lưu vào cơ sở dữ liệu. Vui lòng thử lại."); // Thay alert
+                    }
                 } else {
                     let message = "Không thêm được câu hỏi nào.";
                     if (errorList.length > 0) { message += `\n\nPhát hiện ${errorList.length} lỗi:\n- ${errorList.join('\n- ')}`; }
-                    alert(message);
+                    window.confirm(message); // Thay alert
                 }
             });
             // 7. XÓA CÂU HỎI
             window.deleteQuestion = async function(questionId) {
                 if (!selectedTestId) return;
-                if (confirm("Bạn có chắc muốn xóa câu hỏi này?")) {
+                if (window.confirm("Bạn có chắc muốn xóa câu hỏi này?")) {
                     try {
                         await db.collection("dethi").doc(selectedTestId).collection("cauhoi").doc(questionId).delete();
                     } catch (error) { console.error("Lỗi xóa câu hỏi: ", error); }
@@ -828,7 +927,8 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                 try {
                     const docRef = await db.collection("dethi").doc(selectedTestId).collection("cauhoi").doc(questionId).get();
                     if (!docRef.exists) {
-                        alert("Lỗi: Không tìm thấy câu hỏi để sửa.");
+                        // Thay alert bằng window.confirm
+                        window.confirm("Lỗi: Không tìm thấy câu hỏi để sửa.");
                         return;
                     }
                     const q = docRef.data();
@@ -864,7 +964,7 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
 
                 } catch (error) {
                     console.error("Lỗi tải câu hỏi để sửa: ", error);
-                    alert("Lỗi tải câu hỏi.");
+                    window.confirm("Lỗi tải câu hỏi."); // Thay alert
                     resetQuestionFormState();
                 }
             }
@@ -892,7 +992,7 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
             async function deleteSelectedSubmissions() {
                 if (selectedSubmissionIds.size === 0) return;
 
-                if (!confirm(`BẠN CÓ CHẮC CHẮN muốn XÓA ${selectedSubmissionIds.size} bài làm đã chọn? Hành động này không thể hoàn tác.`)) {
+                if (!window.confirm(`BẠN CÓ CHẮC CHẮN muốn XÓA ${selectedSubmissionIds.size} bài làm đã chọn? Hành động này không thể hoàn tác.`)) {
                     return;
                 }
 
@@ -910,7 +1010,7 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
 
                 try {
                     await batch.commit();
-                    alert(`Đã xóa thành công ${deleteCount} bài làm!`);
+                    window.confirm(`Đã xóa thành công ${deleteCount} bài làm!`); // Thay alert
                     
                     // Reset UI (onSnapshot listener sẽ cập nhật bảng)
                     selectedSubmissionIds.clear();
@@ -918,7 +1018,7 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                     
                 } catch (error) {
                     console.error("Lỗi khi xóa hàng loạt: ", error);
-                    alert(`Lỗi khi xóa ${deleteCount} bài làm. Vui lòng kiểm tra lại quyền (Rules).`);
+                    window.confirm(`Lỗi khi xóa ${deleteCount} bài làm. Vui lòng kiểm tra lại quyền (Rules).`); // Thay alert
                 } finally {
                     deleteSelectedBtn.disabled = false;
                 }
@@ -1016,7 +1116,7 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                         await db.collection("ketqua").doc(submissionId).delete();
                     } catch (error) {
                         console.error("Lỗi khi xóa bài làm: ", error);
-                        alert("Lỗi khi xóa bài làm. Vui lòng kiểm tra lại quyền (Rules) hoặc kết nối.");
+                        window.confirm("Lỗi khi xóa bài làm. Vui lòng kiểm tra lại quyền (Rules) hoặc kết nối."); // Thay alert
                     }
                 }
             }
@@ -1051,29 +1151,145 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
 
 
             // --- (C) Logic cho Tab "Quản lý Tài Khoản" ---
+            const createStudentForm = document.getElementById('createStudentForm');
+            const createStudentMsg = document.getElementById('create-student-msg');
+            
+            // NEW: 1. TẠO ADMIN MỚI
             const createAdminForm = document.getElementById('createAdminForm');
             const createAdminMsg = document.getElementById('create-admin-msg');
+
             const changePasswordForm = document.getElementById('changePasswordForm');
             const changePassMsg = document.getElementById('change-pass-msg');
+            
+            // NEW: 1A. TẠO ADMIN MỚI
             createAdminForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const email = document.getElementById('newAdminEmail').value;
                 const password = document.getElementById('newAdminPass').value;
+                
+                createAdminMsg.style.display = 'block';
+                createAdminMsg.innerText = 'Đang tạo tài khoản...';
+                createAdminMsg.style.color = 'blue';
+
+                // Tạo một instance Firebase thứ cấp để tạo user mà không cần đăng xuất user hiện tại
                 const secondaryApp = firebase.initializeApp(firebaseConfig, "secondary");
                 secondaryApp.auth().createUserWithEmailAndPassword(email, password)
                     .then((userCredential) => {
                         createAdminMsg.innerText = `Tạo thành công admin: ${userCredential.user.email}`;
                         createAdminMsg.style.color = 'green';
-                        createAdminMsg.style.display = 'block';
+                        createAdminForm.reset();
+                        // Xóa instance thứ cấp sau khi dùng
                         secondaryApp.delete();
                     })
                     .catch((error) => {
                         createAdminMsg.innerText = `Lỗi: ${error.message}`;
                         createAdminMsg.style.color = 'red';
-                        createAdminMsg.style.display = 'block';
+                        // Xóa instance thứ cấp sau khi dùng
                         secondaryApp.delete();
                     });
             });
+
+            // NEW: 1B. TẠO MÃ HỌC SINH
+            createStudentForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const code = document.getElementById('studentCodeId').value.trim();
+                const name = document.getElementById('studentNameNew').value.trim();
+                const className = document.getElementById('studentClassNew').value.trim();
+                
+                createStudentMsg.style.display = 'block';
+                createStudentMsg.innerText = 'Đang kiểm tra và tạo mã...';
+                createStudentMsg.style.color = 'blue';
+
+                if (!code || !name || !className) {
+                    createStudentMsg.innerText = "Vui lòng điền đủ Mã HS, Tên và Lớp.";
+                    createStudentMsg.style.color = 'red';
+                    return;
+                }
+                
+                try {
+                    // Kiểm tra xem mã đã tồn tại chưa
+                    const docRef = db.collection("hocsinh").doc(code);
+                    const doc = await docRef.get();
+                    if (doc.exists) {
+                        createStudentMsg.innerText = `Lỗi: Mã HS "${code}" đã tồn tại.`;
+                        createStudentMsg.style.color = 'red';
+                        return;
+                    }
+
+                    // Thêm học sinh mới
+                    await docRef.set({
+                        maHS: code,
+                        hoTen: name,
+                        lop: className
+                    });
+                    
+                    createStudentMsg.innerText = `Tạo thành công Mã HS: ${code} cho ${name} - ${className}`;
+                    createStudentMsg.style.color = 'green';
+                    createStudentForm.reset();
+                    loadStudentList(); // Tải lại danh sách
+                    
+                } catch (error) {
+                    console.error("Lỗi tạo Mã HS: ", error);
+                    createStudentMsg.innerText = `Lỗi: ${error.message}`;
+                    createStudentMsg.style.color = 'red';
+                }
+            });
+
+            // NEW: 2. TẢI VÀ HIỂN THỊ DANH SÁCH HỌC SINH
+            function loadStudentList() {
+                studentListDiv.innerHTML = '<p>Đang tải danh sách học sinh...</p>';
+                db.collection("hocsinh").onSnapshot(snapshot => {
+                    studentListDiv.innerHTML = '';
+                    if (snapshot.empty) {
+                        studentListDiv.innerHTML = '<p>Chưa có Mã HS nào được tạo.</p>';
+                        return;
+                    }
+                    
+                    snapshot.forEach(doc => {
+                        const student = doc.data();
+                        const studentId = doc.id;
+                        const item = document.createElement('div');
+                        item.className = 'student-list-item';
+                        
+                        item.innerHTML = `
+                            <div>
+                                <strong>${student.hoTen}</strong> (${student.lop})
+                                <div style="font-size: 0.9em; color: #007bff;">Mã HS: ${student.maHS}</div>
+                            </div>
+                            <button class="delete-btn delete-student-btn" data-id="${studentId}" data-name="${student.hoTen}">Xóa</button>
+                        `;
+                        
+                        item.querySelector('.delete-student-btn').addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            deleteStudent(studentId, student.hoTen);
+                        });
+                        studentListDiv.appendChild(item);
+                    });
+                }, error => {
+                    console.error("Lỗi tải danh sách học sinh: ", error);
+                    studentListDiv.innerHTML = '<p style="color: red;">Lỗi tải danh sách học sinh.</p>';
+                });
+            }
+            
+            // NEW: 3. XÓA MÃ HỌC SINH
+            async function deleteStudent(studentId, studentName) {
+                if (window.confirm(`Bạn có chắc chắn muốn XÓA Mã HS "${studentId}" của học sinh ${studentName} không? (Học sinh sẽ không thể đăng nhập bằng mã này nữa)`)) {
+                    try {
+                        await db.collection("hocsinh").doc(studentId).delete();
+                        
+                        createStudentMsg.innerText = `Đã xóa Mã HS: ${studentId} thành công!`;
+                        createStudentMsg.style.color = 'red';
+                        createStudentMsg.style.display = 'block';
+                        setTimeout(() => createStudentMsg.style.display = 'none', 3000);
+
+                    } catch (error) {
+                        console.error("Lỗi xóa Mã HS: ", error);
+                        window.confirm("Lỗi khi xóa Mã HS. Vui lòng thử lại.");
+                    }
+                }
+            }
+
+
             changePasswordForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const newPass = document.getElementById('newPass').value;
@@ -1107,44 +1323,7 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                     });
             });
 
-            // --- LOGIC ĐỔI AVATAR ADMIN ---
-            function setupAvatarUpload() {
-                const avatarInput = document.getElementById('admin-avatar-input');
-                const statusDiv = document.getElementById('avatar-upload-status');
-                const largeAvatar = document.getElementById('current-admin-avatar');
-
-                // Đồng bộ hóa ảnh lớn
-                largeAvatar.src = getAdminAvatarUrl(currentUser.email);
-
-
-                avatarInput.addEventListener('change', function() {
-                    const file = this.files[0];
-                    if (file) {
-                        // Kiểm tra kích thước file (tối đa 1MB)
-                        if (file.size > 1024 * 1024 * 1) { 
-                            statusDiv.innerText = 'Lỗi: Kích thước ảnh quá lớn (tối đa 1MB).';
-                            statusDiv.style.color = '#dc3545';
-                            this.value = ''; 
-                            setTimeout(() => statusDiv.innerText = '', 5000);
-                            return;
-                        }
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            const newAvatarUrl = e.target.result;
-                            // 1. Lưu ảnh Base64 vào localStorage
-                            localStorage.setItem(ADMIN_AVATAR_KEY, newAvatarUrl);
-                            
-                            // 2. Cập nhật giao diện (cả header và tab)
-                            updateAllAvatars(newAvatarUrl);
-                            
-                            statusDiv.style.color = '#28a745';
-                            statusDiv.innerText = 'Đã cập nhật ảnh đại diện thành công!';
-                            setTimeout(() => statusDiv.innerText = '', 3000);
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                });
-            }
+            // *** LOGIC ĐỔI AVATAR ADMIN ĐÃ ĐƯỢC DI CHUYỂN RA NGOÀI ***
 
 
         } // --- Kết thúc hàm initializeAdminApp ---
@@ -1279,7 +1458,7 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                     // Hiển thị ảnh (nếu có)
                     if (q.imageUrl) {
                         const image = document.createElement('img');
-                        image.src = q.imageUrl;
+                        image.src = q.imageUrl; // Đây có thể là Base64 hoặc URL
                         image.style.maxWidth = '100%';
                         image.style.maxHeight = '300px';
                         image.style.marginBottom = '10px';

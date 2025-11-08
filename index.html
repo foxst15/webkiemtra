@@ -96,7 +96,7 @@
             font-weight: 600; 
             color: var(--text-color);
         }
-        input[type="text"] { 
+        input[type="text"], input[type="password"] { /* Cập nhật loại input */
             width: 100%; 
             padding: 12px; 
             border: 1px solid #ddd; 
@@ -105,7 +105,7 @@
             margin-bottom: 20px;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
-        input[type="text"]:focus {
+        input[type="text"]:focus, input[type="password"]:focus {
             border-color: var(--primary-color);
             box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
             outline: none;
@@ -126,6 +126,14 @@
             background-color: var(--primary-hover); 
             transform: translateY(-1px);
         }
+        #login-error {
+            color: #dc3545;
+            text-align: center;
+            margin-top: -10px;
+            margin-bottom: 10px;
+            font-weight: 600;
+            display: none;
+        }
         
         /* Responsive (Mobile view) */
         @media (max-width: 650px) {
@@ -144,6 +152,9 @@
             .intro-icon { font-size: 3em; }
         }
     </style>
+    <!-- SDK Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -161,29 +172,68 @@
         <!-- CỘT 2: FORM ĐĂNG NHẬP -->
         <div class="login-container">
             <h1>ĐĂNG NHẬP</h1>
-            <h4>Vui lòng nhập thông tin để bắt đầu kiểm tra</h4>
+            <h4>Vui lòng nhập Mã HS và Mật khẩu để bắt đầu kiểm tra</h4>
             <form id="loginForm">
                 <div>
-                    <label for="fullName">Họ và Tên:</label>
-                    <input type="text" id="fullName" placeholder="Ví dụ: Nguyễn Văn A" required>
+                    <label for="studentCode">Mã HS:</label>
+                    <input type="text" id="studentCode" placeholder="Ví dụ: L10A3_001" required>
                 </div>
                 <div>
-                    <label for="className">Lớp:</label>
-                    <input type="text" id="className" placeholder="Ví dụ: 10A3" required>
+                    <label for="password">Mật khẩu:</label>
+                    <input type="password" id="password" placeholder="Nhập Mã HS lần nữa" required>
                 </div>
+                <p id="login-error" style="display: none;">Mã HS hoặc Mật khẩu không đúng. Vui lòng thử lại.</p>
                 <button type="submit">Vào Trang chủ</button>
             </form>
         </div>
     </div>
 
     <script>
-        // Tự động kiểm tra đăng nhập khi tải trang (giữ nguyên logic)
-        window.onload = function() {
-            const studentName = localStorage.getItem('studentName');
-            const studentClass = localStorage.getItem('studentClass');
+        // *** Dán firebaseConfig của bạn vào đây ***
+        const firebaseConfig = {
+          apiKey: "AIzaSyDmRq3djRZHElhC2T_EYsU7v5vrzwRyybY",
+          authDomain: "webkiemtra-66cdc.firebaseapp.com",
+          projectId: "webkiemtra-66cdc",
+          storageBucket: "webkiemtra-66cdc.firebasestorage.app",
+          messagingSenderId: "181113887829",
+          appId: "1:181113887829:web:49535ee20d85b7395948dc"
+        };
+        
+        let db;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+        } catch (e) { console.error("Lỗi cấu hình Firebase:", e); }
 
-            if (studentName && studentClass) {
-                // Hiển thị thông báo nhanh và chuyển hướng
+        // --- BỔ SUNG LOGIC XÓA DỮ LIỆU CŨ TRONG LOCALSTORAGE ---
+        function cleanOldLoginData() {
+            // Đây là các khóa được dùng trong phương thức đăng nhập cũ (Họ Tên, Lớp)
+            // Cần xóa chúng để buộc học sinh đăng nhập lại bằng Mã HS
+            localStorage.removeItem('studentName');
+            localStorage.removeItem('studentClass');
+            // Giữ lại khóa 'studentCode' (hoặc xóa nếu bạn muốn reset hoàn toàn)
+            // localStorage.removeItem('studentCode'); 
+            
+            // Xóa luôn các dữ liệu liên quan đến bài thi cũ để tránh lỗi
+            localStorage.removeItem('selectedTestId');
+            localStorage.removeItem('selectedTestName');
+            localStorage.removeItem('selectedTestTime');
+            localStorage.removeItem('score');
+            localStorage.removeItem('lastSubmissionId');
+            localStorage.removeItem('studentAvatar'); // Xóa cả avatar cũ
+        }
+        
+        // --- Cập nhật lại logic Tự động kiểm tra đăng nhập ---
+        window.onload = function() {
+            // KHỞI TẠO: Xóa tất cả dữ liệu cũ ngay khi trang tải
+            cleanOldLoginData();
+
+            // Chỉ kiểm tra đăng nhập bằng khóa mới 'studentCode' (nếu bạn quyết định lưu nó)
+            const studentCode = localStorage.getItem('studentCode');
+
+            if (studentCode && localStorage.getItem('studentName')) {
+                // Nếu Mã HS và Tên đã được lưu sau lần đăng nhập thành công gần nhất
+                // (Sau khi chạy cleanOldLoginData() thì lần đầu tiên sẽ không vào đây)
                 document.body.innerHTML = '<div style="text-align: center; padding: 50px;"><h1>Đã nhận diện! Đang chuyển vào hệ thống...</h1></div>';
                 setTimeout(() => {
                     window.location.href = 'home.html';
@@ -191,22 +241,55 @@
             }
         }
 
-        // Logic submit form (giữ nguyên)
-        document.getElementById('loginForm').addEventListener('submit', function(event) {
+        // Logic submit form
+        document.getElementById('loginForm').addEventListener('submit', async function(event) {
             event.preventDefault(); 
             
-            const fullName = document.getElementById('fullName').value.trim();
-            const className = document.getElementById('className').value.trim();
+            const code = document.getElementById('studentCode').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const errorElement = document.getElementById('login-error');
             
-            if (fullName && className) {
-                // Lưu thông tin học sinh vào localStorage
-                localStorage.setItem('studentName', fullName);
-                localStorage.setItem('studentClass', className);
+            errorElement.style.display = 'none';
 
-                window.location.href = 'home.html';
-            } else {
-                // Thông báo lỗi nếu thiếu thông tin
-                alert('Vui lòng điền đầy đủ Họ và Tên cùng với Lớp.');
+            if (code !== password) {
+                errorElement.innerText = "Mật khẩu phải giống với Mã HS.";
+                errorElement.style.display = 'block';
+                return;
+            }
+            
+            if (!code) {
+                errorElement.innerText = "Vui lòng nhập Mã HS.";
+                errorElement.style.display = 'block';
+                return;
+            }
+
+            try {
+                // Lấy thông tin học sinh từ collection 'hocsinh' bằng Mã HS (dùng ID document)
+                const docRef = db.collection("hocsinh").doc(code);
+                const doc = await docRef.get();
+                
+                if (doc.exists) {
+                    const studentData = doc.data();
+                    
+                    // Xóa dữ liệu cũ (làm lại một lần nữa cho chắc chắn)
+                    cleanOldLoginData();
+                    
+                    // Lưu thông tin học sinh vào localStorage
+                    localStorage.setItem('studentName', studentData.hoTen);
+                    localStorage.setItem('studentClass', studentData.lop);
+                    localStorage.setItem('studentCode', studentData.maHS); // Lưu mã HS
+
+                    window.location.href = 'home.html';
+                } else {
+                    // Mã HS không tồn tại
+                    errorElement.innerText = "Mã HS không tồn tại trong hệ thống. Vui lòng kiểm tra lại.";
+                    errorElement.style.display = 'block';
+                }
+
+            } catch (error) {
+                console.error("Lỗi đăng nhập: ", error);
+                errorElement.innerText = "Lỗi kết nối CSDL. Vui lòng thử lại.";
+                errorElement.style.display = 'block';
             }
         });
     </script>
