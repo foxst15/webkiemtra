@@ -651,7 +651,7 @@
                 stopCheatWarning();
             });
             
-            // *** MỚI: 5. Chặn F5 và Ctrl+R ***
+            // 5. Chặn F5 và Ctrl+R
             document.addEventListener('keydown', function(e) {
                 if ((e.key === 'r' && e.ctrlKey) || e.key === 'F5') {
                     if (!daNopBai) {
@@ -661,6 +661,20 @@
                     }
                 }
             });
+
+            // *** MỚI: 6. Chặn Reload bằng click chuột hoặc đóng tab ***
+            // Bẫy sự kiện 'beforeunload'
+            window.onbeforeunload = function(e) {
+                // Nếu bài chưa được nộp (daNopBai === false)
+                if (!daNopBai) {
+                    // Hiển thị thông báo xác nhận của trình duyệt
+                    // (Lưu ý: Trình duyệt sẽ hiển thị thông báo chung, không phải message này)
+                    const confirmationMessage = 'Bạn có chắc chắn muốn rời khỏi? Mọi tiến trình sẽ bị mất.';
+                    e.returnValue = confirmationMessage; // (Cho các trình duyệt cũ)
+                    return confirmationMessage;        // (Cho các trình duyệt mới)
+                }
+                // Nếu daNopBai === true, không làm gì cả, cho phép rời đi
+            };
         }
 
 
