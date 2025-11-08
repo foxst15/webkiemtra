@@ -227,6 +227,9 @@
     <!-- SDK Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
+    <!-- THÊM THƯ VIỆN seedrandom.js TỪ CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/seedrandom/3.0.5/seedrandom.min.js"></script>
 </head>
 <body>
 
@@ -394,6 +397,7 @@
         
         // HÀM XÁO TRỘN FISHER-YATES SHUFFLE
         function shuffleArray(array) {
+            // Sử dụng Math.random() mặc định (đã được ghi đè bởi seedrandom)
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [array[i], array[j]] = [array[j], array[i]];
@@ -411,6 +415,10 @@
             // 1. Ẩn/Hiện câu hỏi
             const questions = document.querySelectorAll('.question');
             questions.forEach(q => q.classList.remove('active'));
+            
+            // Xử lý trường hợp không tìm thấy câu hỏi (lỗi)
+            if (questions.length === 0) return;
+            
             questions[index].classList.add('active');
 
             // 2. Cập nhật nút điều hướng
@@ -425,7 +433,10 @@
             // 3. Cập nhật trạng thái câu hỏi hiện tại trên bản đồ
             const qBoxes = questionMapContainer.querySelectorAll('.q-box');
             qBoxes.forEach(box => box.classList.remove('current'));
-            qBoxes[index].classList.add('current');
+            // Xử lý trường hợp không tìm thấy qBoxes (lỗi)
+            if (qBoxes.length > 0) {
+                qBoxes[index].classList.add('current');
+            }
             
             // 4. Kéo màn hình lên đầu câu hỏi (chỉ trên desktop)
             if (window.innerWidth > 900) { // 900px là breakpoint grid
@@ -541,6 +552,11 @@
         // --- TẢI CÂU HỎI (Cập nhật logic tạo HTML) ---
         async function loadQuiz() {
             loadingDiv.style.display = 'block';
+            
+            // Tạo một ID duy nhất cho phiên làm bài này để sử dụng làm hạt giống xáo trộn
+            // Ghi đè Math.random() bằng Math.seedrandom()
+            const uniqueStudentSeed = studentName + studentClass + selectedTestId + new Date().getTime();
+            Math.seedrandom(uniqueStudentSeed); 
 
             try {
                 const snapshot = await db.collection("dethi").doc(selectedTestId).collection("cauhoi").get();
@@ -553,32 +569,73 @@
                 let loadedQuestions = []; 
                 snapshot.forEach(doc => {
                     const q = doc.data();
+                    q.id = doc.id;
                     loadedQuestions.push(q); 
                 });
                 
-                // ÁP DỤNG XÁO TRỘN CÂU HỎI
-                shuffleArray(loadedQuestions); 
+                // 1. SẮP XẾP TRONG BỘ NHỚ (Đảm bảo câu cũ/mới đều có thứ tự ban đầu)
+                loadedQuestions.sort((a, b) => {
+                    const indexA = a.index !== undefined && a.index !== null ? a.index : -1;
+                    const indexB = b.index !== undefined && b.index !== null ? b.index : -1;
 
-                testForm.innerHTML = ''; // Đảm bảo form sạch
+                    if (indexA !== -1 && indexB !== -1) {
+                        return indexA - indexB;
+                    } else if (indexA !== -1) {
+                        return -1;
+                    } else if (indexB !== -1) {
+                        return 1;
+                    } else {
+                        // Cả hai đều cũ: Sắp xếp theo ID tài liệu (ngẫu nhiên)
+                        return a.id.localeCompare(b.id);
+                    }
+                });
+
+                // 2. XÁO TRỘN CÂU HỎI (Nếu không phải Tiếng Việt/English)
+                const testNameLower = selectedTestName.toLowerCase();
+                const shouldShuffleQuestions = !testNameLower.includes("tiếng việt") && !testNameLower.includes("english");
+                
+                if (shouldShuffleQuestions) {
+                    shuffleArray(loadedQuestions); // Áp dụng xáo trộn câu hỏi
+                    console.log("Đề thi đã được xáo trộn câu hỏi.");
+                } else {
+                    console.log("Đề thi không xáo trộn câu hỏi (Tiếng Việt/English).");
+                }
+
+
+                testForm.innerHTML = ''; 
                 
                 let questionIndex = 0;
                 loadedQuestions.forEach(q => {
                     
+                    // *** THỰC HIỆN XÁO TRỘN LỰA CHỌN (LUÔN LUÔN XÁO TRỘN) ***
+                    let originalOptions = [...q.options];
+                    
+                    // Tạo mảng chỉ số [0, 1, 2, 3] và xáo trộn nó
+                    let optionIndices = [0, 1, 2, 3];
+                    shuffleArray(optionIndices);
+                    
+                    // Xây dựng lại mảng options và lưu trữ ánh xạ đáp án
+                    let shuffledOptions = optionIndices.map(i => originalOptions[i]);
+
+                    // Lưu trữ lại mảng options đã xáo trộn cho bài nộp
+                    q.shuffledOptions = shuffledOptions; 
+                    
+                    
+                    // 3. TẠO HTML CÂU HỎI
                     let questionDiv = document.createElement('div');
                     questionDiv.className = 'question';
                     questionDiv.id = `question${questionIndex}`; 
                     
-                    // *** THÊM MỚI: Hiển thị Đoạn văn (Chữ) nếu có ***
+                    // Hiển thị Đoạn văn/Ảnh (giữ nguyên)
                     if (q.comprehensionText) {
                         const textPassage = document.createElement('div');
                         textPassage.className = 'comprehension-text';
-                        textPassage.innerText = q.comprehensionText; // Dùng innerText để giữ xuống dòng
+                        textPassage.innerText = q.comprehensionText;
                         questionDiv.appendChild(textPassage);
                     } 
-                    // Thêm hình ảnh nếu có (VÀ không có đoạn văn chữ)
                     else if (q.imageUrl) {
                         const image = document.createElement('img');
-                        image.src = q.imageUrl; // Đây có thể là Base64 hoặc URL
+                        image.src = q.imageUrl;
                         image.className = 'question-image';
                         questionDiv.appendChild(image);
                     }
@@ -589,23 +646,27 @@
                     
                     let optionsDiv = document.createElement('div');
                     optionsDiv.className = 'options';
-                    q.options.forEach(option => {
+                    
+                    // Sử dụng MẢNG ĐÃ XÁO TRỘN để tạo radio button
+                    shuffledOptions.forEach(option => { 
                         let label = document.createElement('label');
                         let input = document.createElement('input');
                         input.type = 'radio';
                         input.name = `question${questionIndex}`;
-                        input.value = option;
+                        input.value = option; // Giá trị là nội dung lựa chọn
                         label.appendChild(input);
                         label.append(` ${option}`);
                         optionsDiv.appendChild(label);
                     });
+                    
                     questionDiv.appendChild(optionsDiv);
                     testForm.appendChild(questionDiv);
                     questionIndex++;
                 });
 
+                // CẬP NHẬT BIẾN TOÀN CỤC SAU KHI XÁO TRỘN
                 fullQuestionObjects = loadedQuestions; 
-                correctAnswers = loadedQuestions.map(q => q.answer); 
+                correctAnswers = loadedQuestions.map(q => q.answer); // Đáp án gốc vẫn giữ nguyên
 
                 loadingDiv.style.display = 'none';
                 quizControls.style.display = 'block';
@@ -620,6 +681,9 @@
 
                 // *** KÍCH HOẠT KIỂM TRA NÂNG CAO SAU KHI TẢI ***
                 startAdvancedFocusCheck();
+                
+                // *** LOẠI BỎ CÁC LISTENER ĐƯỢC GÁN TRONG PHIÊN TRƯỚC VÀ GÁN LẠI TẠI PHẠM VI TOÀN CỤC ***
+                // Chức năng nút điều hướng đã được gỡ bỏ khỏi đây và chuyển xuống phạm vi toàn cục.
 
             } catch (error) {
                 console.error("Lỗi khi tải câu hỏi: ", error);
@@ -628,17 +692,14 @@
             }
         }
         
-        // --- XỬ LÝ NÚT ĐIỀU HƯỚNG ---
-        prevBtn.addEventListener('click', () => {
-            showQuestion(currentQuestionIndex - 1);
-        });
-        nextBtn.addEventListener('click', () => {
-            // *** Đảm bảo logic +1 là chính xác ***
-            showQuestion(currentQuestionIndex + 1);
-        });
+        // --- HÀM CHỐNG GIAN LẬN (Math.seedrandom cần thiết cho Xáo trộn lựa chọn) ---
+        // Đã xóa định nghĩa seedrandom nội bộ và thay bằng tải từ CDN
+        
+        // Khởi tạo Math.random ban đầu bằng Math.seedrandom với Math.random() để đảm bảo
+        // việc gọi Math.random() trong hàm shuffleArray vẫn dùng phương pháp ngẫu nhiên được seed
+        Math.seedrandom(Math.random());
 
-
-        // --- Hàm Đếm ngược (Không đổi) ---
+        // --- HÀM ĐẾM NGƯỢC (Không đổi) ---
         function startTimer(durationInSeconds) {
             globalTimeLeft = durationInSeconds;
             const timerElement = document.getElementById('timer');
@@ -819,6 +880,10 @@
             // --- Chấm điểm (đồng bộ) ---
             let score = 0;
             const userAnswers = userSelections; 
+            
+            // Lấy đáp án gốc để chấm điểm
+            correctAnswers = fullQuestionObjects.map(q => q.answer); 
+
             correctAnswers.forEach((answer, index) => {
                 const userAnswer = userAnswers[index];
                 if (userAnswer === answer) {
@@ -826,7 +891,7 @@
                 }
             });
             const totalQuestions = correctAnswers.length;
-            const finalScore = (score / totalQuestions) * 10;
+            const finalScore = (totalQuestions > 0) ? (score / totalQuestions) * 10 : 0;
             
             // --- Tạo đối tượng lưu trữ (đồng bộ) ---
             const submissionData = {
@@ -841,8 +906,8 @@
                 nopTuDong: isAutoSubmit, 
                 lyDoNopTuDong: autoSubmitReason,
                 answeredCount: globalAnsweredCount,
-                userAnswers: userAnswers,         
-                quizData: fullQuestionObjects     
+                userAnswers: userSelections,         
+                quizData: fullQuestionObjects     // Lưu trữ câu hỏi đã xáo trộn để hiển thị kết quả đúng
             };
 
             // --- Lưu vào localStorage (đồng bộ) ---
@@ -886,6 +951,9 @@
             let score = 0;
             const userAnswers = userSelections; 
 
+            // Lấy đáp án gốc để chấm điểm
+            correctAnswers = fullQuestionObjects.map(q => q.answer); 
+
             correctAnswers.forEach((answer, index) => {
                 const userAnswer = userAnswers[index];
                 if (userAnswer === answer) {
@@ -894,7 +962,7 @@
             });
             
             const totalQuestions = correctAnswers.length;
-            const finalScore = (score / totalQuestions) * 10;
+            const finalScore = (totalQuestions > 0) ? (score / totalQuestions) * 10 : 0;
             
             // Lưu vào localStorage (cho trang results)
             localStorage.setItem('score', finalScore.toFixed(2));
@@ -921,8 +989,8 @@
                         nopTuDong: isAutoSubmit, 
                         lyDoNopTuDong: autoSubmitReason,
                         answeredCount: globalAnsweredCount, 
-                        userAnswers: userAnswers,         
-                        quizData: fullQuestionObjects     
+                        userAnswers: userSelections,         
+                        quizData: fullQuestionObjects     // Lưu trữ câu hỏi đã xáo trộn cho từng HS
                     });
 
                     // Lưu ID bài nộp để trang results.html tải về 
@@ -936,6 +1004,15 @@
             // Chuyển sang trang kết quả
             window.location.replace('results.html'); // Dùng replace để thay thế lịch sử
         }
+
+        // *** GÁN LISTENER CHO NÚT ĐIỀU HƯỚNG TẠI PHẠM VI TOÀN CỤC ***
+        // Điều này đảm bảo các nút luôn hoạt động ngay cả khi việc tải dữ liệu mất thời gian.
+        prevBtn.addEventListener('click', () => {
+            showQuestion(currentQuestionIndex - 1);
+        });
+        nextBtn.addEventListener('click', () => {
+            showQuestion(currentQuestionIndex + 1);
+        });
 
         // --- KHỞI ĐỘNG ---
         // *** Đảm bảo kiểm tra bài nộp chờ luôn nằm ở đầu script ***
