@@ -516,9 +516,9 @@ HS003,Lê Văn C,10A1</code></pre>
             <div class="card avatar-upload-section">
                 <h3>Đổi Ảnh Đại Diện Cá Nhân</h3>
                 <img id="current-admin-avatar" src="" alt="Avatar hiện tại">
-                <p style="font-size: 0.9em; color: #555;">Ảnh này sẽ đồng bộ trên các thiết bị.</p>
+                <p style="font-size: 0.9em; color: #555;">Ảnh này sẽ chỉ hiển thị cho riêng bạn.</p>
                 <label for="admin-avatar-input" class="upload-label-admin">
-                    Tải Ảnh Mới
+                    Tải Ảnh Mới (Max 1MB)
                 </label>
                 <input type="file" id="admin-avatar-input" accept="image/*">
                 <div id="avatar-upload-status"></div>
@@ -571,7 +571,8 @@ HS003,Lê Văn C,10A1</code></pre>
           appId: "1:181113887829:web:49535ee20d85b7395948dc"
         };
         
-        const ADMIN_CONFIG_DOC = 'admin_avatar'; 
+        // *** THAY ĐỔI: Không dùng hằng số chung nữa ***
+        // const ADMIN_CONFIG_DOC = 'admin_avatar'; 
         const MAX_IMAGE_SIZE_KB = 500; 
 
         // --- 1. KHỞI TẠO VÀ XỬ LÝ ĐĂNG NHẬP ---
@@ -617,22 +618,29 @@ HS003,Lê Văn C,10A1</code></pre>
             auth.signOut();
         });
 
+        // *** THÊM: Hàm update UI (bị thiếu ở bản vá trước) ***
+        function updateAllAvatars(url) {
+            document.getElementById('admin-avatar').src = url;
+            const largeAvatar = document.getElementById('current-admin-avatar');
+            if (largeAvatar) largeAvatar.src = url;
+        }
+
         function getDefaultAvatarUrl(email) {
             if (!email) return "https://placehold.co/40x40/007bff/ffffff?text=AD";
             const initial = email.charAt(0).toUpperCase();
             return `https://placehold.co/40x40/007bff/ffffff?text=${initial}`;
         }
         
-        function updateAllAvatars(url) {
-            document.getElementById('admin-avatar').src = url;
-            const largeAvatar = document.getElementById('current-admin-avatar');
-            if (largeAvatar) largeAvatar.src = url;
-        }
-        
-        async function loadAvatarFromFirestore(email) {
+        // *** THAY ĐỔI: Tải avatar cá nhân bằng uid ***
+        async function loadAvatarFromFirestore(uid, email) {
             const defaultAvatar = getDefaultAvatarUrl(email);
+            if (!uid) {
+                updateAllAvatars(defaultAvatar);
+                return;
+            }
             try {
-                const docRef = db.collection('adminconfig').doc(ADMIN_CONFIG_DOC);
+                // Đọc từ doc cá nhân: adminconfig/{uid}
+                const docRef = db.collection('adminconfig').doc(uid);
                 const doc = await docRef.get();
                 
                 if (doc.exists && doc.data().avatarUrl) {
@@ -645,15 +653,16 @@ HS003,Lê Văn C,10A1</code></pre>
                 updateAllAvatars(defaultAvatar);
             }
         }
-
-        function setupAvatarUpload() {
+        
+        // *** THAY ĐỔI: Lưu avatar cá nhân bằng uid ***
+        function setupAvatarUpload(uid) {
             const avatarInput = document.getElementById('admin-avatar-input');
             const statusDiv = document.getElementById('avatar-upload-status');
 
             avatarInput.addEventListener('change', async function() {
                 const file = this.files[0];
                 if (file) {
-                    if (file.size > 1024 * 1024 * 1) { 
+                    if (file.size > 1024 * 1024 * 1) { // Vẫn giới hạn 1MB
                         statusDiv.innerText = 'Lỗi: Kích thước ảnh quá lớn (tối đa 1MB).';
                         statusDiv.style.color = '#dc3545';
                         this.value = ''; 
@@ -668,8 +677,11 @@ HS003,Lê Văn C,10A1</code></pre>
                         const reader = new FileReader();
                         reader.onload = async function(e) {
                             const newAvatarUrl = e.target.result; // Base64
-                            const docRef = db.collection('adminconfig').doc(ADMIN_CONFIG_DOC);
+                            
+                            // Lưu vào doc cá nhân: adminconfig/{uid}
+                            const docRef = db.collection('adminconfig').doc(uid); 
                             await docRef.set({ avatarUrl: newAvatarUrl }, { merge: true }); 
+                            
                             updateAllAvatars(newAvatarUrl);
                             
                             statusDiv.style.color = '#28a745';
@@ -702,10 +714,13 @@ HS003,Lê Văn C,10A1</code></pre>
                 managementContainer.style.display = 'block'; 
                 document.getElementById('admin-name').innerText = user.email;
                 
-                loadAvatarFromFirestore(user.email); 
+                // *** THAY ĐỔI: Truyền cả uid và email ***
+                loadAvatarFromFirestore(user.uid, user.email); 
                 
                 initializeAdminApp(); 
-                setupAvatarUpload(); 
+                
+                // *** THAY ĐỔI: Truyền uid ***
+                setupAvatarUpload(user.uid); 
             } else {
                 currentUser = null;
                 loginContainer.style.display = 'grid';
