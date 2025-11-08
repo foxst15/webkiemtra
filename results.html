@@ -38,6 +38,19 @@
             border-top: 1px dashed #ccc; 
             padding-top: 15px; 
         }
+        /* *** MỚI: CSS Thông báo số câu đã chọn *** */
+        #answered-count-details {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #ffc107; /* Màu vàng */
+            background-color: #fff3cd;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ffeeba;
+            margin-top: 15px;
+        }
+
+
         .nav-link { 
             display: inline-block; 
             margin-top: 20px; 
@@ -82,6 +95,16 @@
             border: 1px solid #f5c6cb;
             text-decoration: line-through;
         }
+        /* *** MỚI: CSS cho câu bỏ trống *** */
+        .review-option.unanswered {
+            background-color: #f8f9fa; /* Màu xám nhạt */
+            border: 1px solid #dee2e6;
+            color: #6c757d;
+            font-style: italic;
+            margin-top: 10px;
+            text-decoration: none; /* Đảm bảo không bị gạch ngang */
+        }
+
 
         @media (max-width: 600px) {
             .result-container {
@@ -105,6 +128,9 @@
         
         <div id="score">...</div>
         <div id="details">...</div>
+        
+        <!-- *** MỚI: Khu vực hiển thị số câu đã chọn (nếu nộp tự động) *** -->
+        <div id="answered-count-details" style="display: none;"></div>
 
         <div class="student-info">
             <h3>Thông tin thí sinh</h3>
@@ -128,7 +154,7 @@
           apiKey: "AIzaSyDmRq3djRZHElhC2T_EYsU7v5vrzwRyybY",
           authDomain: "webkiemtra-66cdc.firebaseapp.com",
           projectId: "webkiemtra-66cdc",
-          storageBucket: "webkiemtra-66cdc.firebasestorage.app",
+          storageBucket: "webkiemtra-66cdc.appspot.com",
           messagingSenderId: "181113887829",
           appId: "1:181113887829:web:49535ee20d85b7395948dc"
         };
@@ -140,10 +166,8 @@
         } catch (e) { console.error("Lỗi cấu hình Firebase!"); }
 
         // *** NEW: Chặn nút quay lại của trình duyệt ***
-        // Ghi đè lịch sử duyệt web để nút back không còn dẫn về trang test.html
         history.pushState(null, null, location.href);
         window.onpopstate = function() {
-            // Khi người dùng bấm nút back, chuyển hướng thẳng về trang chủ
             window.location.replace('home.html'); 
         };
 
@@ -155,10 +179,8 @@
         const totalQuestions = localStorage.getItem('totalQuestions');
         const correctCount = localStorage.getItem('correctCount');
         
-        // *** MỚI: Lấy ID bài nộp ***
         const lastSubmissionId = localStorage.getItem('lastSubmissionId');
 
-        // *** ĐÃ SỬA: Chuyển hướng về index.html ***
         if (!studentName || !score) {
             window.location.href = 'index.html';
         }
@@ -174,10 +196,11 @@
 
         document.getElementById('details').innerText = `Bạn đã trả lời đúng ${correctCount} / ${totalQuestions} câu.`;
 
-        // --- *** MỚI: Tải chi tiết bài làm từ Firebase *** ---
+        // --- *** MỚI: Tải chi tiết bài làm từ Firebase (ĐÃ CẬP NHẬT) *** ---
         async function loadReview() {
             const loadingDiv = document.getElementById('review-loading');
             const contentDiv = document.getElementById('review-content');
+            const answeredCountDiv = document.getElementById('answered-count-details');
 
             if (!lastSubmissionId || !db) {
                 loadingDiv.innerText = "Không tìm thấy chi tiết bài làm.";
@@ -200,6 +223,12 @@
                     return;
                 }
 
+                // *** MỚI: Hiển thị số câu đã chọn (nếu nộp tự động) ***
+                if (data.nopTuDong && data.answeredCount !== undefined) {
+                    answeredCountDiv.innerText = `Lý do nộp: ${data.lyDoNopTuDong}. Bạn đã chọn ${data.answeredCount} / ${data.tongSoCau} câu.`;
+                    answeredCountDiv.style.display = 'block';
+                }
+
                 // Bắt đầu hiển thị
                 loadingDiv.style.display = 'none';
                 contentDiv.innerHTML = ''; // Xóa
@@ -208,11 +237,23 @@
                     const questionDiv = document.createElement('div');
                     questionDiv.className = 'review-question';
                     
+                    // Thêm hình ảnh nếu có
+                    if (q.imageUrl) {
+                        const image = document.createElement('img');
+                        image.src = q.imageUrl;
+                        image.style.maxWidth = '100%';
+                        image.style.maxHeight = '300px';
+                        image.style.marginBottom = '10px';
+                        image.style.borderRadius = '8px';
+                        image.style.border = '1px solid #ddd';
+                        questionDiv.appendChild(image);
+                    }
+                    
                     const promptP = document.createElement('p');
                     promptP.innerText = `${index + 1}. ${q.prompt}`;
                     questionDiv.appendChild(promptP);
 
-                    const userAnswer = userAnswers[index];
+                    const userAnswer = userAnswers[index]; // Có thể là null
                     const correctAnswer = q.answer;
 
                     q.options.forEach(option => {
@@ -221,14 +262,21 @@
                         optionSpan.innerText = option;
 
                         if (option === correctAnswer) {
-                            // Đây là đáp án đúng
                             optionSpan.classList.add('correct');
-                        } else if (option === userAnswer) {
-                            // Đây là đáp án sai mà HS đã chọn
+                        } else if (option === userAnswer) { // userAnswer không null và sai
                             optionSpan.classList.add('wrong');
                         }
+                        
                         questionDiv.appendChild(optionSpan);
                     });
+
+                    // *** MỚI: Hiển thị thông báo nếu câu này bị bỏ trống ***
+                    if (userAnswer === null) {
+                        const unansweredSpan = document.createElement('span');
+                        unansweredSpan.className = 'review-option unanswered';
+                        unansweredSpan.innerText = "Học sinh đã bỏ trống câu này.";
+                        questionDiv.appendChild(unansweredSpan);
+                    }
 
                     contentDiv.appendChild(questionDiv);
                 });

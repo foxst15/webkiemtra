@@ -6,7 +6,7 @@
     <title>Trang Quản Trị</title>
     <style>
         body { 
-            font-family: -apple-system, BlinkMacMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
             background-color: #f0f2f5; 
             margin: 20px; 
         }
@@ -25,14 +25,16 @@
         #management-container { display: none; max-width: 1600px; margin: auto; } 
         .card { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         h2 { margin-top: 0; }
-        input[type="text"], input[type="number"], input[type="email"], input[type="password"], input[type="datetime-local"] { 
+        /* Cập nhật: Thêm input[type="search"] */
+        input[type="text"], input[type="number"], input[type="email"], input[type="password"], input[type="datetime-local"], textarea, input[type="search"] { 
             width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; 
             border-radius: 8px; box-sizing: border-box; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
         button { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.2s; }
         button:hover { background-color: #0056b3; }
         
-        /* HEADER ADMIN (CẬP NHẬT CHO AVATAR) */
+        /* HEADER ADMIN */
         #admin-header { 
             display: flex; justify-content: space-between; align-items: center; 
             padding: 10px 20px; background-color: #fff; border-radius: 12px; 
@@ -53,14 +55,16 @@
         #admin-info { font-weight: 600; font-size: 1.1em; }
         #logout-btn { background-color: #dc3545; }
         
+        /* TABS */
         #admin-nav { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #ccc; flex-wrap: wrap; }
         #admin-nav button { background-color: transparent; color: #555; padding: 10px 20px; border: none; border-bottom: 4px solid transparent; font-size: 1.1em; font-weight: 600; }
         #admin-nav button.active { color: #007bff; border-bottom-color: #007bff; }
+        
+        /* Tab 1: Đề Thi */
         #test-manager-view { display: none; grid-template-columns: 350px 1fr; gap: 20px; }
         button.add-btn { background-color: #28a745; }
         button.delete-btn { background-color: #dc3545; font-size: 0.8em; padding: 5px 10px; }
         button.detail-btn { background-color: #17a2b8; font-size: 0.8em; padding: 5px 10px; } 
-        /* CSS cho nút xóa bài làm */
         .action-btn-delete { background-color: #dc3545; color: white; padding: 5px 10px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8em; margin-left: 5px;}
         .action-btn-delete:hover { background-color: #c82333; }
         
@@ -78,19 +82,8 @@
         .question-prompt { font-weight: 600; }
         .question-answer { font-style: italic; color: #28a745; }
 
+        /* Tab 2: Kết Quả */
         #results-view { display: none; }
-        
-        /* CẬP NHẬT GRID CHO QUẢN LÝ TÀI KHOẢN */
-        #account-manager-view { display: none; grid-template-columns: 1fr 1fr; gap: 20px; } 
-        .student-list-item { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 10px; 
-            border-bottom: 1px solid #eee; 
-        }
-        .student-list-item:hover { background-color: #f8f9fa; }
-
         #results-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         #results-table th, #results-table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
         #results-table th { background-color: #f8f9fa; }
@@ -102,13 +95,68 @@
         .reason-time { color: #ffc107; font-weight: bold; }
         .reason-manual { color: #28a745; }
 
-        /* (CSS cho Thêm hàng loạt, Toggle giữ nguyên) */
         .toggle-buttons { display: flex; gap: 10px; margin-bottom: 15px; }
         .toggle-buttons button { flex: 1; background-color: #eee; color: #333; border: 1px solid #ccc; }
         .toggle-buttons button.active { background-color: #007bff; color: white; border-color: #007bff; }
         pre { background-color: #f8f9fa; border: 1px solid #eee; padding: 10px; border-radius: 8px; white-space: pre-wrap; word-wrap: break-word; font-family: monospace; }
 
-        /* CSS cho MODAL xem chi tiết/sửa */
+        /* Tab 3: Học Sinh */
+        #student-manager-view { display: none; grid-template-columns: 350px 1fr; gap: 20px; }
+        
+        #student-list {
+            max-height: 600px; 
+            overflow-y: auto;  
+            border: 1px solid #eee;
+            padding: 5px;
+            border-radius: 8px;
+        }
+        
+        .student-list-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 10px; 
+            border-bottom: 1px solid #eee; 
+        }
+        .student-list-item:hover { background-color: #f8f9fa; }
+        
+        .student-item-info {
+            display: flex;
+            flex-direction: column; 
+            gap: 5px;
+        }
+        .student-name-class {
+            display: flex;
+            align-items: baseline; 
+            gap: 8px;
+            flex-wrap: wrap; 
+        }
+        .student-name-class .student-name {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #000;
+        }
+        .student-item-info .lopHS {
+            font-size: 1em; 
+            font-weight: 600; 
+            color: #007bff; 
+            font-style: normal; 
+        }
+        .student-item-info .maHS {
+            font-size: 1.2em; 
+            font-weight: 700; 
+            color: #dc3545; 
+        }
+        /* MỚI: CSS cho nút sửa/xóa HS */
+        .student-item-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        /* Tab 4: Tài Khoản Admin */
+        #account-manager-view { display: none; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+        /* CSS cho MODAL */
         #modal-backdrop {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.5); z-index: 2000;
@@ -118,7 +166,7 @@
             position: fixed; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             width: 90%; max-width: 800px;
-            max-height: 90vh; overflow-y: auto; /* Dùng max-height thay vì height */
+            max-height: 90vh; overflow-y: auto; 
             background: #fff; padding: 25px; border-radius: 12px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
@@ -127,13 +175,29 @@
             font-size: 2em; font-weight: bold;
             cursor: pointer; border: none; background: none;
         }
+        
         /* CSS cho review */
         .review-question { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
         .review-question p { font-weight: bold; }
         .review-option { display: block; padding: 8px; border-radius: 5px; margin: 5px 0; }
         .review-option.correct { background-color: #d4edda; border: 1px solid #c3e6cb; font-weight: bold; }
         .review-option.wrong { background-color: #f8d7da; border: 1px solid #f5c6cb; text-decoration: line-through; }
-        
+        .review-option.unanswered {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            color: #6c757d;
+            font-style: italic;
+            font-weight: bold;
+        }
+        .auto-submit-info-admin {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
         /* CSS cho khu vực đổi ảnh đại diện */
         .avatar-upload-section {
             margin-bottom: 20px;
@@ -163,11 +227,12 @@
         .upload-label-admin:hover { background-color: #218838; }
         #admin-avatar-input { display: none; }
         #avatar-upload-status { font-size: 0.8em; color: #28a745; margin-top: 5px; }
-        
+
         /* Tương thích điện thoại */
         @media (max-width: 900px) {
             #test-manager-view { grid-template-columns: 1fr; }
             .options-grid { grid-template-columns: 1fr; }
+            #student-manager-view { grid-template-columns: 1fr; }
             #account-manager-view { grid-template-columns: 1fr; }
             #admin-profile {
                 flex-direction: column;
@@ -209,6 +274,7 @@
         
         <div id="admin-nav">
             <button id="nav-tests" class="active">Quản lý Đề Thi</button>
+            <button id="nav-students">Quản lý Học Sinh (Mã HS)</button>
             <button id="nav-results">Xem Kết Quả</button>
             <button id="nav-account">Quản lý Tài Khoản</button>
         </div>
@@ -218,7 +284,12 @@
             <!-- CỘT 1 -->
             <div class="card">
                 <h2>Quản lý Đề Thi</h2>
-                <form id="createTestForm" style="margin-bottom: 20px;">
+                
+                <!-- MỚI: BỘ LỌC ĐỀ THI -->
+                <label for="test-search-input" style="font-weight: 600;">Lọc Đề Thi:</label>
+                <input type="search" id="test-search-input" placeholder="Lọc theo Tên đề, Người tạo..." style="margin-bottom: 20px;">
+                
+                <form id="createTestForm" style="margin-bottom: 20px; border-top: 1px solid #eee; padding-top: 20px;">
                     <label>Tên đề thi mới:</label>
                     <input type="text" id="testName" placeholder="Ví dụ: Kiểm tra 15p Toán 10" required>
                     
@@ -247,7 +318,6 @@
                  <form id="addQuestionForm" style="display: block;">
                     <h3>Thêm câu hỏi mới</h3>
                     
-                    <!-- CHỌN ẢNH VÀ URL ẢNH -->
                     <label>Tải Hình ảnh từ Tệp (Tùy chọn, Max 500KB):</label>
                     <input type="file" id="questionImageFile" accept="image/*">
                     <div id="image-upload-status" style="font-size: 0.9em; margin-bottom: 10px;"></div>
@@ -287,13 +357,71 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                 </div>
             </div>
         </div>
+        
+        <!-- Tab 2: Quản lý Học Sinh (Mã HS) -->
+        <div id="student-manager-view">
+            <!-- CỘT 1: TẠO MÃ HS MỚI -->
+            <div class="card">
+                <h2>Quản lý Mã Học Sinh</h2>
+                 <div class="toggle-buttons">
+                    <button id="toggle-add-student-single" class="active">Thêm từng HS</button>
+                    <button id="toggle-add-student-bulk">Thêm hàng loạt</button>
+                 </div>
 
-        <!-- Tab 2: Xem Kết Quả -->
+                <!-- Form thêm từng HS -->
+                <div id="addStudentFormContainer" style="display: block;">
+                    <form id="createStudentForm" style="margin-bottom: 20px; margin-top: 15px;">
+                        <label>Mã Học Sinh (Dùng để đăng nhập):</label>
+                        <input type="text" id="studentCode" placeholder="Ví dụ: HS10A3001 (Viết liền, không dấu)" required>
+                        
+                        <label>Họ và Tên Học Sinh:</label>
+                        <input type="text" id="studentFullName" placeholder="Ví dụ: Nguyễn Văn A" required>
+                        
+                        <label>Lớp:</label>
+                        <input type="text" id="studentClass" placeholder="Ví dụ: 10A3" required>
+                        
+                        <button type="submit" class="add-btn" style="width: 100%;">Tạo Mã Mới</button>
+                    </form>
+                    <p id="create-student-msg" style="display: none;"></p>
+                </div>
+                
+                <!-- Form thêm hàng loạt HS -->
+                <form id="addBulkStudentForm" style="display: none; margin-top: 15px;">
+                    <p>Dán danh sách vào đây. Mỗi học sinh một dòng theo định dạng:</p>
+                    <pre><code>MãHS,TênHọcSinh,Lớp</code></pre>
+                    <p><strong>Ví dụ:</strong></p>
+                    <pre><code>HS001,Nguyễn Văn A,10A1
+HS002,Trần Thị B,10A2
+HS003,Lê Văn C,10A1</code></pre>
+                    <textarea id="bulkStudentsText" rows="15" style="width: 100%; font-family: monospace;"></textarea>
+                    <button type="submit" class="add-btn" style="width: 100%;">Thêm Hàng Loạt</button>
+                </form>
+
+            </div>
+            <!-- CỘT 2: DANH SÁCH MÃ HS ĐÃ TẠO -->
+            <div class="card" id="student-list-manager">
+                 <h2>Danh sách Học Sinh</h2>
+                 
+                 <!-- MỚI: BỘ LỌC HỌC SINH -->
+                 <label for="student-search-input" style="font-weight: 600;">Lọc Học Sinh:</label>
+                 <input type="search" id="student-search-input" placeholder="Lọc theo Tên, Lớp..." style="margin-bottom: 15px;">
+
+                 <p id="student-list-loading">Đang tải danh sách...</p>
+                 <div id="student-list">
+                 </div>
+            </div>
+        </div>
+
+
+        <!-- Tab 3: Xem Kết Quả -->
         <div id="results-view" class="card">
             <h2>Danh sách Kết Quả</h2>
             
-            <!-- BATCH ACTION BAR -->
-            <div id="batch-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <!-- MỚI: BỘ LỌC KẾT QUẢ -->
+            <label for="results-search-input" style="font-weight: 600;">Lọc Kết Quả:</label>
+            <input type="search" id="results-search-input" placeholder="Lọc theo Tên HS, Lớp, Tên đề thi..." style="margin-bottom: 15px;">
+            
+            <div id="batch-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-top: 1px solid #eee; padding-top: 15px;">
                 <p>Tổng số bài nộp: <strong id="results-count">0</strong></p>
                 <button id="delete-selected-btn" class="action-btn-delete" style="display: none;">Xóa Bài Đã Chọn (<span id="selected-count">0</span>)</button>
             </div>
@@ -302,7 +430,7 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                 <table id="results-table">
                     <thead>
                         <tr>
-                            <th><input type="checkbox" id="select-all-checkbox"></th> <!-- CHECKBOX SELECT ALL -->
+                            <th><input type="checkbox" id="select-all-checkbox"></th>
                             <th>Họ Tên</th>
                             <th>Lớp</th>
                             <th>Tên Đề Thi</th>
@@ -318,14 +446,13 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
             </div>
         </div>
 
-        <!-- Tab 3: Quản lý Tài Khoản -->
-        <div id="account-manager-view" class="card">
-            
-            <!-- KHU VỰC ĐỔI AVATAR -->
-            <div class="avatar-upload-section">
+        <!-- Tab 4: Quản lý Tài Khoản Admin -->
+        <div id="account-manager-view">
+            <!-- CỘT 1: ĐỔI AVATAR -->
+            <div class="card avatar-upload-section">
                 <h3>Đổi Ảnh Đại Diện Cá Nhân</h3>
                 <img id="current-admin-avatar" src="" alt="Avatar hiện tại">
-                <p style="font-size: 0.9em; color: #555;">Ảnh này chỉ hiển thị cho bạn.</p>
+                <p style="font-size: 0.9em; color: #555;">Ảnh này sẽ đồng bộ trên các thiết bị.</p>
                 <label for="admin-avatar-input" class="upload-label-admin">
                     Tải Ảnh Mới
                 </label>
@@ -333,28 +460,8 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                 <div id="avatar-upload-status"></div>
             </div>
             
-             <!-- CỘT 1 (QUẢN LÝ MÃ HỌC SINH) -->
-            <div>
-                <h2>Quản lý Mã Học Sinh</h2>
-                <form id="createStudentForm">
-                    <label>Mã HS (ID đăng nhập):</label>
-                    <input type="text" id="studentCodeId" placeholder="Ví dụ: L10A3_001" required>
-                    <label>Họ và Tên Học Sinh:</label>
-                    <input type="text" id="studentNameNew" placeholder="Ví dụ: Nguyễn Văn A" required>
-                    <label>Lớp Học:</label>
-                    <input type="text" id="studentClassNew" placeholder="Ví dụ: 10A3" required>
-                    <button type="submit" class="add-btn">Tạo Mã HS</button>
-                </form>
-                <p id="create-student-msg" style="display: none;"></p>
-                
-                <h3 style="margin-top: 20px;">Danh sách Mã HS</h3>
-                <div id="student-list">
-                    <p>Đang tải danh sách học sinh...</p>
-                </div>
-            </div>
-            
-            <!-- CỘT 2 (TẠO ADMIN MỚI & ĐỔI MẬT KHẨU) -->
-            <div>
+             <!-- CỘT 2: TẠO ADMIN & ĐỔI MẬT KHẨU -->
+            <div class="card">
                 <h2>Tạo Admin Mới</h2>
                 <form id="createAdminForm">
                     <label>Email Admin Mới:</label>
@@ -365,7 +472,9 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                 </form>
                 <p id="create-admin-msg" style="display: none;"></p>
                 
-                <h2 style="margin-top: 30px;">Đổi Mật khẩu Của Bạn</h2>
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 2rem 0;">
+                
+                <h2>Đổi Mật khẩu Của Bạn</h2>
                 <form id="changePasswordForm">
                     <label>Mật khẩu mới:</label>
                     <input type="password" id="newPass" required>
@@ -378,18 +487,17 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
         </div>
     </div>
 
-    <!-- *** MODAL XEM LẠI BÀI/CHỈNH SỬA ĐỀ THI *** -->
+    <!-- *** MODAL XEM LẠI BÀI/CHỈNH SỬA ĐỀ THI/CHỈNH SỬA HỌC SINH *** -->
     <div id="modal-backdrop">
         <div id="modal-content">
             <button id="modal-close">&times;</button>
-            <h2 id="modal-title">Chi tiết bài làm</h2>
+            <h2 id="modal-title">Chi tiết</h2>
             <div id="modal-body">Đang tải...</div>
         </div>
     </div>
 
 
     <script>
-        // *** ĐÃ DÁN firebaseConfig CỦA BẠN ***
         const firebaseConfig = {
           apiKey: "AIzaSyDmRq3djRZHElhC2T_EYsU7v5vrzwRyybY",
           authDomain: "webkiemtra-66cdc.firebaseapp.com",
@@ -399,8 +507,8 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
           appId: "1:181113887829:web:49535ee20d85b7395948dc"
         };
         
-        const ADMIN_AVATAR_KEY = 'adminAvatar'; // Key lưu avatar của Admin trong localStorage
-        const MAX_IMAGE_SIZE_KB = 500; // Giới hạn kích thước ảnh cho Base64 để tránh vượt quá giới hạn 1MB của Firestore Document
+        const ADMIN_CONFIG_DOC = 'admin_avatar'; 
+        const MAX_IMAGE_SIZE_KB = 500; 
 
         // --- 1. KHỞI TẠO VÀ XỬ LÝ ĐĂNG NHẬP ---
         let db; 
@@ -408,7 +516,12 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
         let selectedTestId = null; 
         let questionListener = null;
         let currentUser = null; 
-        let isEditingQuestionId = null; // Dùng để theo dõi trạng thái Sửa câu hỏi
+        let isEditingQuestionId = null;
+        
+        // --- MỚI: Biến lưu trữ cache cho bộ lọc ---
+        let allTestsCache = [];
+        let allStudentsCache = [];
+        let allResultsCache = [];
         
         try {
             if (!firebase.apps.length) {
@@ -434,15 +547,11 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                 });
         });
         document.getElementById('logout-btn').addEventListener('click', () => {
-            localStorage.removeItem(ADMIN_AVATAR_KEY); // Xóa avatar local khi đăng xuất
             auth.signOut();
         });
 
         // HÀM LẤY AVATAR MẶC ĐỊNH DỰ TRÊN EMAIL
-        function getAdminAvatarUrl(email) {
-            const savedAvatar = localStorage.getItem(ADMIN_AVATAR_KEY);
-            if (savedAvatar) return savedAvatar;
-            
+        function getDefaultAvatarUrl(email) {
             if (!email) return "https://placehold.co/40x40/007bff/ffffff?text=AD";
             const initial = email.charAt(0).toUpperCase();
             return `https://placehold.co/40x40/007bff/ffffff?text=${initial}`;
@@ -454,8 +563,68 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
             const largeAvatar = document.getElementById('current-admin-avatar');
             if (largeAvatar) largeAvatar.src = url;
         }
+        
+        // HÀM TẢI AVATAR TỪ FIRESTORE (ĐỒNG BỘ)
+        async function loadAvatarFromFirestore(email) {
+            const defaultAvatar = getDefaultAvatarUrl(email);
+            try {
+                const docRef = db.collection('adminconfig').doc(ADMIN_CONFIG_DOC);
+                const doc = await docRef.get();
+                
+                if (doc.exists && doc.data().avatarUrl) {
+                    updateAllAvatars(doc.data().avatarUrl);
+                } else {
+                    updateAllAvatars(defaultAvatar);
+                }
+            } catch (error) {
+                console.error("Lỗi tải avatar từ Firestore: ", error);
+                updateAllAvatars(defaultAvatar);
+            }
+        }
 
-        // --- HÀM HỖ TRỢ CHUYỂN FILE SANG BASE64 ---
+        // HÀM XỬ LÝ TẢI AVATAR (Đã đưa ra ngoài)
+        function setupAvatarUpload() {
+            const avatarInput = document.getElementById('admin-avatar-input');
+            const statusDiv = document.getElementById('avatar-upload-status');
+
+            avatarInput.addEventListener('change', async function() {
+                const file = this.files[0];
+                if (file) {
+                    if (file.size > 1024 * 1024 * 1) { 
+                        statusDiv.innerText = 'Lỗi: Kích thước ảnh quá lớn (tối đa 1MB).';
+                        statusDiv.style.color = '#dc3545';
+                        this.value = ''; 
+                        setTimeout(() => statusDiv.innerText = '', 5000);
+                        return;
+                    }
+                    
+                    statusDiv.innerText = 'Đang tải ảnh lên...';
+                    statusDiv.style.color = 'blue';
+
+                    try {
+                        const reader = new FileReader();
+                        reader.onload = async function(e) {
+                            const newAvatarUrl = e.target.result; // Base64
+                            const docRef = db.collection('adminconfig').doc(ADMIN_CONFIG_DOC);
+                            await docRef.set({ avatarUrl: newAvatarUrl }, { merge: true }); 
+                            updateAllAvatars(newAvatarUrl);
+                            
+                            statusDiv.style.color = '#28a745';
+                            statusDiv.innerText = 'Đã cập nhật ảnh đại diện thành công!';
+                            setTimeout(() => statusDiv.innerText = '', 3000);
+                        };
+                        reader.readAsDataURL(file);
+                    } catch (error) {
+                        console.error("Lỗi lưu avatar vào Firestore: ", error);
+                        statusDiv.innerText = 'Lỗi khi lưu ảnh. Vui lòng thử lại.';
+                        statusDiv.style.color = '#dc3545';
+                    }
+                }
+            });
+        }
+
+
+        // --- HÀM HỖ TRỢ CHUYỂN FILE SANG BASE64 (Cho Câu hỏi) ---
         function fileToBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -464,50 +633,6 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                 reader.onerror = error => reject(error);
             });
         }
-        
-        // --- LOGIC ĐỔI AVATAR ADMIN (ĐƯỢC DI CHUYỂN RA NGOÀI) ---
-        function setupAvatarUpload() {
-            const avatarInput = document.getElementById('admin-avatar-input');
-            const statusDiv = document.getElementById('avatar-upload-status');
-            const largeAvatar = document.getElementById('current-admin-avatar');
-
-            // Đồng bộ hóa ảnh lớn
-            // Cần phải có currentUser trước khi gọi hàm này, nhưng hàm onAuthStateChanged đã đảm bảo điều đó.
-            if (currentUser) {
-                largeAvatar.src = getAdminAvatarUrl(currentUser.email);
-            }
-
-
-            avatarInput.addEventListener('change', function() {
-                const file = this.files[0];
-                if (file) {
-                    // Kiểm tra kích thước file (tối đa 1MB)
-                    if (file.size > 1024 * 1024 * 1) { 
-                        statusDiv.innerText = 'Lỗi: Kích thước ảnh quá lớn (tối đa 1MB).';
-                        statusDiv.style.color = '#dc3545';
-                        this.value = ''; 
-                        setTimeout(() => statusDiv.innerText = '', 5000);
-                        return;
-                    }
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const newAvatarUrl = e.target.result;
-                        // 1. Lưu ảnh Base64 vào localStorage
-                        localStorage.setItem(ADMIN_AVATAR_KEY, newAvatarUrl);
-                        
-                        // 2. Cập nhật giao diện (cả header và tab)
-                        updateAllAvatars(newAvatarUrl);
-                        
-                        statusDiv.style.color = '#28a745';
-                        statusDiv.innerText = 'Đã cập nhật ảnh đại diện thành công!';
-                        setTimeout(() => statusDiv.innerText = '', 3000);
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-        }
-        // --- KẾT THÚC LOGIC ĐỔI AVATAR ADMIN ---
-
 
         auth.onAuthStateChanged(user => {
             if (user) {
@@ -516,10 +641,10 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                 managementContainer.style.display = 'block'; 
                 document.getElementById('admin-name').innerText = user.email;
                 
-                updateAllAvatars(getAdminAvatarUrl(user.email));
+                loadAvatarFromFirestore(user.email); 
                 
                 initializeAdminApp(); 
-                setupAvatarUpload(); // KHẮC PHỤC LỖI: Hàm này đã được di chuyển ra ngoài và gọi tại đây
+                setupAvatarUpload(); 
             } else {
                 currentUser = null;
                 loginContainer.style.display = 'grid';
@@ -530,55 +655,22 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
 
         // --- 2. KHU VỰC LOGIC QUẢN LÝ ---
         
-        // BIẾN TOÀN CỤC CHO XÓA HÀNG LOẠAT
         let selectedSubmissionIds = new Set();
-        const selectAllCheckbox = document.getElementById('select-all-checkbox');
-        const deleteSelectedBtn = document.getElementById('delete-selected-btn');
-        const selectedCountSpan = document.getElementById('selected-count');
+        // *** SỬA LỖI: Di chuyển khai báo const lên đầu hàm ***
         
         function initializeAdminApp() {
-            // (Xử lý Tabs không đổi)
+            
+            // --- KHAI BÁO BIẾN DOM (ĐÃ DI CHUYỂN LÊN ĐẦU) ---
             const navTests = document.getElementById('nav-tests');
+            const navStudents = document.getElementById('nav-students');
             const navResults = document.getElementById('nav-results');
             const navAccount = document.getElementById('nav-account'); 
+            
             const testManagerView = document.getElementById('test-manager-view');
+            const studentManagerView = document.getElementById('student-manager-view');
             const resultsView = document.getElementById('results-view');
             const accountManagerView = document.getElementById('account-manager-view'); 
-            const studentListDiv = document.getElementById('student-list'); // NEW
-
-            navTests.addEventListener('click', () => {
-                testManagerView.style.display = 'grid';
-                resultsView.style.display = 'none';
-                accountManagerView.style.display = 'none';
-                navTests.classList.add('active');
-                navResults.classList.remove('active');
-                navAccount.classList.remove('active');
-            });
-            navResults.addEventListener('click', () => {
-                testManagerView.style.display = 'none';
-                resultsView.style.display = 'block';
-                accountManagerView.style.display = 'none';
-                navTests.classList.remove('active');
-                navResults.classList.add('active');
-                navAccount.classList.remove('active');
-                
-                updateBatchActionsUI();
-            });
-            navAccount.addEventListener('click', () => {
-                testManagerView.style.display = 'none';
-                resultsView.style.display = 'none';
-                accountManagerView.style.display = 'grid';
-                navTests.classList.remove('active');
-                navResults.classList.remove('active');
-                navAccount.classList.add('active');
-                
-                // NEW: Tải danh sách học sinh khi vào tab
-                loadStudentList();
-            });
-            navTests.click();
-
-
-            // --- (A) Logic cho Tab "Quản lý Đề Thi" ---
+            
             const createTestForm = document.getElementById('createTestForm');
             const testListDiv = document.getElementById('test-list');
             const testLoadingDiv = document.getElementById('test-loading');
@@ -591,115 +683,111 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
             const toggleAddBulk = document.getElementById('toggle-add-bulk');
             const addBulkQuestionForm = document.getElementById('addBulkQuestionForm');
 
-            // 1. TẠO ĐỀ THI MỚI (ĐÃ CẬP NHẬT)
-            createTestForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const testName = document.getElementById('testName').value;
-                const testTime = document.getElementById('testTime').value;
-                const startTime = document.getElementById('testStartTime').value;
-                const endTime = document.getElementById('testEndTime').value;
-                const adminEmail = currentUser.email; 
-                if (!testName || !testTime) return;
+            const createStudentForm = document.getElementById('createStudentForm');
+            const createStudentMsg = document.getElementById('create-student-msg');
+            const studentListDiv = document.getElementById('student-list');
+            const studentListLoading = document.getElementById('student-list-loading');
+            const toggleAddStudentSingle = document.getElementById('toggle-add-student-single');
+            const toggleAddStudentBulk = document.getElementById('toggle-add-student-bulk');
+            const addStudentFormContainer = document.getElementById('addStudentFormContainer');
+            const addBulkStudentForm = document.getElementById('addBulkStudentForm');
+
+            const resultsTableBody = document.getElementById('results-table-body');
+            const resultsCount = document.getElementById('results-count');
+            const selectAllCheckbox = document.getElementById('select-all-checkbox');
+            const deleteSelectedBtn = document.getElementById('delete-selected-btn');
+            const selectedCountSpan = document.getElementById('selected-count');
+
+            const createAdminForm = document.getElementById('createAdminForm');
+            const createAdminMsg = document.getElementById('create-admin-msg');
+            const changePasswordForm = document.getElementById('changePasswordForm');
+            const changePassMsg = document.getElementById('change-pass-msg');
+            
+            
+            // --- ĐỊNH NGHĨA HÀM ---
+
+            function setActiveTab(activeNav, activeView) {
+                [navTests, navStudents, navResults, navAccount].forEach(nav => nav.classList.remove('active'));
+                [testManagerView, studentManagerView, resultsView, accountManagerView].forEach(view => view.style.display = 'none');
                 
-                if (startTime && endTime && startTime >= endTime) {
-                    // Thay alert bằng window.confirm
-                    window.confirm('Lỗi: Thời gian BẮT ĐẦU phải trước thời gian KẾT THÚC.');
-                    return;
+                activeNav.classList.add('active');
+                
+                if (activeView === testManagerView || activeView === studentManagerView || activeView === accountManagerView) {
+                    activeView.style.display = 'grid';
+                } else {
+                    activeView.style.display = 'block'; 
                 }
-
-                try {
-                    await db.collection("dethi").add({ 
-                        tenDe: testName, 
-                        thoiGianLamBai: parseInt(testTime),
-                        nguoiTao: adminEmail,
-                        // Lưu thời gian mở và đóng dưới dạng chuỗi ISO (YYYY-MM-DDTHH:MM)
-                        thoiGianMo: startTime || null, 
-                        thoiGianDong: endTime || null 
-                    });
-                    createTestForm.reset();
-                    // Thay alert bằng thông báo không chặn UI (sử dụng element sẵn có của form khác)
-                    const statusDiv = document.getElementById('create-student-msg');
-                    statusDiv.innerText = "Tạo đề thi thành công!";
-                    statusDiv.style.color = 'green';
-                    statusDiv.style.display = 'block';
-                    setTimeout(() => statusDiv.style.display = 'none', 3000);
-
-                } catch (error) { console.error("Lỗi tạo đề thi: ", error); }
-            });
-
-            // 2. TẢI DANH SÁCH ĐỀ THI
-            if (!window.testListListener) {
-                window.testListListener = db.collection("dethi").onSnapshot(snapshot => {
-                    testLoadingDiv.style.display = 'none';
-                    testListDiv.innerHTML = ''; 
-                    if (snapshot.empty) { testListDiv.innerHTML = '<p>Chưa có đề thi nào.</p>'; return; }
-                    snapshot.forEach(doc => {
-                        const test = doc.data();
-                        const testId = doc.id;
-                        const item = document.createElement('div');
-                        item.className = 'test-list-item';
-                        
-                        let timeInfo = `
-                            <span class="time">${test.thoiGianLamBai || 'N/A'} phút</span>
-                        `;
-                        if (test.thoiGianMo || test.thoiGianDong) {
-                            // Chuyển đổi định dạng ISO string sang định dạng hiển thị
-                            const mo = test.thoiGianMo ? new Date(test.thoiGianMo).toLocaleString('vi-VN') : 'Không giới hạn';
-                            const dong = test.thoiGianDong ? new Date(test.thoiGianDong).toLocaleString('vi-VN') : 'Không giới hạn';
-                            timeInfo += `<span style="font-size: 0.7em; color: #ffc107; margin-top: 5px;">Mở: ${mo} | Đóng: ${dong}</span>`;
-                        }
-
-                        item.innerHTML = `
-                            <div class="test-item-info">
-                                <span>${test.tenDe}</span>
-                                ${timeInfo}
-                                <span class="creator">Tạo bởi: ${test.nguoiTao || 'Không rõ'}</span>
-                            </div>
-                            <div> 
-                                <button class="detail-btn edit-test-btn" data-id="${testId}" data-name="${test.tenDe}">Sửa</button>
-                                <button class="delete-btn" data-id="${testId}">Xóa</button>
-                            </div>
-                        `;
-                        item.querySelector('.delete-btn').addEventListener('click', (e) => {
-                            e.stopPropagation(); 
-                            // Thay alert bằng window.confirm
-                            if (window.confirm(`CẢNH BÁO:\nBạn có chắc chắn muốn XÓA TOÀN BỘ đề thi "${test.tenDe}"?`)) {
-                                deleteTest(testId, test.tenDe);
-                            }
-                        });
-                        // NEW: Listener cho nút Sửa đề thi
-                        item.querySelector('.edit-test-btn').addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            showEditTestModal(testId, test.tenDe);
-                        });
-
-                        item.addEventListener('click', () => {
-                            selectTest(testId, test.tenDe);
-                            document.querySelectorAll('.test-list-item').forEach(el => el.classList.remove('active'));
-                            item.classList.add('active');
-                        });
-                        testListDiv.appendChild(item);
-                    });
-                }, error => { console.error("Lỗi tải danh sách đề: ", error); });
             }
             
-            // 3. XÓA ĐỀ THI
+            // --- (A) Logic cho Tab "Quản lý Đề Thi" ---
+
+            // 3. MỚI: HÀM RENDER DANH SÁCH ĐỀ THI (Từ Cache)
+            window.renderTestList = function() {
+                const query = document.getElementById('test-search-input').value.toLowerCase();
+                
+                const filteredTests = allTestsCache.filter(test => 
+                    test.tenDe.toLowerCase().includes(query) ||
+                    (test.nguoiTao && test.nguoiTao.toLowerCase().includes(query))
+                );
+
+                testListDiv.innerHTML = ''; 
+                if (filteredTests.length === 0) { 
+                    testListDiv.innerHTML = '<p>Không tìm thấy đề thi nào.</p>'; 
+                    return; 
+                }
+                
+                filteredTests.forEach(test => {
+                    const testId = test.id;
+                    const item = document.createElement('div');
+                    item.className = 'test-list-item';
+                    
+                    let timeInfo = `<span class="time">${test.thoiGianLamBai || 'N/A'} phút</span>`;
+                    if (test.thoiGianMo || test.thoiGianDong) {
+                        const mo = test.thoiGianMo ? new Date(test.thoiGianMo).toLocaleString('vi-VN') : 'Không giới hạn';
+                        const dong = test.thoiGianDong ? new Date(test.thoiGianDong).toLocaleString('vi-VN') : 'Không giới hạn';
+                        timeInfo += `<span style="font-size: 0.7em; color: #ffc107; margin-top: 5px;">Mở: ${mo} | Đóng: ${dong}</span>`;
+                    }
+
+                    item.innerHTML = `
+                        <div class="test-item-info">
+                            <span>${test.tenDe}</span>
+                            ${timeInfo}
+                            <span class="creator">Tạo bởi: ${test.nguoiTao || 'Không rõ'}</span>
+                        </div>
+                        <div> 
+                            <button class="detail-btn edit-test-btn" data-id="${testId}" data-name="${test.tenDe}">Sửa</button>
+                            <button class="delete-btn" data-id="${testId}">Xóa</button>
+                        </div>
+                    `;
+                    item.querySelector('.delete-btn').addEventListener('click', (e) => {
+                        e.stopPropagation(); 
+                        deleteTest(testId, test.tenDe);
+                    });
+                    item.querySelector('.edit-test-btn').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        showEditTestModal(testId, test.tenDe);
+                    });
+
+                    item.addEventListener('click', () => {
+                        selectTest(testId, test.tenDe);
+                        document.querySelectorAll('.test-list-item').forEach(el => el.classList.remove('active'));
+                        item.classList.add('active');
+                    });
+                    testListDiv.appendChild(item);
+                });
+            }
+            
+            // 4. XÓA ĐỀ THI
             async function deleteTest(testId, testName) {
-                // Đã chuyển confirm ra ngoài
+                if (!confirm(`CẢNH BÁO:\nBạn có chắc chắn muốn XÓA TOÀN BỘ đề thi "${testName}"?`)) return;
                 try {
                     await db.collection("dethi").doc(testId).delete();
-                    
-                    // Sử dụng div thông báo không chặn UI
-                    const statusDiv = document.getElementById('create-student-msg');
-                    statusDiv.innerText = `Đã xóa đề thi "${testName}"!`;
-                    statusDiv.style.color = 'red';
-                    statusDiv.style.display = 'block';
-                    setTimeout(() => statusDiv.style.display = 'none', 3000);
-
+                    alert("Đã xóa đề thi!");
                     if (selectedTestId === testId) resetQuestionManager();
                 } catch (error) { console.error("Lỗi xóa đề thi: ", error); }
             }
-            // 4. CHỌN ĐỀ THI
+            
+            // 5. CHỌN ĐỀ THI
             function selectTest(testId, testName) {
                 selectedTestId = testId; 
                 qManagerDiv.style.display = 'block';
@@ -707,9 +795,10 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                 toggleAddSingle.click(); 
                 qListContainer.style.display = 'block';
                 loadQuestionList(testId);
-                resetQuestionFormState(); // Đảm bảo form trở về trạng thái Thêm mới
+                resetQuestionFormState(); 
             }
-            // 5. TẢI CÂU HỎI
+            
+            // 6. TẢI CÂU HỎI
             function loadQuestionList(testId) {
                 if (questionListener) questionListener();
                 qListDiv.innerHTML = '<p>Đang tải câu hỏi...</p>';
@@ -723,7 +812,6 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                             const qId = doc.id;
                             const item = document.createElement('div');
                             item.className = 'question-item';
-                            // Hiển thị ảnh (nếu có)
                             const imageHtml = q.imageUrl ? `<img src="${q.imageUrl}" style="max-width: 100px; max-height: 100px; margin-bottom: 5px; border-radius: 4px;">` : '';
 
                             item.innerHTML = `
@@ -737,10 +825,9 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                                     <button class="delete-btn" onclick="deleteQuestion('${qId}')">Xóa</button>
                                 </div>
                             `;
-                            // NEW: Listener cho nút Sửa câu hỏi
                             item.querySelector('.edit-question-btn').addEventListener('click', (e) => {
                                 e.stopPropagation();
-                                editQuestion(qId); // qId là ID của câu hỏi trong subcollection "cauhoi"
+                                editQuestion(qId);
                             });
 
                             qListDiv.appendChild(item);
@@ -748,13 +835,332 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                     }, error => { qListDiv.innerHTML = '<p>Lỗi tải câu hỏi.</p>'; });
             }
 
-            // 6A. Logic Toggle
+            // 7. XÓA CÂU HỎI
+            window.deleteQuestion = async function(questionId) {
+                if (!selectedTestId) return;
+                if (confirm("Bạn có chắc muốn xóa câu hỏi này?")) {
+                    try {
+                        await db.collection("dethi").doc(selectedTestId).collection("cauhoi").doc(questionId).delete();
+                    } catch (error) { console.error("Lỗi xóa câu hỏi: ", error); }
+                }
+            }
+            
+            // 8. RESET CỘT 2
+            function resetQuestionManager() {
+                selectedTestId = null;
+                if (questionListener) questionListener();
+                qManagerDiv.style.display = 'none';
+            }
+            
+            // 9. CHỈNH SỬA CÂU HỎI
+            window.editQuestion = async function(questionId) {
+                if (!selectedTestId) return;
+                document.getElementById('toggle-add-single').click();
+                document.getElementById('question-manager').scrollIntoView({ behavior: 'smooth' });
+                try {
+                    const docRef = await db.collection("dethi").doc(selectedTestId).collection("cauhoi").doc(questionId).get();
+                    if (!docRef.exists) {
+                        alert("Lỗi: Không tìm thấy câu hỏi để sửa.");
+                        return;
+                    }
+                    const q = docRef.data();
+                    isEditingQuestionId = questionId; 
+                    document.getElementById('addQuestionForm').querySelector('h3').innerText = "Chỉnh sửa Câu hỏi";
+                    document.getElementById('addQuestionForm').querySelector('button[type="submit"]').innerText = "CẬP NHẬT Câu Hỏi";
+                    document.getElementById('prompt').value = q.prompt;
+                    document.getElementById('opt1').value = q.options[0];
+                    document.getElementById('opt2').value = q.options[1];
+                    document.getElementById('opt3').value = q.options[2];
+                    document.getElementById('opt4').value = q.options[3];
+                    document.getElementById('answer').value = q.answer;
+                    const isBase64 = q.imageUrl && q.imageUrl.startsWith('data:image');
+                    document.getElementById('questionImageUrl').value = isBase64 ? '' : q.imageUrl || '';
+                    const statusDiv = document.getElementById('image-upload-status');
+                    if (isBase64) {
+                        statusDiv.innerText = 'LƯU Ý: Câu hỏi đang có ảnh Base64. Nếu muốn thay đổi, vui lòng tải ảnh mới từ tệp.';
+                        statusDiv.style.color = '#ffc107';
+                    } else if (q.imageUrl) {
+                        statusDiv.innerText = 'Bạn đang chỉnh sửa câu hỏi. Ảnh hiện tại là URL.';
+                        statusDiv.style.color = 'blue';
+                    } else {
+                        statusDiv.innerText = 'Bạn đang chỉnh sửa câu hỏi. Tải ảnh mới sẽ thay thế ảnh cũ.';
+                        statusDiv.style.color = 'blue';
+                    }
+                } catch (error) {
+                    console.error("Lỗi tải câu hỏi để sửa: ", error);
+                    alert("Lỗi tải câu hỏi.");
+                    resetQuestionFormState();
+                }
+            }
+            
+            // 10. RESET FORM (Câu hỏi)
+            function resetQuestionFormState() {
+                isEditingQuestionId = null;
+                document.getElementById('addQuestionForm').querySelector('h3').innerText = "Thêm câu hỏi mới";
+                document.getElementById('addQuestionForm').querySelector('button[type="submit"]').innerText = "Thêm câu hỏi";
+                document.getElementById('image-upload-status').innerText = '';
+                document.getElementById('questionImageFile').value = '';
+                addQuestionForm.reset(); 
+            }
+            
+            
+            // --- (B) Logic cho Tab "Quản lý Học Sinh" ---
+
+            // TẢI DANH SÁCH HS (Cập nhật: Dùng Cache)
+            async function loadStudentList() {
+                studentListLoading.style.display = 'block';
+                studentListDiv.innerHTML = '';
+                try {
+                    const snapshot = await db.collection('hocsinh').get();
+                    allStudentsCache = []; // Xóa cache
+                    snapshot.forEach(doc => {
+                        allStudentsCache.push({ id: doc.id, ...doc.data() });
+                    });
+                    
+                    // SẮP XẾP
+                    allStudentsCache.sort((a, b) => {
+                        const lopCompare = (a.lop || '').localeCompare(b.lop || '');
+                        if (lopCompare !== 0) return lopCompare;
+                        return (a.hoTen || '').localeCompare(b.hoTen || '');
+                    });
+                    
+                    renderStudentList(); // Gọi hàm render
+                    
+                } catch (error) {
+                    console.error("Lỗi tải danh sách HS: ", error);
+                    studentListLoading.innerText = 'Lỗi tải danh sách.';
+                }
+            }
+            
+            // MỚI: HÀM RENDER DANH SÁCH HS (Từ Cache)
+            window.renderStudentList = function() {
+                const query = document.getElementById('student-search-input').value.toLowerCase();
+                
+                const filteredStudents = allStudentsCache.filter(hs => 
+                    hs.hoTen.toLowerCase().includes(query) ||
+                    hs.lop.toLowerCase().includes(query)
+                );
+
+                studentListDiv.innerHTML = '';
+                studentListLoading.style.display = 'none';
+
+                if (filteredStudents.length === 0) {
+                    studentListDiv.innerHTML = '<p>Không tìm thấy học sinh nào.</p>';
+                    return;
+                }
+                                    
+                filteredStudents.forEach(hs => {
+                    const item = document.createElement('div');
+                    item.className = 'student-list-item';
+                    
+                    item.innerHTML = `
+                        <div class="student-item-info">
+                            <div class="student-name-class">
+                                <span class="student-name">${hs.hoTen}</span>
+                                <span class="lopHS">(Lớp: ${hs.lop})</span>
+                            </div>
+                            <span class="maHS">Mã HS: ${hs.id}</span>
+                        </div>
+                        <div class="student-item-actions">
+                            <button class="detail-btn edit-student-btn" data-id="${hs.id}" data-name="${hs.hoTen}" data-lop="${hs.lop}">Sửa</button>
+                            <button class="delete-btn" data-id="${hs.id}" data-name="${hs.hoTen}">Xóa</button>
+                        </div>
+                    `;
+                    
+                    item.querySelector('.delete-btn').addEventListener('click', (e) => {
+                        deleteStudent(e.target.dataset.id, e.target.dataset.name);
+                    });
+                    
+                    item.querySelector('.edit-student-btn').addEventListener('click', (e) => {
+                        showEditStudentModal(e.target.dataset.id, e.target.dataset.name, e.target.dataset.lop);
+                    });
+                    
+                    studentListDiv.appendChild(item);
+                });
+            }
+            
+            // XÓA MÃ HS
+            async function deleteStudent(maHS, hoTen) {
+                if (!confirm(`Bạn có chắc muốn XÓA Mã HS "${maHS}" của học sinh "${hoTen}"?`)) return;
+                try {
+                    await db.collection('hocsinh').doc(maHS).delete();
+                    loadStudentList(); // Tải lại danh sách sau khi xóa
+                } catch (error) {
+                    console.error("Lỗi xóa Mã HS: ", error);
+                    alert("Lỗi khi xóa Mã HS.");
+                }
+            }
+            
+            
+            // --- (C) Logic cho Tab "Xem Kết Quả" ---
+
+            function updateBatchActionsUI() {
+                selectedCountSpan.innerText = selectedSubmissionIds.size;
+                deleteSelectedBtn.style.display = selectedSubmissionIds.size > 0 ? 'inline-block' : 'none';
+            }
+
+            async function deleteSelectedSubmissions() {
+                if (selectedSubmissionIds.size === 0) return;
+                if (!confirm(`BẠN CÓ CHẮC CHẮN muốn XÓA ${selectedSubmissionIds.size} bài làm đã chọn?`)) return;
+
+                deleteSelectedBtn.disabled = true;
+                deleteSelectedBtn.innerText = `Đang xóa ${selectedSubmissionIds.size} bài...`;
+                const batch = db.batch();
+                let deleteCount = 0;
+                selectedSubmissionIds.forEach(id => {
+                    const docRef = db.collection("ketqua").doc(id);
+                    batch.delete(docRef);
+                    deleteCount++;
+                });
+                try {
+                    await batch.commit();
+                    alert(`Đã xóa thành công ${deleteCount} bài làm!`);
+                    selectedSubmissionIds.clear();
+                    selectAllCheckbox.checked = false;
+                } catch (error) {
+                    console.error("Lỗi khi xóa hàng loạt: ", error);
+                } finally {
+                    deleteSelectedBtn.disabled = false;
+                }
+            }
+
+            // MỚI: HÀM RENDER BẢNG KẾT QUẢ (Từ Cache)
+            window.renderResultsList = function() {
+                const query = document.getElementById('results-search-input').value.toLowerCase();
+                
+                const filteredResults = allResultsCache.filter(res => 
+                    (res.hoTen && res.hoTen.toLowerCase().includes(query)) ||
+                    (res.lop && res.lop.toLowerCase().includes(query)) ||
+                    (res.tenDeThi && res.tenDeThi.toLowerCase().includes(query))
+                );
+
+                resultsCount.innerText = filteredResults.length;
+                resultsTableBody.innerHTML = '';
+                selectedSubmissionIds.clear(); 
+                selectAllCheckbox.checked = false; 
+
+                if (filteredResults.length === 0) {
+                    resultsTableBody.innerHTML = '<tr><td colspan="9" style="text-align: center;">Không tìm thấy kết quả nào.</td></tr>';
+                    updateBatchActionsUI(); // Cập nhật UI ngay cả khi không có kết quả
+                    return;
+                }
+                
+                filteredResults.forEach(res => {
+                    const tr = document.createElement('tr');
+                    let nopLuc = "Không rõ";
+                    if (res.thoiGianNop) { nopLuc = new Date(res.thoiGianNop.toMillis()).toLocaleString('vi-VN'); }
+                    const diem = parseFloat(res.diemSo);
+                    const diemClass = diem >= 5 ? 'score-pass' : 'score-fail';
+                    let lyDoText = 'Thủ công';
+                    let lyDoClass = 'reason-manual';
+                    if (res.nopTuDong) {
+                        lyDoText = res.lyDoNopTuDong || 'Tự động';
+                        if (lyDoText === "Hết giờ") { lyDoClass = 'reason-time'; }
+                        else { lyDoClass = 'reason-cheat'; }
+                    }
+                    
+                    const isSelected = selectedSubmissionIds.has(res.id);
+
+                    tr.innerHTML = `
+                        <td><input type="checkbox" class="row-checkbox" data-id="${res.id}" ${isSelected ? 'checked' : ''}></td>
+                        <td>${res.hoTen || 'N/A'}</td>
+                        <td>${res.lop || 'N/A'}</td>
+                        <td>${res.tenDeThi || 'N/A'}</td>
+                        <td class="${diemClass}">${res.diemSo || 'N/A'}</td>
+                        <td>${res.soCauDung || 'N/A'} / ${res.tongSoCau || 'N/A'}</td>
+                        <td>${nopLuc}</td>
+                        <td class="${lyDoClass}">${lyDoText}</td>
+                        <td>
+                            <button class="detail-btn" data-id="${res.id}">Xem</button>
+                            <button class="action-btn-delete single-delete-btn" data-id="${res.id}" data-name="${res.hoTen}">Xóa</button>
+                        </td>
+                    `;
+                    resultsTableBody.appendChild(tr);
+                });
+                
+                updateBatchActionsUI();
+            }
+
+            async function deleteSubmission(submissionId, studentName) {
+                if (window.confirm(`BẠN CÓ CHẮC CHẮN muốn XÓA bài làm của ${studentName}?`)) {
+                    try {
+                        await db.collection("ketqua").doc(submissionId).delete();
+                        // (onSnapshot sẽ tự động cập nhật)
+                    } catch (error) {
+                        console.error("Lỗi khi xóa bài làm: ", error);
+                    }
+                }
+            }
+            
+
+            // --- GÁN EVENT LISTENERS (ĐẶT SAU KHI KHAI BÁO HÀM) ---
+            
+            // Listeners cho Tab
+            navTests.addEventListener('click', () => setActiveTab(navTests, testManagerView));
+            navStudents.addEventListener('click', () => {
+                setActiveTab(navStudents, studentManagerView);
+                loadStudentList(); 
+            });
+            navResults.addEventListener('click', () => {
+                setActiveTab(navResults, resultsView);
+                // (renderResultsList sẽ tự gọi updateBatchActionsUI)
+            });
+            navAccount.addEventListener('click', () => setActiveTab(navAccount, accountManagerView));
+            
+            // Listeners cho Bộ lọc
+            document.getElementById('test-search-input').addEventListener('input', renderTestList);
+            document.getElementById('student-search-input').addEventListener('input', renderStudentList);
+            document.getElementById('results-search-input').addEventListener('input', renderResultsList);
+
+            // Listeners cho Tab 1: Đề thi
+            createTestForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const testName = document.getElementById('testName').value;
+                const testTime = document.getElementById('testTime').value;
+                const startTime = document.getElementById('testStartTime').value;
+                const endTime = document.getElementById('testEndTime').value;
+                const adminEmail = currentUser.email; 
+                if (!testName || !testTime) return;
+                
+                if (startTime && endTime && startTime >= endTime) {
+                    alert('Lỗi: Thời gian BẮT ĐẦU phải trước thời gian KẾT THÚC.');
+                    return;
+                }
+
+                try {
+                    await db.collection("dethi").add({ 
+                        tenDe: testName, 
+                        thoiGianLamBai: parseInt(testTime),
+                        nguoiTao: adminEmail,
+                        thoiGianMo: startTime || null, 
+                        thoiGianDong: endTime || null 
+                    });
+                    createTestForm.reset();
+                    alert("Tạo đề thi thành công!");
+                } catch (error) { console.error("Lỗi tạo đề thi: ", error); }
+            });
+
+            // Tải danh sách Đề thi (Chỉ gán listener 1 lần)
+            if (!window.testListListener) {
+                window.testListListener = db.collection("dethi").onSnapshot(snapshot => {
+                    testLoadingDiv.style.display = 'none';
+                    allTestsCache = []; 
+                    snapshot.forEach(doc => {
+                        allTestsCache.push({ id: doc.id, ...doc.data() });
+                    });
+                    renderTestList(); 
+                }, error => { 
+                    console.error("Lỗi tải danh sách đề: ", error); 
+                    testLoadingDiv.innerText = "Lỗi tải danh sách đề.";
+                });
+            }
+
             toggleAddSingle.addEventListener('click', () => {
                 addQuestionForm.style.display = 'block';
                 addBulkQuestionForm.style.display = 'none';
                 toggleAddSingle.classList.add('active');
                 toggleAddBulk.classList.remove('active');
-                resetQuestionFormState(); // Đảm bảo form reset khi chuyển tab
+                resetQuestionFormState(); 
             });
             toggleAddBulk.addEventListener('click', () => {
                 addQuestionForm.style.display = 'none';
@@ -763,22 +1169,16 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                 toggleAddBulk.classList.add('active');
             });
             
-            // 6B. THÊM/CẬP NHẬT CÂU HỎI (Từng câu)
             addQuestionForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 if (!selectedTestId) return;
-
                 const fileInput = document.getElementById('questionImageFile');
                 const imageUrlInput = document.getElementById('questionImageUrl');
                 const statusDiv = document.getElementById('image-upload-status');
                 statusDiv.innerText = '';
-
                 let finalImageUrl = imageUrlInput.value.trim();
-
-                // 1. Xử lý tệp hình ảnh (Ưu tiên tệp)
                 const file = fileInput.files[0];
                 if (file) {
-                    // Kiểm tra kích thước tệp
                     if (file.size > MAX_IMAGE_SIZE_KB * 1024) {
                         statusDiv.innerText = `Lỗi: Tệp quá lớn. Max: ${MAX_IMAGE_SIZE_KB} KB.`;
                         statusDiv.style.color = 'red';
@@ -787,7 +1187,6 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                     try {
                         statusDiv.innerText = 'Đang mã hóa ảnh...';
                         statusDiv.style.color = 'blue';
-                        // Chuyển tệp sang Base64
                         finalImageUrl = await fileToBase64(file); 
                         statusDiv.innerText = 'Đã mã hóa thành công!';
                         statusDiv.style.color = 'green';
@@ -798,55 +1197,36 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                         return;
                     }
                 } else if (finalImageUrl === '') {
-                     finalImageUrl = null; // Không có tệp và không có URL
+                     finalImageUrl = null;
                 }
-
-
                 const prompt = document.getElementById('prompt').value;
                 const options = [ document.getElementById('opt1').value, document.getElementById('opt2').value, document.getElementById('opt3').value, document.getElementById('opt4').value ];
                 const answer = document.getElementById('answer').value;
-                // Kiểm tra đáp án đúng (Phải là 1 trong 4 lựa chọn)
                 if (!options.includes(answer)) { 
-                    // Thay alert bằng window.confirm để không chặn UI
-                    window.confirm("Lỗi: Đáp án đúng phải là 1 trong 4 lựa chọn A, B, C, D (Gõ y hệt nội dung lựa chọn)."); 
+                    alert("Lỗi: Đáp án đúng phải là 1 trong 4 lựa chọn A, B, C, D (Gõ y hệt nội dung lựa chọn)."); 
                     return; 
                 }
-                
-                // Chuẩn bị dữ liệu
-                const questionData = { 
-                    prompt: prompt, 
-                    options: options, 
-                    answer: answer,
-                    imageUrl: finalImageUrl // Lưu Base64 string hoặc URL
-                };
-
-                // Lưu/Cập nhật câu hỏi vào Firestore
+                const questionData = { prompt: prompt, options: options, answer: answer, imageUrl: finalImageUrl };
                 try {
                     if (isEditingQuestionId) {
-                        // Chế độ CẬP NHẬT
                         await db.collection("dethi").doc(selectedTestId).collection("cauhoi").doc(isEditingQuestionId).update(questionData);
                         statusDiv.innerText = 'CẬP NHẬT câu hỏi thành công!';
                         statusDiv.style.color = 'green';
                     } else {
-                        // Chế độ THÊM MỚI
                         await db.collection("dethi").doc(selectedTestId).collection("cauhoi").add(questionData);
                         statusDiv.innerText = 'Thêm câu hỏi thành công!';
                         statusDiv.style.color = 'green';
                     }
-                    
                     addQuestionForm.reset();
-                    resetQuestionFormState(); // Reset về trạng thái Thêm mới
-
+                    resetQuestionFormState(); 
                 } catch (error) { 
                     console.error("Lỗi thêm/cập nhật câu hỏi: ", error); 
-                    // Thay alert bằng window.confirm
-                    window.confirm("Lỗi khi thêm/cập nhật câu hỏi!"); 
+                    alert("Lỗi khi thêm/cập nhật câu hỏi!"); 
                     statusDiv.innerText = 'Lỗi khi lưu vào CSDL.';
                     statusDiv.style.color = 'red';
                 }
             });
-
-            // 6C. THÊM HÀNG LOẠT (Giữ nguyên logic cũ, thay alert bằng window.confirm)
+            
             addBulkQuestionForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 if (!selectedTestId) return;
@@ -857,17 +1237,13 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                 for (const block of blocks) {
                     const lines = block.split('\n').map(l => l.trim()).filter(l => l !== "");
                     if (lines.length === 0) continue; 
-                    
-                    // Cần tối thiểu 6 dòng (Prompt, 4 Options, Answer). Dòng thứ 7 là Image (tùy chọn)
                     if (lines.length < 6) { errorList.push(`Lỗi định dạng khối: "${lines[0]}..." (Không đủ 6 dòng cơ bản).`); continue; }
-                    
                     const prompt = lines[0];
                     const options = [ lines[1].substring(lines[1].indexOf(".") + 1).trim(), lines[2].substring(lines[2].indexOf(".") + 1).trim(), lines[3].substring(lines[3].indexOf(".") + 1).trim(), lines[4].substring(lines[4].indexOf(".") + 1).trim() ];
                     const answerLine = lines[5];
                     const answerText = answerLine.substring(answerLine.indexOf(":") + 1).trim();
                     const imageLine = lines.length > 6 && lines[6].startsWith('Image:') ? lines[6] : null;
                     const imageUrl = imageLine ? imageLine.substring(imageLine.indexOf(":") + 1).trim() : null;
-                    
                     let finalAnswer = "";
                     if (options.includes(answerText)) { finalAnswer = answerText; }
                     else {
@@ -888,151 +1264,140 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                         await batch.commit();
                         let message = `Đã thêm thành công ${questionsToAdd.length} câu hỏi!`;
                         if (errorList.length > 0) { message += `\n\nPhát hiện ${errorList.length} lỗi (đã bỏ qua):\n- ${errorList.join('\n- ')}`; }
-                        window.confirm(message); // Thay alert
+                        alert(message);
                         addBulkQuestionForm.reset();
-                    } catch (error) { 
-                        console.error("Lỗi khi commit batch: ", error); 
-                        window.confirm("Lỗi khi lưu vào cơ sở dữ liệu. Vui lòng thử lại."); // Thay alert
-                    }
+                    } catch (error) { console.error("Lỗi khi commit batch: ", error); alert("Lỗi khi lưu vào cơ sở dữ liệu. Vui lòng thử lại."); }
                 } else {
                     let message = "Không thêm được câu hỏi nào.";
                     if (errorList.length > 0) { message += `\n\nPhát hiện ${errorList.length} lỗi:\n- ${errorList.join('\n- ')}`; }
-                    window.confirm(message); // Thay alert
+                    alert(message);
                 }
             });
-            // 7. XÓA CÂU HỎI
-            window.deleteQuestion = async function(questionId) {
-                if (!selectedTestId) return;
-                if (window.confirm("Bạn có chắc muốn xóa câu hỏi này?")) {
-                    try {
-                        await db.collection("dethi").doc(selectedTestId).collection("cauhoi").doc(questionId).delete();
-                    } catch (error) { console.error("Lỗi xóa câu hỏi: ", error); }
-                }
-            }
-            // 8. RESET CỘT 2
-            function resetQuestionManager() {
-                selectedTestId = null;
-                if (questionListener) questionListener();
-                qManagerDiv.style.display = 'none';
-            }
 
-            // NEW: Hàm chỉnh sửa câu hỏi (Tải dữ liệu và điền vào form "Thêm từng câu")
-            window.editQuestion = async function(questionId) {
-                if (!selectedTestId) return;
 
-                // Chuyển sang tab thêm từng câu và cuộn lên
-                document.getElementById('toggle-add-single').click();
-                document.getElementById('question-manager').scrollIntoView({ behavior: 'smooth' });
-
-                try {
-                    const docRef = await db.collection("dethi").doc(selectedTestId).collection("cauhoi").doc(questionId).get();
-                    if (!docRef.exists) {
-                        // Thay alert bằng window.confirm
-                        window.confirm("Lỗi: Không tìm thấy câu hỏi để sửa.");
-                        return;
-                    }
-                    const q = docRef.data();
-                    
-                    isEditingQuestionId = questionId; 
-                    document.getElementById('addQuestionForm').querySelector('h3').innerText = "Chỉnh sửa Câu hỏi";
-                    document.getElementById('addQuestionForm').querySelector('button[type="submit"]').innerText = "CẬP NHẬT Câu Hỏi";
-                    
-                    // Điền dữ liệu vào form
-                    document.getElementById('prompt').value = q.prompt;
-                    document.getElementById('opt1').value = q.options[0];
-                    document.getElementById('opt2').value = q.options[1];
-                    document.getElementById('opt3').value = q.options[2];
-                    document.getElementById('opt4').value = q.options[3];
-                    document.getElementById('answer').value = q.answer;
-                    
-                    // Xử lý URL/Base64 của ảnh
-                    const isBase64 = q.imageUrl && q.imageUrl.startsWith('data:image');
-                    document.getElementById('questionImageUrl').value = isBase64 ? '' : q.imageUrl || '';
-                    
-                    // Hiển thị thông báo
-                    const statusDiv = document.getElementById('image-upload-status');
-                    if (isBase64) {
-                        statusDiv.innerText = 'LƯU Ý: Câu hỏi đang có ảnh Base64. Nếu muốn thay đổi, vui lòng tải ảnh mới từ tệp.';
-                        statusDiv.style.color = '#ffc107';
-                    } else if (q.imageUrl) {
-                        statusDiv.innerText = 'Bạn đang chỉnh sửa câu hỏi. Ảnh hiện tại là URL.';
-                        statusDiv.style.color = 'blue';
-                    } else {
-                        statusDiv.innerText = 'Bạn đang chỉnh sửa câu hỏi. Tải ảnh mới sẽ thay thế ảnh cũ.';
-                        statusDiv.style.color = 'blue';
-                    }
-
-                } catch (error) {
-                    console.error("Lỗi tải câu hỏi để sửa: ", error);
-                    window.confirm("Lỗi tải câu hỏi."); // Thay alert
-                    resetQuestionFormState();
-                }
-            }
-
-            // NEW: Hàm reset form sau khi chỉnh sửa/thêm
-            function resetQuestionFormState() {
-                isEditingQuestionId = null;
-                document.getElementById('addQuestionForm').querySelector('h3').innerText = "Thêm câu hỏi mới";
-                document.getElementById('addQuestionForm').querySelector('button[type="submit"]').innerText = "Thêm câu hỏi";
-                document.getElementById('image-upload-status').innerText = '';
-                document.getElementById('questionImageFile').value = '';
-            }
-
-            // --- (B) Logic cho Tab "Xem Kết Quả" ---
-            const resultsTableBody = document.getElementById('results-table-body');
-            const resultsCount = document.getElementById('results-count');
-
-            // --- Cập nhật UI hàng loạt ---
-            function updateBatchActionsUI() {
-                selectedCountSpan.innerText = selectedSubmissionIds.size;
-                deleteSelectedBtn.style.display = selectedSubmissionIds.size > 0 ? 'inline-block' : 'none';
-            }
-
-            // --- HÀM XÓA HÀNG LOẠT ---
-            async function deleteSelectedSubmissions() {
-                if (selectedSubmissionIds.size === 0) return;
-
-                if (!window.confirm(`BẠN CÓ CHẮC CHẮN muốn XÓA ${selectedSubmissionIds.size} bài làm đã chọn? Hành động này không thể hoàn tác.`)) {
+            // Listeners cho Tab 2: Học sinh
+            toggleAddStudentSingle.addEventListener('click', () => {
+                addStudentFormContainer.style.display = 'block';
+                addBulkStudentForm.style.display = 'none';
+                toggleAddStudentSingle.classList.add('active');
+                toggleAddStudentBulk.classList.remove('active');
+            });
+            toggleAddStudentBulk.addEventListener('click', () => {
+                addStudentFormContainer.style.display = 'none';
+                addBulkStudentForm.style.display = 'block';
+                toggleAddStudentSingle.classList.remove('active');
+                toggleAddStudentBulk.classList.add('active');
+            });
+            
+            createStudentForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const maHS = document.getElementById('studentCode').value.trim();
+                const hoTen = document.getElementById('studentFullName').value.trim();
+                const lop = document.getElementById('studentClass').value.trim();
+                if (!maHS || !hoTen || !lop) {
+                    alert("Vui lòng nhập đủ Mã HS, Họ Tên và Lớp.");
                     return;
                 }
-
-                deleteSelectedBtn.disabled = true;
-                deleteSelectedBtn.innerText = `Đang xóa ${selectedSubmissionIds.size} bài...`;
-                
+                createStudentMsg.style.display = 'block';
+                createStudentMsg.style.color = 'blue';
+                createStudentMsg.innerText = 'Đang kiểm tra và tạo...';
+                try {
+                    const docRef = db.collection('hocsinh').doc(maHS);
+                    const doc = await docRef.get();
+                    if (doc.exists) {
+                        createStudentMsg.style.color = 'red';
+                        createStudentMsg.innerText = `Lỗi: Mã HS "${maHS}" đã tồn tại. Vui lòng chọn mã khác.`;
+                    } else {
+                        await docRef.set({ hoTen: hoTen, lop: lop });
+                        createStudentMsg.style.color = 'green';
+                        createStudentMsg.innerText = `Tạo thành công: ${hoTen} (Mã: ${maHS})`;
+                        createStudentForm.reset();
+                        loadStudentList(); // Tải lại danh sách
+                    }
+                } catch (error) {
+                    console.error("Lỗi tạo Mã HS: ", error);
+                    createStudentMsg.style.color = 'red';
+                    createStudentMsg.innerText = "Lỗi khi kết nối CSDL.";
+                }
+            });
+            
+            addBulkStudentForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const text = document.getElementById('bulkStudentsText').value.trim();
+                if (!text) {
+                    alert("Vui lòng nhập danh sách.");
+                    return;
+                }
+                const lines = text.split('\n');
                 const batch = db.batch();
-                let deleteCount = 0;
-                
-                selectedSubmissionIds.forEach(id => {
-                    const docRef = db.collection("ketqua").doc(id);
-                    batch.delete(docRef);
-                    deleteCount++;
+                let addedCount = 0;
+                let errorList = [];
+                lines.forEach((line, index) => {
+                    line = line.trim();
+                    if (!line) return; 
+                    const parts = line.split(',');
+                    if (parts.length === 3) {
+                        const maHS = parts[0].trim();
+                        const hoTen = parts[1].trim();
+                        const lop = parts[2].trim();
+                        if (maHS && hoTen && lop) {
+                            const docRef = db.collection('hocsinh').doc(maHS);
+                            batch.set(docRef, { hoTen: hoTen, lop: lop });
+                            addedCount++;
+                        } else {
+                            errorList.push(index + 1);
+                        }
+                    } else {
+                        errorList.push(index + 1);
+                    }
                 });
-
+                if (addedCount === 0 && errorList.length > 0) {
+                     alert(`Không thêm được học sinh nào. Lỗi định dạng ở các dòng: ${errorList.join(', ')}.\nĐịnh dạng phải là: MaHS,Ten,Lop`);
+                     return;
+                }
                 try {
                     await batch.commit();
-                    window.confirm(`Đã xóa thành công ${deleteCount} bài làm!`); // Thay alert
-                    
-                    // Reset UI (onSnapshot listener sẽ cập nhật bảng)
-                    selectedSubmissionIds.clear();
-                    selectAllCheckbox.checked = false;
-                    
+                    let successMsg = `Đã thêm/cập nhật thành công ${addedCount} học sinh!`;
+                    if (errorList.length > 0) {
+                        successMsg += `\nĐã bỏ qua ${errorList.length} dòng bị lỗi định dạng (Dòng: ${errorList.join(', ')}).`;
+                    }
+                    alert(successMsg);
+                    addBulkStudentForm.reset();
+                    loadStudentList(); // Tải lại danh sách
                 } catch (error) {
-                    console.error("Lỗi khi xóa hàng loạt: ", error);
-                    window.confirm(`Lỗi khi xóa ${deleteCount} bài làm. Vui lòng kiểm tra lại quyền (Rules).`); // Thay alert
-                } finally {
-                    deleteSelectedBtn.disabled = false;
+                    console.error("Lỗi thêm hàng loạt HS: ", error);
+                    alert("Lỗi khi lưu hàng loạt. Vui lòng thử lại.");
                 }
+            });
+
+
+            // Listeners cho Tab 3: Kết quả
+            if (!window.resultsListener) {
+                window.resultsListener = db.collection("ketqua").onSnapshot(snapshot => {
+                    allResultsCache = []; 
+                    snapshot.forEach(doc => { 
+                        let data = doc.data();
+                        data.id = doc.id; 
+                        allResultsCache.push(data); 
+                    });
+                    allResultsCache.sort((a, b) => {
+                        const timeA = a.thoiGianNop ? a.thoiGianNop.toMillis() : 0;
+                        const timeB = b.thoiGianNop ? b.thoiGianNop.toMillis() : 0;
+                        return timeB - timeA;
+                    });
+                    renderResultsList(); 
+                }, error => {
+                    console.error("Lỗi tải kết quả: ", error);
+                    resultsTableBody.innerHTML = '<tr><td colspan="9">Lỗi tải dữ liệu.</td></tr>';
+                });
             }
             
-            // --- Event Listener Xóa hàng loạt ---
             deleteSelectedBtn.addEventListener('click', deleteSelectedSubmissions);
 
-            // --- Event Listener Chọn Tất Cả ---
             selectAllCheckbox.addEventListener('change', (e) => {
                 const isChecked = e.target.checked;
                 const checkboxes = resultsTableBody.querySelectorAll('.row-checkbox');
                 selectedSubmissionIds.clear();
-
                 checkboxes.forEach(checkbox => {
                     checkbox.checked = isChecked;
                     if (isChecked) {
@@ -1042,87 +1407,6 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                 updateBatchActionsUI();
             });
 
-
-            if (!window.resultsListener) {
-                window.resultsListener = db.collection("ketqua").onSnapshot(snapshot => {
-                    let results = [];
-                    // Đảm bảo xóa selection khi dữ liệu load lại
-                    selectedSubmissionIds.clear(); 
-                    selectAllCheckbox.checked = false; 
-
-                    snapshot.forEach(doc => { 
-                        let data = doc.data();
-                        data.id = doc.id; 
-                        results.push(data); 
-                    });
-                    
-                    results.sort((a, b) => {
-                        const timeA = a.thoiGianNop ? a.thoiGianNop.toMillis() : 0;
-                        const timeB = b.thoiGianNop ? b.thoiGianNop.toMillis() : 0;
-                        return timeB - timeA;
-                    });
-                    resultsCount.innerText = results.length;
-                    resultsTableBody.innerHTML = '';
-                    
-                    results.forEach(res => {
-                        const tr = document.createElement('tr');
-                        let nopLuc = "Không rõ";
-                        if (res.thoiGianNop) { nopLuc = new Date(res.thoiGianNop.toMillis()).toLocaleString('vi-VN'); }
-                        const diem = parseFloat(res.diemSo);
-                        const diemClass = diem >= 5 ? 'score-pass' : 'score-fail';
-                        let lyDoText = 'Thủ công';
-                        let lyDoClass = 'reason-manual';
-                        if (res.nopTuDong) {
-                            lyDoText = res.lyDoNopTuDong || 'Tự động';
-                            if (lyDoText === "Hết giờ") { lyDoClass = 'reason-time'; }
-                            else { lyDoClass = 'reason-cheat'; }
-                        }
-                        
-                        // Kiểm tra xem bài làm này có nằm trong danh sách đang được chọn trước đó không (để giữ trạng thái checked)
-                        const isSelected = selectedSubmissionIds.has(res.id);
-
-                        tr.innerHTML = `
-                            <td><input type="checkbox" class="row-checkbox" data-id="${res.id}" ${isSelected ? 'checked' : ''}></td>
-                            <td>${res.hoTen || 'N/A'}</td>
-                            <td>${res.lop || 'N/A'}</td>
-                            <td>${res.tenDeThi || 'N/A'}</td>
-                            <td class="${diemClass}">${res.diemSo || 'N/A'}</td>
-                            <td>${res.soCauDung || 'N/A'} / ${res.tongSoCau || 'N/A'}</td>
-                            <td>${nopLuc}</td>
-                            <td class="${lyDoClass}">${lyDoText}</td>
-                            <td>
-                                <button class="detail-btn" data-id="${res.id}">Xem</button>
-                                <button class="action-btn-delete single-delete-btn" data-id="${res.id}" data-name="${res.hoTen}">Xóa</button>
-                            </td>
-                        `;
-                        resultsTableBody.appendChild(tr);
-                    });
-                    
-                    // Cần kiểm tra lại trạng thái "Chọn tất cả" sau khi reload
-                    const totalCheckboxes = resultsTableBody.querySelectorAll('.row-checkbox').length;
-                    selectAllCheckbox.checked = (totalCheckboxes > 0 && selectedSubmissionIds.size === totalCheckboxes);
-                    
-                    updateBatchActionsUI();
-                }, error => {
-                    console.error("Lỗi tải kết quả: ", error);
-                    resultsTableBody.innerHTML = '<tr><td colspan="9">Lỗi tải dữ liệu.</td></tr>'; // Cập nhật colspan lên 9
-                });
-            }
-
-            // --- Hàm xóa bài làm ĐƠN LẺ ---
-            async function deleteSubmission(submissionId, studentName) {
-                if (window.confirm(`BẠN CÓ CHẮC CHẮN muốn XÓA bài làm của ${studentName} (ID: ${submissionId})? Hành động này không thể hoàn tác.`)) {
-                    try {
-                        await db.collection("ketqua").doc(submissionId).delete();
-                    } catch (error) {
-                        console.error("Lỗi khi xóa bài làm: ", error);
-                        window.confirm("Lỗi khi xóa bài làm. Vui lòng kiểm tra lại quyền (Rules) hoặc kết nối."); // Thay alert
-                    }
-                }
-            }
-
-
-            // --- Event Listener cho các nút trong bảng (Dùng Event Delegation) ---
             resultsTableBody.addEventListener('change', (e) => {
                 if (e.target.classList.contains('row-checkbox')) {
                     const id = e.target.dataset.id;
@@ -1130,7 +1414,6 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                         selectedSubmissionIds.add(id);
                     } else {
                         selectedSubmissionIds.delete(id);
-                        // Nếu bất kỳ ô nào bị bỏ chọn, bỏ chọn "Chọn tất cả"
                         selectAllCheckbox.checked = false;
                     }
                     updateBatchActionsUI();
@@ -1140,7 +1423,6 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
             resultsTableBody.addEventListener('click', (e) => {
                 const submissionId = e.target.dataset.id;
                 if (!submissionId) return;
-
                 if (e.target.classList.contains('detail-btn')) {
                     showSubmissionDetail(submissionId);
                 } else if (e.target.classList.contains('single-delete-btn')) { 
@@ -1150,146 +1432,27 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
             });
 
 
-            // --- (C) Logic cho Tab "Quản lý Tài Khoản" ---
-            const createStudentForm = document.getElementById('createStudentForm');
-            const createStudentMsg = document.getElementById('create-student-msg');
-            
-            // NEW: 1. TẠO ADMIN MỚI
-            const createAdminForm = document.getElementById('createAdminForm');
-            const createAdminMsg = document.getElementById('create-admin-msg');
-
-            const changePasswordForm = document.getElementById('changePasswordForm');
-            const changePassMsg = document.getElementById('change-pass-msg');
-            
-            // NEW: 1A. TẠO ADMIN MỚI
+            // --- (D) Logic cho Tab "Quản lý Tài Khoản" ---
             createAdminForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const email = document.getElementById('newAdminEmail').value;
                 const password = document.getElementById('newAdminPass').value;
-                
-                createAdminMsg.style.display = 'block';
-                createAdminMsg.innerText = 'Đang tạo tài khoản...';
-                createAdminMsg.style.color = 'blue';
-
-                // Tạo một instance Firebase thứ cấp để tạo user mà không cần đăng xuất user hiện tại
                 const secondaryApp = firebase.initializeApp(firebaseConfig, "secondary");
                 secondaryApp.auth().createUserWithEmailAndPassword(email, password)
                     .then((userCredential) => {
                         createAdminMsg.innerText = `Tạo thành công admin: ${userCredential.user.email}`;
                         createAdminMsg.style.color = 'green';
-                        createAdminForm.reset();
-                        // Xóa instance thứ cấp sau khi dùng
-                        secondaryApp.delete();
+                        createAdminMsg.style.display = 'block';
+                        secondaryApp.delete(); 
                     })
                     .catch((error) => {
                         createAdminMsg.innerText = `Lỗi: ${error.message}`;
                         createAdminMsg.style.color = 'red';
-                        // Xóa instance thứ cấp sau khi dùng
+                        createAdminMsg.style.display = 'block';
                         secondaryApp.delete();
                     });
             });
-
-            // NEW: 1B. TẠO MÃ HỌC SINH
-            createStudentForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const code = document.getElementById('studentCodeId').value.trim();
-                const name = document.getElementById('studentNameNew').value.trim();
-                const className = document.getElementById('studentClassNew').value.trim();
-                
-                createStudentMsg.style.display = 'block';
-                createStudentMsg.innerText = 'Đang kiểm tra và tạo mã...';
-                createStudentMsg.style.color = 'blue';
-
-                if (!code || !name || !className) {
-                    createStudentMsg.innerText = "Vui lòng điền đủ Mã HS, Tên và Lớp.";
-                    createStudentMsg.style.color = 'red';
-                    return;
-                }
-                
-                try {
-                    // Kiểm tra xem mã đã tồn tại chưa
-                    const docRef = db.collection("hocsinh").doc(code);
-                    const doc = await docRef.get();
-                    if (doc.exists) {
-                        createStudentMsg.innerText = `Lỗi: Mã HS "${code}" đã tồn tại.`;
-                        createStudentMsg.style.color = 'red';
-                        return;
-                    }
-
-                    // Thêm học sinh mới
-                    await docRef.set({
-                        maHS: code,
-                        hoTen: name,
-                        lop: className
-                    });
-                    
-                    createStudentMsg.innerText = `Tạo thành công Mã HS: ${code} cho ${name} - ${className}`;
-                    createStudentMsg.style.color = 'green';
-                    createStudentForm.reset();
-                    loadStudentList(); // Tải lại danh sách
-                    
-                } catch (error) {
-                    console.error("Lỗi tạo Mã HS: ", error);
-                    createStudentMsg.innerText = `Lỗi: ${error.message}`;
-                    createStudentMsg.style.color = 'red';
-                }
-            });
-
-            // NEW: 2. TẢI VÀ HIỂN THỊ DANH SÁCH HỌC SINH
-            function loadStudentList() {
-                studentListDiv.innerHTML = '<p>Đang tải danh sách học sinh...</p>';
-                db.collection("hocsinh").onSnapshot(snapshot => {
-                    studentListDiv.innerHTML = '';
-                    if (snapshot.empty) {
-                        studentListDiv.innerHTML = '<p>Chưa có Mã HS nào được tạo.</p>';
-                        return;
-                    }
-                    
-                    snapshot.forEach(doc => {
-                        const student = doc.data();
-                        const studentId = doc.id;
-                        const item = document.createElement('div');
-                        item.className = 'student-list-item';
-                        
-                        item.innerHTML = `
-                            <div>
-                                <strong>${student.hoTen}</strong> (${student.lop})
-                                <div style="font-size: 0.9em; color: #007bff;">Mã HS: ${student.maHS}</div>
-                            </div>
-                            <button class="delete-btn delete-student-btn" data-id="${studentId}" data-name="${student.hoTen}">Xóa</button>
-                        `;
-                        
-                        item.querySelector('.delete-student-btn').addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            deleteStudent(studentId, student.hoTen);
-                        });
-                        studentListDiv.appendChild(item);
-                    });
-                }, error => {
-                    console.error("Lỗi tải danh sách học sinh: ", error);
-                    studentListDiv.innerHTML = '<p style="color: red;">Lỗi tải danh sách học sinh.</p>';
-                });
-            }
             
-            // NEW: 3. XÓA MÃ HỌC SINH
-            async function deleteStudent(studentId, studentName) {
-                if (window.confirm(`Bạn có chắc chắn muốn XÓA Mã HS "${studentId}" của học sinh ${studentName} không? (Học sinh sẽ không thể đăng nhập bằng mã này nữa)`)) {
-                    try {
-                        await db.collection("hocsinh").doc(studentId).delete();
-                        
-                        createStudentMsg.innerText = `Đã xóa Mã HS: ${studentId} thành công!`;
-                        createStudentMsg.style.color = 'red';
-                        createStudentMsg.style.display = 'block';
-                        setTimeout(() => createStudentMsg.style.display = 'none', 3000);
-
-                    } catch (error) {
-                        console.error("Lỗi xóa Mã HS: ", error);
-                        window.confirm("Lỗi khi xóa Mã HS. Vui lòng thử lại.");
-                    }
-                }
-            }
-
-
             changePasswordForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const newPass = document.getElementById('newPass').value;
@@ -1322,19 +1485,20 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                         changePassMsg.style.display = 'block';
                     });
             });
-
-            // *** LOGIC ĐỔI AVATAR ADMIN ĐÃ ĐƯỢC DI CHUYỂN RA NGOÀI ***
-
+            
+            // --- KHỞI CHẠY LẦN ĐẦU ---
+            navTests.click(); 
 
         } // --- Kết thúc hàm initializeAdminApp ---
         
-        // --- *** 3. LOGIC CHO MODAL VÀ CHỈNH SỬA ĐỀ THI/CÂU HỎI *** ---
+        
+        // --- *** 3. LOGIC CHO MODAL *** ---
         const modalBackdrop = document.getElementById('modal-backdrop');
         const modalClose = document.getElementById('modal-close');
         const modalTitle = document.getElementById('modal-title');
         const modalBody = document.getElementById('modal-body');
 
-        // NEW: Hàm hiển thị modal chỉnh sửa đề thi
+        // Hàm hiển thị modal chỉnh sửa đề thi
         async function showEditTestModal(testId, testName) {
             modalBackdrop.style.display = 'block';
             modalTitle.innerText = `Chỉnh sửa Đề: ${testName}`;
@@ -1348,10 +1512,8 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                 }
                 const data = docRef.data();
 
-                // Chuyển đổi định dạng ISO string sang định dạng local datetime input
                 const toDateTimeLocal = (isoString) => {
                     if (!isoString) return '';
-                    // Firestore lưu ISO string (YYYY-MM-DDTHH:MM), chỉ cần cắt bỏ phần giây và múi giờ nếu có
                     return isoString.substring(0, 16); 
                 };
 
@@ -1360,32 +1522,25 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                         <h3 style="margin-top: 0;">Thông tin chung</h3>
                         <label>Tên đề thi:</label>
                         <input type="text" id="editTestName" value="${data.tenDe}" required>
-                        
                         <label>Thời gian làm bài (phút):</label>
                         <input type="number" id="editTestTime" value="${data.thoiGianLamBai}" required min="1">
                         
                         <h3 style="margin-top: 20px;">Quản lý Thời Gian Mở/Đóng</h3>
-                        
                         <label>Thời gian BẮT ĐẦU (Mở đề):</label>
                         <input type="datetime-local" id="editTestStartTime" value="${toDateTimeLocal(data.thoiGianMo)}">
-                        <p style="font-size: 0.9em; color: #555;">(Để trống nếu không giới hạn)</p>
-                        
                         <label>Thời gian KẾT THÚC (Đóng đề):</label>
                         <input type="datetime-local" id="editTestEndTime" value="${toDateTimeLocal(data.thoiGianDong)}">
-                        <p style="font-size: 0.9em; color: #555;">(Để trống nếu không giới hạn)</p>
                         
                         <button type="submit" class="add-btn" style="width: 100%; margin-top: 20px;">Lưu Thay Đổi Đề Thi</button>
                         <p id="editTestMsg" style="color: green; margin-top: 10px; display: none;"></p>
                     </form>
                 `;
 
-                // Xử lý sự kiện Submit của form chỉnh sửa đề
                 document.getElementById('editTestForm').addEventListener('submit', async (e) => {
                     e.preventDefault();
                     const id = e.target.dataset.id;
                     const newName = document.getElementById('editTestName').value;
                     const newTime = parseInt(document.getElementById('editTestTime').value);
-                    // Giá trị rỗng từ input type="datetime-local" là ""
                     const newStartTime = document.getElementById('editTestStartTime').value || null;
                     const newEndTime = document.getElementById('editTestEndTime').value || null;
                     const msg = document.getElementById('editTestMsg');
@@ -1409,10 +1564,7 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                         });
                         msg.innerText = `Đã cập nhật đề thi "${newName}" thành công!`;
                         msg.style.color = 'green';
-                        
-                        // Đóng modal sau 2 giây
                         setTimeout(() => modalBackdrop.style.display = 'none', 2000);
-
                     } catch (error) { 
                         console.error("Lỗi cập nhật đề thi: ", error); 
                         msg.innerText = "Lỗi khi cập nhật đề thi. Vui lòng thử lại.";
@@ -1425,8 +1577,90 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                 modalBody.innerHTML = 'Lỗi khi tải dữ liệu đề thi.';
             }
         }
+        
+        // *** MỚI: Hàm hiển thị modal CHỈNH SỬA HỌC SINH ***
+        async function showEditStudentModal(oldMaHS, hoTen, lop) {
+            modalBackdrop.style.display = 'block';
+            modalTitle.innerText = `Chỉnh sửa HS: ${hoTen}`;
+            modalBody.innerHTML = `
+                <form id="editStudentForm" data-old-id="${oldMaHS}">
+                    <h3 style="margin-top: 0;">Thông tin Học sinh</h3>
+                    
+                    <label>Mã Học Sinh (ID Đăng nhập):</label>
+                    <input type="text" id="editMaHS" value="${oldMaHS}" required>
+                    <p style="font-size: 0.9em; color: #555; margin-top: -10px;">(Cẩn thận khi thay đổi. Nếu Mã HS thay đổi, học sinh phải dùng Mã mới để đăng nhập).</p>
 
-        // Hàm hiển thị modal chi tiết bài làm (Giữ nguyên logic cũ)
+                    <label>Họ và Tên:</label>
+                    <input type="text" id="editHoTen" value="${hoTen}" required>
+                    
+                    <label>Lớp:</label>
+                    <input type="text" id="editLop" value="${lop}" required>
+                    
+                    <button type="submit" class="add-btn" style="width: 100%; margin-top: 20px;">Lưu Thay Đổi</button>
+                    <p id="editStudentMsg" style="color: green; margin-top: 10px; display: none;"></p>
+                </form>
+            `;
+
+            document.getElementById('editStudentForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const oldId = e.target.dataset.oldId;
+                const newId = document.getElementById('editMaHS').value.trim();
+                const newHoTen = document.getElementById('editHoTen').value.trim();
+                const newLop = document.getElementById('editLop').value.trim();
+                const msg = document.getElementById('editStudentMsg');
+                
+                if (!newId || !newHoTen || !newLop) {
+                    alert("Vui lòng điền đầy đủ thông tin.");
+                    return;
+                }
+
+                msg.style.display = 'block';
+                msg.innerText = 'Đang lưu...';
+                msg.style.color = 'blue';
+
+                const newData = { hoTen: newHoTen, lop: newLop };
+
+                try {
+                    if (newId === oldId) {
+                        // TRƯỜNG HỢP 1: Chỉ cập nhật Tên/Lớp, không đổi Mã HS
+                        await db.collection('hocsinh').doc(oldId).update(newData);
+                        msg.innerText = 'Cập nhật thành công!';
+                        msg.style.color = 'green';
+                    } else {
+                        // TRƯỜNG HỢP 2: Đổi Mã HS (Phải Xóa + Tạo mới)
+                        
+                        // 1. Kiểm tra xem Mã HS mới đã tồn tại chưa
+                        const checkRef = db.collection('hocsinh').doc(newId);
+                        const checkDoc = await checkRef.get();
+                        if (checkDoc.exists) {
+                            msg.innerText = `Lỗi: Mã HS "${newId}" mới đã tồn tại. Vui lòng chọn mã khác.`;
+                            msg.style.color = 'red';
+                            return;
+                        }
+                        
+                        // 2. Tạo doc mới
+                        await checkRef.set(newData);
+                        
+                        // 3. Xóa doc cũ
+                        await db.collection('hocsinh').doc(oldId).delete();
+                        
+                        msg.innerText = 'Đã thay đổi Mã HS và cập nhật thành công!';
+                        msg.style.color = 'green';
+                    }
+                    
+                    loadStudentList(); // Tải lại danh sách
+                    setTimeout(() => modalBackdrop.style.display = 'none', 2000);
+
+                } catch (error) {
+                    console.error("Lỗi cập nhật học sinh: ", error);
+                    msg.innerText = "Lỗi khi lưu. Vui lòng thử lại.";
+                    msg.style.color = 'red';
+                }
+            });
+        }
+
+
+        // Hàm hiển thị modal chi tiết bài làm
         async function showSubmissionDetail(submissionId) {
             modalBackdrop.style.display = 'block';
             modalTitle.innerText = "Chi tiết bài làm";
@@ -1447,18 +1681,27 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                     return;
                 }
 
-                // Cập nhật tiêu đề modal
                 modalTitle.innerText = `Bài làm của: ${data.hoTen} - Lớp: ${data.lop}`;
                 modalBody.innerHTML = ''; // Xóa
+
+                if (data.nopTuDong === true && data.answeredCount !== undefined) {
+                    const autoSubmitInfo = document.createElement('div');
+                    autoSubmitInfo.className = 'auto-submit-info-admin';
+                    autoSubmitInfo.innerHTML = `
+                        <h4 style="margin-top:0;">Thông tin Nộp bài Tự động</h4>
+                        <p><strong>Lý do:</strong> ${data.lyDoNopTuDong || 'Tự động'}</p>
+                        <p><strong>Số câu đã chọn:</strong> ${data.answeredCount} / ${data.tongSoCau}</p>
+                    `;
+                    modalBody.appendChild(autoSubmitInfo);
+                }
 
                 questions.forEach((q, index) => {
                     const questionDiv = document.createElement('div');
                     questionDiv.className = 'review-question';
                     
-                    // Hiển thị ảnh (nếu có)
                     if (q.imageUrl) {
                         const image = document.createElement('img');
-                        image.src = q.imageUrl; // Đây có thể là Base64 hoặc URL
+                        image.src = q.imageUrl;
                         image.style.maxWidth = '100%';
                         image.style.maxHeight = '300px';
                         image.style.marginBottom = '10px';
@@ -1471,7 +1714,7 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                     promptP.innerText = `${index + 1}. ${q.prompt}`;
                     questionDiv.appendChild(promptP);
 
-                    const userAnswer = userAnswers[index];
+                    const userAnswer = userAnswers[index]; 
                     const correctAnswer = q.answer;
 
                     q.options.forEach(option => {
@@ -1486,6 +1729,14 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                         }
                         questionDiv.appendChild(optionSpan);
                     });
+                    
+                    if (userAnswer === null) {
+                        const unansweredSpan = document.createElement('span');
+                        unansweredSpan.className = 'review-option unanswered';
+                        unansweredSpan.innerText = '[Học sinh đã bỏ trống câu này]';
+                        questionDiv.appendChild(unansweredSpan);
+                    }
+                    
                     modalBody.appendChild(questionDiv);
                 });
 
@@ -1505,7 +1756,6 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
             }
         });
         
-        // Thêm đóng modal bằng phím ESC
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && modalBackdrop.style.display === 'block') {
                 modalBackdrop.style.display = 'none';

@@ -320,17 +320,11 @@
         document.getElementById('testTitle').innerText = selectedTestName || "Bài kiểm tra";
         
         // *** NEW: Xử lý lịch sử duyệt web để chặn quay lại sau khi đã nộp ***
-        // Thay thế trạng thái hiện tại bằng chính nó. Điều này giúp ngăn người dùng quay lại
-        // trang làm bài khi đã nộp xong và xem kết quả.
         history.replaceState(null, null, location.href);
         window.onpopstate = function() {
-            // Khi người dùng bấm nút back, nó sẽ chuyển hướng thẳng đến trang chọn đề,
-            // tránh quay lại trạng thái trước khi replaceState.
             if (!daNopBai) {
-                // Nếu chưa nộp, có thể là thoát giữa chừng (tùy thuộc vào quy tắc của bạn)
-                // Hiện tại, ta sẽ cho phép người dùng thoát (và coi là chưa nộp nếu thoát trước khi hết giờ/vi phạm)
+                // (Tùy chọn: Có thể thêm cảnh báo nếu đang làm bài)
             } else {
-                // Nếu đã nộp rồi mà cố gắng quay lại, chuyển thẳng về trang chủ (hoặc trang chọn đề)
                 window.location.replace('select-test.html'); 
             }
         };
@@ -447,8 +441,6 @@
                     const index = parseInt(e.target.name.replace('question', ''), 10);
                     userSelections[index] = e.target.value;
                     updateProgress();
-                    
-                    // Loại bỏ khối tự động chuyển câu. Học sinh tự bấm Next.
                 }
             });
             updateProgress();
@@ -651,7 +643,7 @@
         }
 
 
-        // --- HÀM NỘP BÀI (Không đổi) ---
+        // --- HÀM NỘP BÀI (*** CẬP NHẬT: Thêm answeredCount ***) ---
         async function submitTest(isAutoSubmit = false, autoSubmitReason = null) {
             if (daNopBai) return; 
 
@@ -678,6 +670,9 @@
             // --- Chấm điểm ---
             let score = 0;
             const userAnswers = userSelections; 
+            
+            // *** MỚI: Đếm số câu đã chọn ***
+            const answeredCount = userSelections.filter(sel => sel !== null).length;
 
             correctAnswers.forEach((answer, index) => {
                 const userAnswer = userAnswers[index];
@@ -693,6 +688,8 @@
             localStorage.setItem('score', finalScore.toFixed(2));
             localStorage.setItem('totalQuestions', totalQuestions);
             localStorage.setItem('correctCount', score);
+            
+            // (Không cần lưu answeredCount vào localStorage, vì trang results.html sẽ tải từ CSDL)
 
             // Lưu kết quả lên Firebase
             if (db) {
@@ -709,7 +706,8 @@
                         nopTuDong: isAutoSubmit, 
                         lyDoNopTuDong: autoSubmitReason,
                         userAnswers: userAnswers,         
-                        quizData: fullQuestionObjects     
+                        quizData: fullQuestionObjects,
+                        answeredCount: answeredCount // *** GỬI DỮ LIỆU MỚI ***
                     });
 
                     // Lưu ID bài nộp để trang results.html tải về 
