@@ -154,7 +154,7 @@
           apiKey: "AIzaSyDmRq3djRZHElhC2T_EYsU7v5vrzwRyybY",
           authDomain: "webkiemtra-66cdc.firebaseapp.com",
           projectId: "webkiemtra-66cdc",
-          storageBucket: "webkiemtra-66cdc.appspot.com",
+          storageBucket: "webkiemtra-66cdc.firebasestorage.app",
           messagingSenderId: "181113887829",
           appId: "1:181113887829:web:49535ee20d85b7395948dc"
         };
@@ -291,7 +291,7 @@
                     questionDiv.appendChild(promptP);
 
                     const userAnswer = userAnswers[index]; // Có thể là null
-                    const correctAnswer = q.answer;
+                    const correctAnswer = decodeURIComponent(atob(q.answer)); // Giải mã đáp án
 
                     q.options.forEach(option => {
                         const optionSpan = document.createElement('span');

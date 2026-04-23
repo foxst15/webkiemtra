@@ -279,14 +279,33 @@
                 // Lấy thời gian hiện tại
                 const currentTime = new Date();
                 
-                // 1. Tải danh sách TẤT CẢ đề thi có sẵn
+                // ==========================================
+                // 🔐 1. TẢI VÀ LỌC DANH SÁCH ĐỀ THEO LỚP 🔐
+                // ==========================================
                 const testsSnapshot = await db.collection("dethi").get();
-                // *** CẬP NHẬT: Gán vào biến toàn cục ***
                 allTestsData = []; 
+                
                 testsSnapshot.forEach(doc => {
-                    // *** SỬA LỖI: Thay thế ...doc.data() bằng Object.assign ***
-                    allTestsData.push(Object.assign({ id: doc.id }, doc.data()));
+                    const testData = doc.data();
+                    // Chuẩn hóa chuỗi để so sánh dễ dàng hơn
+                    const lopApDung = (testData.lopApDung || '').trim().toLowerCase();
+                    const myClass = (studentClass || '').trim().toLowerCase();
+                    
+                    let isAllowed = true;
+                    // Nếu đề có thiết lập lớp áp dụng (ví dụ: "10A1, 10A2")
+                    if (lopApDung !== '') {
+                        // Tách các lớp bằng dấu phẩy, xóa khoảng trắng thừa
+                        const allowedClasses = lopApDung.split(',').map(c => c.trim());
+                        // Kiểm tra xem lớp của học sinh có nằm trong danh sách không
+                        isAllowed = allowedClasses.includes(myClass);
+                    }
+
+                    // Nếu được phép làm (đúng lớp hoặc đề áp dụng cho mọi lớp)
+                    if (isAllowed) {
+                        allTestsData.push(Object.assign({ id: doc.id }, testData));
+                    }
                 });
+                // ==========================================
 
                 // 2. Tải danh sách BÀI ĐÃ NỘP của học sinh này
                 const submissionsSnapshot = await db.collection("ketqua")
@@ -308,16 +327,16 @@
                 // 3. Lọc và hiển thị (Render lần đầu)
                 allTestsData.forEach(test => {
                     const testId = test.id;
-                    const testName = test.tenDe; // SỬA LỖI: Bỏ .data
-                    const testTime = test.thoiGianLamBai || 15; // SỬA LỖI: Bỏ .data
+                    const testName = test.tenDe; 
+                    const testTime = test.thoiGianLamBai || 15; 
                     const isCompleted = completedTestIdsData.has(testId);
                     
                     let isDisabled = isCompleted;
                     let statusText = '';
                     let statusClass = '';
 
-                    const startTime = test.thoiGianMo ? new Date(test.thoiGianMo) : null; // SỬA LỖI: Bỏ .data
-                    const endTime = test.thoiGianDong ? new Date(test.thoiGianDong) : null; // SỬA LỖI: Bỏ .data
+                    const startTime = test.thoiGianMo ? new Date(test.thoiGianMo) : null; 
+                    const endTime = test.thoiGianDong ? new Date(test.thoiGianDong) : null; 
                     
                     if (startTime || endTime || isCompleted) {
                         
@@ -381,7 +400,7 @@
                             localStorage.setItem('selectedTestId', testId);
                             localStorage.setItem('selectedTestName', testName);
                             localStorage.setItem('selectedTestTime', testTime); 
-                            window.location.href = 'rules.html'; // SỬA Ở ĐÂY
+                            window.location.href = 'rules.html'; 
                         };
                     }
                     
@@ -389,10 +408,10 @@
                 });
 
                 // 4. Hiển thị thông báo nếu không còn bài nào để làm
-                if (availableTestsCount === 0 && allTests.length > 0) {
+                if (availableTestsCount === 0 && allTestsData.length > 0) {
                     noTestMessage.style.display = 'block';
                 } else if (allTestsData.length === 0) {
-                    listDiv.innerHTML = '<p>Chưa có đề thi nào được tạo bởi admin.</p>';
+                    listDiv.innerHTML = '<p>Chưa có đề thi nào dành cho lớp của bạn.</p>';
                 }
 
                 // *** MỚI: Khởi động bộ đếm giờ cập nhật thời gian thực ***
@@ -431,8 +450,8 @@
                 let statusText = '';
                 let statusClass = '';
 
-                const startTime = test.thoiGianMo ? new Date(test.thoiGianMo) : null; // SỬA LỖI: Bỏ .data
-                const endTime = test.thoiGianDong ? new Date(test.thoiGianDong) : null; // SỬA LỖI: Bỏ .data
+                const startTime = test.thoiGianMo ? new Date(test.thoiGianMo) : null; 
+                const endTime = test.thoiGianDong ? new Date(test.thoiGianDong) : null; 
 
                 if (startTime && currentTime < startTime) {
                     isDisabled = true;
@@ -484,17 +503,15 @@
                                 localStorage.setItem('selectedTestId', testId);
                                 localStorage.setItem('selectedTestName', testName);
                                 localStorage.setItem('selectedTestTime', testTime); 
-                                window.location.href = 'rules.html'; // SỬA Ở ĐÂY
+                                window.location.href = 'rules.html'; 
                             };
-                        })(testId, test.tenDe, test.thoiGianLamBai || 15); // SỬA LỖI: Bỏ .data
+                        })(testId, test.tenDe, test.thoiGianLamBai || 15); 
                     }
                 }
             });
         }
 
-
         loadTestList();
     </script>
 </body>
-
 </html>

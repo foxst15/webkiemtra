@@ -59,6 +59,13 @@
         #admin-nav button { background-color: transparent; color: #555; padding: 10px 20px; border: none; border-bottom: 4px solid transparent; font-size: 1.1em; font-weight: 600; }
         #admin-nav button.active { color: #007bff; border-bottom-color: #007bff; }
         
+        /* MỚI: SELECT BỘ LỌC */
+        select.filter-select {
+            padding: 10px; border: 1px solid #ccc; border-radius: 8px;
+            font-family: inherit; font-size: 0.95em; flex-grow: 1;
+        }
+        .filter-row { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;}
+
         /* Tab 1: Đề Thi */
         #test-manager-view { display: none; grid-template-columns: 350px 1fr; gap: 20px; }
         button.add-btn { background-color: #28a745; }
@@ -253,14 +260,12 @@
             }
         }
     </style>
-    <!-- SDK Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 </head>
 <body>
 
-    <!-- *** 1. GIAO DIỆN ĐĂNG NHẬP *** -->
     <div id="login-container">
         <div class="login-box">
             <h2>Đăng nhập Quản trị</h2>
@@ -273,9 +278,7 @@
         </div>
     </div>
 
-    <!-- *** 2. GIAO DIỆN QUẢN LÝ *** -->
     <div id="management-container">
-        <!-- HEADER -->
         <div id="admin-header">
             <div id="admin-profile">
                 <img id="admin-avatar" src="" alt="Avatar Admin"> 
@@ -291,14 +294,24 @@
             <button id="nav-account">Quản lý Tài Khoản</button>
         </div>
 
-        <!-- Tab 1: Quản lý Đề Thi -->
         <div id="test-manager-view">
-            <!-- CỘT 1 -->
             <div class="card">
                 <h2>Quản lý Đề Thi</h2>
                 
-                <label for="test-search-input" style="font-weight: 600;">Lọc Đề Thi:</label>
-                <input type="search" id="test-search-input" placeholder="Lọc theo Tên đề, Người tạo..." style="margin-bottom: 20px;">
+                <input type="search" id="test-search-input" placeholder="Tìm tên đề, Người tạo..." style="margin-bottom: 10px;">
+                
+                <div class="filter-row">
+                    <select id="filter-test-class" class="filter-select"><option value="">-- Tất cả các Lớp --</option></select>
+                    <select id="filter-test-subject" class="filter-select"><option value="">-- Tất cả Môn học --</option></select>
+                </div>
+
+                <div id="test-batch-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px; border: 1px solid #eee;">
+                    <div>
+                        <input type="checkbox" id="select-all-tests-checkbox" style="cursor: pointer; margin-right: 5px;">
+                        <label for="select-all-tests-checkbox" style="cursor: pointer; display: inline; font-weight: bold;">Chọn tất cả</label>
+                    </div>
+                    <button id="delete-selected-tests-btn" class="action-btn-delete" style="display: none;">Xóa đề đã chọn (<span id="selected-tests-count">0</span>)</button>
+                </div>
                 
                 <form id="createTestForm" style="margin-bottom: 20px; border-top: 1px solid #eee; padding-top: 20px;">
                     <label>Tên đề thi mới:</label>
@@ -313,13 +326,19 @@
                     <label>Thời gian KẾT THÚC (Tùy chọn):</label>
                     <input type="datetime-local" id="testEndTime">
                     
-                    <button type="submit" class="add-btn" style="width: 100%;">Tạo Đề Thi Mới</button>
+                    <label style="color: #007bff; font-weight: bold; margin-top: 10px; display: block;">Môn học (Tùy chọn, để phân loại):</label>
+                    <input type="text" id="testSubject" placeholder="Ví dụ: Toán, Ngữ Văn, Tiếng Anh">
+
+                    <label style="color: #28a745; font-weight: bold; display: block;">Lớp áp dụng (Tách bằng dấu phẩy, để trống = Tất cả):</label>
+                    <input type="text" id="testTargetClass" placeholder="Ví dụ: 10A1, 10A2">
+                    
+                    <button type="submit" class="add-btn" style="width: 100%; margin-top: 10px;">Tạo Đề Thi Mới</button>
                 </form>
+
                 <div id="test-list">
                     <div id="test-loading">Đang tải danh sách đề...</div>
                 </div>
             </div>
-            <!-- CỘT 2 -->
             <div class="card" id="question-manager">
                  <h2 id="question-manager-title">Chọn một đề thi để thêm câu hỏi</h2>
                  
@@ -329,7 +348,6 @@
                     <button id="toggle-add-comprehension">Thêm Đọc-Hiểu (TV/Anh)</button>
                  </div>
                  
-                 <!-- Form 1: Thêm từng câu -->
                  <form id="addQuestionForm" style="display: block;">
                     <h3>Thêm câu hỏi mới</h3>
                     
@@ -353,7 +371,6 @@
                     <button type="submit" class="add-btn">Thêm câu hỏi</button>
                 </form>
                 
-                <!-- Form 2: Thêm hàng loạt (Bulk) -->
                 <form id="addBulkQuestionForm" style="display: none;">
                     <h3>Thêm hàng loạt câu hỏi</h3>
                     <p>Dán nội dung vào đây. Mỗi câu hỏi phải theo định dạng (tối thiểu 6 dòng):</p>
@@ -369,7 +386,6 @@ Image: https://products.aspose.app/imaging/vi/conversion/image-to-base64 (Tùy c
                     <button type="submit" class="add-btn" style="width: 100%;">Lưu hàng loạt câu hỏi</button>
                 </form>
                 
-                <!-- Form 3: Thêm Đọc-Hiểu -->
                 <form id="addComprehensionForm" style="display: none;">
                     <h3>Thêm Đọc-Hiểu (Tiếng Việt/Anh)</h3>
                     <p>Dùng cho các bài có <strong>một đoạn văn chung</strong> và nhiều câu hỏi.
@@ -400,8 +416,6 @@ D. Lựa chọn C
 
                 <div id="question-list-container" style="display: none; margin-top: 20px;">
                     <h3>Danh sách câu hỏi</h3>
-                    
-                    <!-- *** THAY ĐỔI: THÊM TÁC VỤ HÀNG LOẠT CHO CÂU HỎI *** -->
                     <div id="question-batch-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-top: 1px solid #eee; padding-top: 10px;">
                         <div>
                             <input type="checkbox" id="select-all-questions-checkbox" style="margin-right: 5px;">
@@ -411,16 +425,12 @@ D. Lựa chọn C
                             Xóa (<span id="selected-questions-count">0</span>)
                         </button>
                     </div>
-                    <!-- *** KẾT THÚC THAY ĐỔI *** -->
-
                     <div id="question-list"></div>
                 </div>
             </div>
         </div>
         
-        <!-- Tab 2: Quản lý Học Sinh (Mã HS) -->
         <div id="student-manager-view">
-            <!-- CỘT 1: TẠO MÃ HS MỚI -->
             <div class="card">
                 <h2>Quản lý Mã Học Sinh</h2>
                  <div class="toggle-buttons">
@@ -428,7 +438,6 @@ D. Lựa chọn C
                     <button id="toggle-add-student-bulk">Thêm hàng loạt</button>
                  </div>
 
-                <!-- Form thêm từng HS -->
                 <div id="addStudentFormContainer" style="display: block;">
                     <form id="createStudentForm" style="margin-bottom: 20px; margin-top: 15px;">
                         <label>Mã Học Sinh (Dùng để đăng nhập):</label>
@@ -445,7 +454,6 @@ D. Lựa chọn C
                     <p id="create-student-msg" style="display: none;"></p>
                 </div>
                 
-                <!-- Form thêm hàng loạt HS -->
                 <form id="addBulkStudentForm" style="display: none; margin-top: 15px;">
                     <p>Dán danh sách vào đây. Mỗi học sinh một dòng theo định dạng:</p>
                     <pre><code>MãHS,TênHọcSinh,Lớp</code></pre>
@@ -458,12 +466,13 @@ HS003,Lê Văn C,10A1</code></pre>
                 </form>
 
             </div>
-            <!-- CỘT 2: DANH SÁCH MÃ HS ĐÃ TẠO -->
             <div class="card" id="student-list-manager">
                  <h2>Danh sách Học Sinh</h2>
                  
-                 <label for="student-search-input" style="font-weight: 600;">Lọc Học Sinh:</label>
-                 <input type="search" id="student-search-input" placeholder="Lọc theo Tên, Lớp..." style="margin-bottom: 15px;">
+                 <input type="search" id="student-search-input" placeholder="Tìm kiếm Tên, Mã HS..." style="margin-bottom: 10px;">
+                 <div class="filter-row">
+                    <select id="filter-student-class" class="filter-select"><option value="">-- Tất cả các Lớp --</option></select>
+                 </div>
 
                  <p id="student-list-loading">Đang tải danh sách...</p>
                  <div id="student-list">
@@ -472,7 +481,6 @@ HS003,Lê Văn C,10A1</code></pre>
         </div>
 
 
-        <!-- Tab 3: Xem Kết Quả -->
         <div id="results-view" class="card">
             <h2>Danh sách Kết Quả</h2>
             
@@ -494,7 +502,7 @@ HS003,Lê Văn C,10A1</code></pre>
                 <table id="results-table">
                     <thead>
                         <tr>
-                            <th><!-- (Bỏ cột checkbox ở đây vì đã dời lên trên) --></th>
+                            <th></th>
                             <th>Họ Tên</th>
                             <th>Lớp</th>
                             <th>Tên Đề Thi</th>
@@ -510,9 +518,7 @@ HS003,Lê Văn C,10A1</code></pre>
             </div>
         </div>
 
-        <!-- Tab 4: Quản lý Tài Khoản Admin -->
         <div id="account-manager-view">
-            <!-- CỘT 1: ĐỔI AVATAR -->
             <div class="card avatar-upload-section">
                 <h3>Đổi Ảnh Đại Diện Cá Nhân</h3>
                 <img id="current-admin-avatar" src="" alt="Avatar hiện tại">
@@ -524,8 +530,7 @@ HS003,Lê Văn C,10A1</code></pre>
                 <div id="avatar-upload-status"></div>
             </div>
             
-             <!-- CỘT 2: TẠO ADMIN & ĐỔI MẬT KHẨU -->
-            <div class="card">
+             <div class="card">
                 <h2>Tạo Admin Mới</h2>
                 <form id="createAdminForm">
                     <label>Email Admin Mới:</label>
@@ -551,7 +556,6 @@ HS003,Lê Văn C,10A1</code></pre>
         </div>
     </div>
 
-    <!-- *** MODAL XEM LẠI BÀI/CHỈNH SỬA ĐỀ THI/CHỈNH SỬA HỌC SINH *** -->
     <div id="modal-backdrop">
         <div id="modal-content">
             <button id="modal-close">&times;</button>
@@ -571,8 +575,6 @@ HS003,Lê Văn C,10A1</code></pre>
           appId: "1:181113887829:web:49535ee20d85b7395948dc"
         };
         
-        // *** THAY ĐỔI: Không dùng hằng số chung nữa ***
-        // const ADMIN_CONFIG_DOC = 'admin_avatar'; 
         const MAX_IMAGE_SIZE_KB = 500; 
 
         // --- 1. KHỞI TẠO VÀ XỬ LÝ ĐĂNG NHẬP ---
@@ -583,12 +585,11 @@ HS003,Lê Văn C,10A1</code></pre>
         let currentUser = null; 
         let isEditingQuestionId = null;
         
-        // --- MỚI: Biến lưu trữ cache cho bộ lọc ---
+        // --- Cache dữ liệu ---
         let allTestsCache = [];
         let allStudentsCache = [];
         let allResultsCache = [];
 
-        // KHAI BÁO BIẾN DÙNG CHUNG ĐỂ LƯU SỐ LƯỢNG CÂU HỎI HIỆN TẠI TRONG ĐỀ ĐƯỢC CHỌN
         let currentQuestionCount = 0; 
         
         try {
@@ -618,7 +619,6 @@ HS003,Lê Văn C,10A1</code></pre>
             auth.signOut();
         });
 
-        // *** THÊM: Hàm update UI (bị thiếu ở bản vá trước) ***
         function updateAllAvatars(url) {
             document.getElementById('admin-avatar').src = url;
             const largeAvatar = document.getElementById('current-admin-avatar');
@@ -631,7 +631,6 @@ HS003,Lê Văn C,10A1</code></pre>
             return `https://placehold.co/40x40/007bff/ffffff?text=${initial}`;
         }
         
-        // *** THAY ĐỔI: Tải avatar cá nhân bằng uid ***
         async function loadAvatarFromFirestore(uid, email) {
             const defaultAvatar = getDefaultAvatarUrl(email);
             if (!uid) {
@@ -639,10 +638,8 @@ HS003,Lê Văn C,10A1</code></pre>
                 return;
             }
             try {
-                // Đọc từ doc cá nhân: adminconfig/{uid}
                 const docRef = db.collection('adminconfig').doc(uid);
                 const doc = await docRef.get();
-                
                 if (doc.exists && doc.data().avatarUrl) {
                     updateAllAvatars(doc.data().avatarUrl);
                 } else {
@@ -654,7 +651,6 @@ HS003,Lê Văn C,10A1</code></pre>
             }
         }
         
-        // *** THAY ĐỔI: Lưu avatar cá nhân bằng uid ***
         function setupAvatarUpload(uid) {
             const avatarInput = document.getElementById('admin-avatar-input');
             const statusDiv = document.getElementById('avatar-upload-status');
@@ -662,7 +658,7 @@ HS003,Lê Văn C,10A1</code></pre>
             avatarInput.addEventListener('change', async function() {
                 const file = this.files[0];
                 if (file) {
-                    if (file.size > 1024 * 1024 * 1) { // Vẫn giới hạn 1MB
+                    if (file.size > 1024 * 1024 * 1) { 
                         statusDiv.innerText = 'Lỗi: Kích thước ảnh quá lớn (tối đa 1MB).';
                         statusDiv.style.color = '#dc3545';
                         this.value = ''; 
@@ -676,21 +672,17 @@ HS003,Lê Văn C,10A1</code></pre>
                     try {
                         const reader = new FileReader();
                         reader.onload = async function(e) {
-                            const newAvatarUrl = e.target.result; // Base64
-                            
-                            // Lưu vào doc cá nhân: adminconfig/{uid}
+                            const newAvatarUrl = e.target.result; 
                             const docRef = db.collection('adminconfig').doc(uid); 
                             await docRef.set({ avatarUrl: newAvatarUrl }, { merge: true }); 
                             
                             updateAllAvatars(newAvatarUrl);
-                            
                             statusDiv.style.color = '#28a745';
                             statusDiv.innerText = 'Đã cập nhật ảnh đại diện thành công!';
                             setTimeout(() => statusDiv.innerText = '', 3000);
                         };
                         reader.readAsDataURL(file);
                     } catch (error) {
-                        console.error("Lỗi lưu avatar vào Firestore: ", error);
                         statusDiv.innerText = 'Lỗi khi lưu ảnh. Vui lòng thử lại.';
                         statusDiv.style.color = '#dc3545';
                     }
@@ -714,12 +706,8 @@ HS003,Lê Văn C,10A1</code></pre>
                 managementContainer.style.display = 'block'; 
                 document.getElementById('admin-name').innerText = user.email;
                 
-                // *** THAY ĐỔI: Truyền cả uid và email ***
                 loadAvatarFromFirestore(user.uid, user.email); 
-                
                 initializeAdminApp(); 
-                
-                // *** THAY ĐỔI: Truyền uid ***
                 setupAvatarUpload(user.uid); 
             } else {
                 currentUser = null;
@@ -731,9 +719,9 @@ HS003,Lê Văn C,10A1</code></pre>
 
         // --- 2. KHU VỰC LOGIC QUẢN LÝ ---
         
-        // *** THAY ĐỔI: Khai báo 2 Set ở đây ***
         let selectedSubmissionIds = new Set();
         let selectedQuestionIds = new Set();
+        let selectedTestIds = new Set(); // MỚI: Xóa hàng loạt Đề thi
         
         function initializeAdminApp() {
             
@@ -757,11 +745,20 @@ HS003,Lê Văn C,10A1</code></pre>
             const qListContainer = document.getElementById('question-list-container');
             const qListDiv = document.getElementById('question-list');
             
-            // *** THAY ĐỔI: DOM cho batch-delete câu hỏi ***
             const selectAllQuestionsCheckbox = document.getElementById('select-all-questions-checkbox');
             const deleteSelectedQuestionsBtn = document.getElementById('delete-selected-questions-btn');
             const selectedQuestionsCountSpan = document.getElementById('selected-questions-count');
             
+            // MỚI: Tác vụ Đề thi
+            const selectAllTestsCheckbox = document.getElementById('select-all-tests-checkbox');
+            const deleteSelectedTestsBtn = document.getElementById('delete-selected-tests-btn');
+            const selectedTestsCountSpan = document.getElementById('selected-tests-count');
+            
+            // MỚI: Bộ lọc Dropdown
+            const filterTestClass = document.getElementById('filter-test-class');
+            const filterTestSubject = document.getElementById('filter-test-subject');
+            const filterStudentClass = document.getElementById('filter-student-class');
+
             const toggleAddSingle = document.getElementById('toggle-add-single');
             const toggleAddBulk = document.getElementById('toggle-add-bulk');
             const toggleAddComprehension = document.getElementById('toggle-add-comprehension');
@@ -789,14 +786,12 @@ HS003,Lê Văn C,10A1</code></pre>
             const changePassMsg = document.getElementById('change-pass-msg');
             
             
-            // --- ĐỊNH NGHĨA HÀM ---
-
+            // --- ĐỊNH NGHĨA HÀM CƠ BẢN ---
             function setActiveTab(activeNav, activeView) {
                 [navTests, navStudents, navResults, navAccount].forEach(nav => nav.classList.remove('active'));
                 [testManagerView, studentManagerView, resultsView, accountManagerView].forEach(view => view.style.display = 'none');
                 
                 activeNav.classList.add('active');
-                
                 if (activeView === testManagerView || activeView === studentManagerView || activeView === accountManagerView) {
                     activeView.style.display = 'grid';
                 } else {
@@ -804,19 +799,71 @@ HS003,Lê Văn C,10A1</code></pre>
                 }
             }
             
+            // --- MỚI: HÀM CẬP NHẬT SELECT BOX TỰ ĐỘNG ---
+            function updateFilterDropdowns() {
+                // 1. Lọc theo Đề thi
+                const testClasses = new Set();
+                const testSubjects = new Set();
+                allTestsCache.forEach(t => {
+                    if (t.lopApDung) {
+                        t.lopApDung.split(',').forEach(c => {
+                            if(c.trim()) testClasses.add(c.trim());
+                        });
+                    }
+                    if (t.monHoc && t.monHoc.trim()) testSubjects.add(t.monHoc.trim());
+                });
+                
+                const currentTestClass = filterTestClass.value;
+                filterTestClass.innerHTML = '<option value="">-- Tất cả các Lớp --</option>' + 
+                    [...testClasses].sort().map(c => `<option value="${c}">${c}</option>`).join('');
+                filterTestClass.value = currentTestClass;
+                
+                const currentTestSub = filterTestSubject.value;
+                filterTestSubject.innerHTML = '<option value="">-- Tất cả Môn học --</option>' + 
+                    [...testSubjects].sort().map(s => `<option value="${s}">${s}</option>`).join('');
+                filterTestSubject.value = currentTestSub;
+                
+                // 2. Lọc theo Học sinh
+                const studentClasses = new Set();
+                allStudentsCache.forEach(hs => {
+                    if (hs.lop && hs.lop.trim()) studentClasses.add(hs.lop.trim());
+                });
+                
+                const currentStudentClass = filterStudentClass.value;
+                filterStudentClass.innerHTML = '<option value="">-- Tất cả các Lớp --</option>' + 
+                    [...studentClasses].sort().map(c => `<option value="${c}">${c}</option>`).join('');
+                filterStudentClass.value = currentStudentClass;
+            }
+
+
             // --- (A) Logic cho Tab "Quản lý Đề Thi" ---
+            
+            function updateTestBatchUI() {
+                selectedTestsCountSpan.innerText = selectedTestIds.size;
+                deleteSelectedTestsBtn.style.display = selectedTestIds.size > 0 ? 'inline-block' : 'none';
+            }
 
             window.renderTestList = function() {
-                const query = document.getElementById('test-search-input').value.toLowerCase();
+                updateFilterDropdowns(); // Update select options first
                 
-                const filteredTests = allTestsCache.filter(test => 
-                    test.tenDe.toLowerCase().includes(query) ||
-                    (test.nguoiTao && test.nguoiTao.toLowerCase().includes(query))
-                );
+                const query = document.getElementById('test-search-input').value.toLowerCase();
+                const classFilter = filterTestClass.value.toLowerCase();
+                const subjectFilter = filterTestSubject.value.toLowerCase();
+                
+                const filteredTests = allTestsCache.filter(test => {
+                    const matchQuery = test.tenDe.toLowerCase().includes(query) || (test.nguoiTao && test.nguoiTao.toLowerCase().includes(query));
+                    const matchClass = classFilter === "" || (test.lopApDung && test.lopApDung.toLowerCase().includes(classFilter));
+                    const matchSubject = subjectFilter === "" || (test.monHoc && test.monHoc.toLowerCase() === subjectFilter);
+                    return matchQuery && matchClass && matchSubject;
+                });
 
                 testListDiv.innerHTML = ''; 
+                selectedTestIds.clear(); // Reset UI chọn khi render lại
+                selectAllTestsCheckbox.checked = false;
+                updateTestBatchUI();
+
                 if (filteredTests.length === 0) { 
-                    testListDiv.innerHTML = '<p>Không tìm thấy đề thi nào.</p>'; 
+                    testListDiv.innerHTML = '<p>Không tìm thấy đề thi nào khớp với bộ lọc.</p>'; 
                     return; 
                 }
                 
@@ -826,24 +873,38 @@ HS003,Lê Văn C,10A1</code></pre>
                     item.className = 'test-list-item';
                     
                     let timeInfo = `<span class="time">${test.thoiGianLamBai || 'N/A'} phút</span>`;
+                    
+                    // Hiển thị Lớp và Môn
+                    let extraInfo = [];
+                    if (test.monHoc) extraInfo.push(`Môn: ${test.monHoc}`);
+                    if (test.lopApDung) extraInfo.push(`Lớp: ${test.lopApDung}`);
+                    if (extraInfo.length > 0) {
+                        timeInfo += `<span style="font-size: 0.85em; color: #28a745; margin-top: 4px;"><b>${extraInfo.join(' | ')}</b></span>`;
+                    }
+                    
                     if (test.thoiGianMo || test.thoiGianDong) {
                         const mo = test.thoiGianMo ? new Date(test.thoiGianMo).toLocaleString('vi-VN') : 'Không giới hạn';
                         const dong = test.thoiGianDong ? new Date(test.thoiGianDong).toLocaleString('vi-VN') : 'Không giới hạn';
                         timeInfo += `<span style="font-size: 0.7em; color: #ffc107; margin-top: 5px;">Mở: ${mo} | Đóng: ${dong}</span>`;
                     }
 
+                    // MỚI: Thêm checkbox cho từng đề
                     item.innerHTML = `
-                        <div class="test-item-info">
-                            <span>${test.tenDe}</span>
+                        <div style="flex-shrink: 0; margin-right: 15px;">
+                            <input type="checkbox" class="test-row-checkbox" data-id="${testId}" style="cursor: pointer; transform: scale(1.2);">
+                        </div>
+                        <div class="test-item-info" style="flex-grow: 1;">
+                            <span style="font-size: 1.1em; color: #007bff; font-weight: bold;">${test.tenDe}</span>
                             ${timeInfo}
                             <span class="creator">Tạo bởi: ${test.nguoiTao || 'Không rõ'}</span>
                         </div>
-                        <div> 
+                        <div style="display: flex; flex-direction: column; gap: 5px;"> 
                             <button class="detail-btn edit-test-btn" data-id="${testId}" data-name="${test.tenDe}">Sửa</button>
-                            <button class="delete-btn" data-id="${testId}">Xóa</button>
+                            <button class="delete-btn single-del-test-btn" data-id="${testId}">Xóa</button>
                         </div>
                     `;
-                    item.querySelector('.delete-btn').addEventListener('click', (e) => {
+                    
+                    item.querySelector('.single-del-test-btn').addEventListener('click', (e) => {
                         e.stopPropagation(); 
                         deleteTest(testId, test.tenDe);
                     });
@@ -852,7 +913,10 @@ HS003,Lê Văn C,10A1</code></pre>
                         showEditTestModal(testId, test.tenDe);
                     });
 
-                    item.addEventListener('click', () => {
+                    item.addEventListener('click', (e) => {
+                        // Tránh trigger chọn đề khi click vào checkbox
+                        if(e.target.classList.contains('test-row-checkbox')) return;
+                        
                         selectTest(testId, test.tenDe);
                         document.querySelectorAll('.test-list-item').forEach(el => el.classList.remove('active'));
                         item.classList.add('active');
@@ -861,6 +925,7 @@ HS003,Lê Văn C,10A1</code></pre>
                 });
             }
             
+            // Xóa MỘT đề
             async function deleteTest(testId, testName) {
                 if (!confirm(`CẢNH BÁO:\nBạn có chắc chắn muốn XÓA TOÀN BỘ đề thi "${testName}"?`)) return;
                 try {
@@ -869,8 +934,38 @@ HS003,Lê Văn C,10A1</code></pre>
                     if (selectedTestId === testId) resetQuestionManager();
                 } catch (error) { console.error("Lỗi xóa đề thi: ", error); }
             }
+
+            // MỚI: XÓA HÀNG LOẠT ĐỀ THI
+            async function deleteSelectedTests() {
+                if (selectedTestIds.size === 0) return;
+                if (!confirm(`BẠN CÓ CHẮC CHẮN muốn XÓA TOÀN BỘ ${selectedTestIds.size} đề thi đã chọn?`)) return;
+
+                deleteSelectedTestsBtn.disabled = true;
+                deleteSelectedTestsBtn.innerText = `Đang xóa ${selectedTestIds.size} đề...`;
+
+                try {
+                    const batch = db.batch();
+                    selectedTestIds.forEach(id => {
+                        const docRef = db.collection("dethi").doc(id);
+                        batch.delete(docRef);
+                    });
+                    
+                    await batch.commit();
+                    alert(`Đã xóa thành công ${selectedTestIds.size} đề thi!`);
+                    
+                    if(selectedTestIds.has(selectedTestId)) resetQuestionManager();
+                    
+                    selectedTestIds.clear();
+                    selectAllTestsCheckbox.checked = false;
+                } catch (error) {
+                    console.error("Lỗi xóa hàng loạt đề thi:", error);
+                    alert("Lỗi xóa đề thi. Có thể do số lượng lớn, vui lòng thử lại.");
+                } finally {
+                    deleteSelectedTestsBtn.disabled = false;
+                    updateTestBatchUI();
+                }
+            }
             
-            // *** THAY ĐỔI: Hàm selectTest CẬP NHẬT UI batch delete câu hỏi ***
             function selectTest(testId, testName) {
                 selectedTestId = testId; 
                 qManagerDiv.style.display = 'block';
@@ -880,20 +975,17 @@ HS003,Lê Văn C,10A1</code></pre>
                 loadQuestionList(testId);
                 resetQuestionFormState(); 
                 
-                // MỚI: Reset UI chọn câu hỏi khi đổi đề
                 selectedQuestionIds.clear();
                 selectAllQuestionsCheckbox.checked = false;
                 updateQuestionBatchActionsUI();
             }
             
-            // *** SỬA LỖI LẦN 2: LOẠI BỎ orderBy() VÀ SẮP XẾP TOÀN BỘ TRONG JAVASCRIPT ***
             function loadQuestionList(testId) {
                 if (questionListener) questionListener();
                 qListDiv.innerHTML = '<p>Đang tải câu hỏi...</p>';
                 
-                // --- BỎ orderBy() để tải tất cả document, kể cả câu hỏi cũ không có index ---
                 questionListener = db.collection("dethi").doc(testId).collection("cauhoi")
-                    .onSnapshot(snapshot => { // Không dùng .orderBy()
+                    .onSnapshot(snapshot => { 
                         
                         let allQuestions = [];
                         snapshot.forEach(doc => {
@@ -902,29 +994,17 @@ HS003,Lê Văn C,10A1</code></pre>
                             allQuestions.push(qData);
                         });
 
-                        // TÍNH TOÁN SỐ LƯỢNG CÂU HỎI HIỆN TẠI (Quan trọng cho việc thêm mới)
                         currentQuestionCount = allQuestions.length; 
                         
-                        // SẮP XẾP BẰNG JAVASCRIPT: Ưu tiên các câu hỏi có index (mới)
                         allQuestions.sort((a, b) => {
                             const indexA = a.index !== undefined && a.index !== null ? a.index : -1;
                             const indexB = b.index !== undefined && b.index !== null ? b.index : -1;
 
-                            if (indexA !== -1 && indexB !== -1) {
-                                // Cả hai đều mới: Sắp xếp theo index
-                                return indexA - indexB;
-                            } else if (indexA !== -1) {
-                                // A mới, B cũ: A lên trên
-                                return -1;
-                            } else if (indexB !== -1) {
-                                // B mới, A cũ: B lên trên
-                                return 1;
-                            } else {
-                                // Cả hai đều cũ (index = -1): Giữ nguyên thứ tự ID (ngẫu nhiên)
-                                return a.id.localeCompare(b.id);
-                            }
+                            if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+                            else if (indexA !== -1) return -1;
+                            else if (indexB !== -1) return 1;
+                            else return a.id.localeCompare(b.id);
                         });
-
 
                         qListDiv.innerHTML = '';
                         selectedQuestionIds.clear();
@@ -954,7 +1034,6 @@ HS003,Lê Văn C,10A1</code></pre>
                                     ${passageHtml}
                                     <div class="question-prompt">${count++}. ${q.prompt}</div>
                                     <div class="question-answer">Đáp án: ${q.answer}</div>
-                                    <!-- HIỂN THỊ CHỈ MỤC CÂU HỎI CHO DEBUG -->
                                     <div style="font-size: 0.7em; color: #999;">Index: ${q.index !== undefined && q.index !== null ? q.index : 'N/A (Cũ)'}</div>
                                 </div>
                                 <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 5px;">
@@ -977,7 +1056,6 @@ HS003,Lê Văn C,10A1</code></pre>
                 if (confirm("Bạn có chắc muốn xóa câu hỏi này?")) {
                     try {
                         await db.collection("dethi").doc(selectedTestId).collection("cauhoi").doc(questionId).delete();
-                        // onSnapshot sẽ tự động chạy và reset UI
                     } catch (error) { console.error("Lỗi xóa câu hỏi: ", error); }
                 }
             }
@@ -1045,7 +1123,7 @@ HS003,Lê Văn C,10A1</code></pre>
             
             // --- (B) Logic cho Tab "Quản lý Học Sinh" ---
 
-            async function loadStudentList() {
+            window.loadStudentList = async function() {
                 studentListLoading.style.display = 'block';
                 studentListDiv.innerHTML = '';
                 try {
@@ -1070,18 +1148,22 @@ HS003,Lê Văn C,10A1</code></pre>
             }
             
             window.renderStudentList = function() {
-                const query = document.getElementById('student-search-input').value.toLowerCase();
+                updateFilterDropdowns(); // Đảm bảo Dropdown luôn update
                 
-                const filteredStudents = allStudentsCache.filter(hs => 
-                    hs.hoTen.toLowerCase().includes(query) ||
-                    hs.lop.toLowerCase().includes(query)
-                );
+                const query = document.getElementById('student-search-input').value.toLowerCase();
+                const classFilter = filterStudentClass.value.toLowerCase();
+                
+                const filteredStudents = allStudentsCache.filter(hs => {
+                    const matchQuery = hs.hoTen.toLowerCase().includes(query) || hs.id.toLowerCase().includes(query);
+                    const matchClass = classFilter === "" || (hs.lop && hs.lop.toLowerCase() === classFilter);
+                    return matchQuery && matchClass;
+                });
 
                 studentListDiv.innerHTML = '';
                 studentListLoading.style.display = 'none';
 
                 if (filteredStudents.length === 0) {
-                    studentListDiv.innerHTML = '<p>Không tìm thấy học sinh nào.</p>';
+                    studentListDiv.innerHTML = '<p>Không tìm thấy học sinh nào khớp với bộ lọc.</p>';
                     return;
                 }
                                     
@@ -1134,7 +1216,6 @@ HS003,Lê Văn C,10A1</code></pre>
                 deleteSelectedBtn.style.display = selectedSubmissionIds.size > 0 ? 'inline-block' : 'none';
             }
             
-            // *** THAY ĐỔI: Thêm hàm cập nhật UI cho câu hỏi ***
             function updateQuestionBatchActionsUI() {
                 selectedQuestionsCountSpan.innerText = selectedQuestionIds.size;
                 deleteSelectedQuestionsBtn.style.display = selectedQuestionIds.size > 0 ? 'inline-block' : 'none';
@@ -1165,7 +1246,6 @@ HS003,Lê Văn C,10A1</code></pre>
                 }
             }
             
-            // *** THAY ĐỔI: Thêm hàm xóa hàng loạt câu hỏi ***
             async function deleteSelectedQuestions() {
                 if (selectedQuestionIds.size === 0) return;
                 if (!selectedTestId) {
@@ -1188,13 +1268,11 @@ HS003,Lê Văn C,10A1</code></pre>
                 try {
                     await batch.commit();
                     alert(`Đã xóa thành công ${deleteCount} câu hỏi!`);
-                    // onSnapshot sẽ tự động chạy, reset UI.
                 } catch (error) {
                     console.error("Lỗi khi xóa hàng loạt câu hỏi: ", error);
                     alert("Lỗi khi xóa hàng loạt. Vui lòng thử lại.");
                 } finally {
                     deleteSelectedQuestionsBtn.disabled = false;
-                    // onSnapshot tự reset UI nên không cần clear Set hay update UI ở đây
                 }
             }
 
@@ -1234,7 +1312,6 @@ HS003,Lê Văn C,10A1</code></pre>
                     
                     const isSelected = selectedSubmissionIds.has(res.id);
                     
-                    // *** THAY ĐỔI: Cập nhật innerHTML của bảng kết quả (bỏ cột checkbox) ***
                     tr.innerHTML = `
                         <td><input type="checkbox" class="row-checkbox" data-id="${res.id}" ${isSelected ? 'checked' : ''} style="cursor: pointer;"></td>
                         <td>${res.hoTen || 'N/A'}</td>
@@ -1278,17 +1355,55 @@ HS003,Lê Văn C,10A1</code></pre>
             });
             navAccount.addEventListener('click', () => setActiveTab(navAccount, accountManagerView));
             
+            // Listeners Filter Inputs
             document.getElementById('test-search-input').addEventListener('input', renderTestList);
+            filterTestClass.addEventListener('change', renderTestList);
+            filterTestSubject.addEventListener('change', renderTestList);
+            
             document.getElementById('student-search-input').addEventListener('input', renderStudentList);
+            filterStudentClass.addEventListener('change', renderStudentList);
+            
             document.getElementById('results-search-input').addEventListener('input', renderResultsList);
 
-            // Listeners cho Tab 1: Đề thi
+            // Listeners cho Xóa Hàng Loạt Đề Thi
+            selectAllTestsCheckbox.addEventListener('change', (e) => {
+                const isChecked = e.target.checked;
+                const checkboxes = testListDiv.querySelectorAll('.test-row-checkbox');
+                selectedTestIds.clear();
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                    if (isChecked) selectedTestIds.add(checkbox.dataset.id);
+                });
+                updateTestBatchUI();
+            });
+            
+            deleteSelectedTestsBtn.addEventListener('click', deleteSelectedTests);
+            
+            testListDiv.addEventListener('change', (e) => {
+                if (e.target.classList.contains('test-row-checkbox')) {
+                    const id = e.target.dataset.id;
+                    if (e.target.checked) selectedTestIds.add(id);
+                    else {
+                        selectedTestIds.delete(id);
+                        selectAllTestsCheckbox.checked = false;
+                    }
+                    updateTestBatchUI();
+                }
+            });
+
+
+            // Listeners cho Tab 1: Form tạo Đề thi
             createTestForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const testName = document.getElementById('testName').value;
                 const testTime = document.getElementById('testTime').value;
                 const startTime = document.getElementById('testStartTime').value;
                 const endTime = document.getElementById('testEndTime').value;
+                
+                // MỚI: Lấy Môn Học và Lớp Áp Dụng
+                const testSubject = document.getElementById('testSubject').value.trim();
+                const targetClass = document.getElementById('testTargetClass').value.trim(); 
+                
                 const adminEmail = currentUser.email; 
                 if (!testName || !testTime) return;
                 
@@ -1303,7 +1418,9 @@ HS003,Lê Văn C,10A1</code></pre>
                         thoiGianLamBai: parseInt(testTime),
                         nguoiTao: adminEmail,
                         thoiGianMo: startTime || null, 
-                        thoiGianDong: endTime || null 
+                        thoiGianDong: endTime || null,
+                        monHoc: testSubject, // Ghi dữ liệu môn
+                        lopApDung: targetClass
                     });
                     createTestForm.reset();
                     alert("Tạo đề thi thành công!");
@@ -1324,6 +1441,7 @@ HS003,Lê Văn C,10A1</code></pre>
                 });
             }
 
+            // Listeners menu Câu hỏi
             toggleAddSingle.addEventListener('click', () => {
                 addQuestionForm.style.display = 'block';
                 addBulkQuestionForm.style.display = 'none';
@@ -1350,7 +1468,7 @@ HS003,Lê Văn C,10A1</code></pre>
                 toggleAddComprehension.classList.add('active'); 
             });
             
-            
+            // Form Câu hỏi
             addQuestionForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 if (!selectedTestId) return;
@@ -1389,26 +1507,22 @@ HS003,Lê Văn C,10A1</code></pre>
                     return; 
                 }
                 
-                // *** CHỈNH SỬA: Thêm trường index và giữ nguyên logic cũ khi update ***
                 const questionData = { 
                     prompt: prompt, 
                     options: options, 
                     answer: answer, 
                     imageUrl: finalImageUrl, 
                     comprehensionText: null,
-                    index: currentQuestionCount + 1, // SỬ DỤNG index TỰ TĂNG
-                    // KHÔNG DÙNG createdAt: firebase.firestore.FieldValue.serverTimestamp() NỮA
+                    index: currentQuestionCount + 1, 
                 };
 
                 try {
                     if (isEditingQuestionId) {
-                        // Không cập nhật index khi sửa, chỉ cập nhật nội dung
                         const updateData = { prompt: prompt, options: options, answer: answer, imageUrl: finalImageUrl, comprehensionText: null };
                         await db.collection("dethi").doc(selectedTestId).collection("cauhoi").doc(isEditingQuestionId).update(updateData);
                         statusDiv.innerText = 'CẬP NHẬT câu hỏi thành công!';
                         statusDiv.style.color = 'green';
                     } else {
-                        // Thêm câu hỏi mới với index
                         await db.collection("dethi").doc(selectedTestId).collection("cauhoi").add(questionData);
                         statusDiv.innerText = 'Thêm câu hỏi thành công!';
                         statusDiv.style.color = 'green';
@@ -1456,12 +1570,11 @@ HS003,Lê Văn C,10A1</code></pre>
                     try {
                         const batch = db.batch();
                         const collectionRef = db.collection("dethi").doc(selectedTestId).collection("cauhoi");
-                        // *** CHỈNH SỬA: Thêm trường index cho batch set ***
                         let nextIndex = currentQuestionCount;
                         questionsToAdd.forEach(q => { 
                             const docRef = collectionRef.doc(); 
                             nextIndex++;
-                            batch.set(docRef, { ...q, index: nextIndex }); // Thêm index
+                            batch.set(docRef, { ...q, index: nextIndex }); 
                         });
                         await batch.commit();
                         let message = `Đã thêm thành công ${questionsToAdd.length} câu hỏi!`;
@@ -1577,12 +1690,11 @@ HS003,Lê Văn C,10A1</code></pre>
                     try {
                         const batch = db.batch();
                         const collectionRef = db.collection("dethi").doc(selectedTestId).collection("cauhoi");
-                        // *** CHỈNH SỬA: Thêm trường index cho batch set ***
                         let nextIndex = currentQuestionCount;
                         questionsToAdd.forEach(q => { 
                             const docRef = collectionRef.doc(); 
                             nextIndex++;
-                            batch.set(docRef, { ...q, index: nextIndex }); // Thêm index
+                            batch.set(docRef, { ...q, index: nextIndex }); 
                         });
                         
                         await batch.commit();
@@ -1765,11 +1877,11 @@ HS003,Lê Văn C,10A1</code></pre>
             });
             
             
-            // *** THAY ĐỔI: Thêm Listeners cho Tác vụ hàng loạt (Câu hỏi) ***
+            // Lắng nghe thao tác Câu hỏi hàng loạt
             selectAllQuestionsCheckbox.addEventListener('change', (e) => {
                 const isChecked = e.target.checked;
                 const checkboxes = qListDiv.querySelectorAll('.question-row-checkbox');
-                selectedQuestionIds.clear(); // Xóa set trước
+                selectedQuestionIds.clear(); 
                 checkboxes.forEach(checkbox => {
                     checkbox.checked = isChecked;
                     if (isChecked) {
@@ -1788,7 +1900,7 @@ HS003,Lê Văn C,10A1</code></pre>
                         selectedQuestionIds.add(id);
                     } else {
                         selectedQuestionIds.delete(id);
-                        selectAllQuestionsCheckbox.checked = false; // Bỏ check "tất cả"
+                        selectAllQuestionsCheckbox.checked = false; 
                     }
                     updateQuestionBatchActionsUI();
                 }
@@ -1886,6 +1998,12 @@ HS003,Lê Văn C,10A1</code></pre>
                         <label>Thời gian làm bài (phút):</label>
                         <input type="number" id="editTestTime" value="${data.thoiGianLamBai}" required min="1">
                         
+                        <label style="color: #007bff; font-weight: bold; margin-top: 10px; display: block;">Môn học (Để phân loại):</label>
+                        <input type="text" id="editTestSubject" value="${data.monHoc || ''}" placeholder="Ví dụ: Toán, Ngữ Văn">
+
+                        <label style="color: #28a745; font-weight: bold; margin-top: 10px; display: block;">Lớp áp dụng (Để trống = Mọi lớp):</label>
+                        <input type="text" id="editTestTargetClass" value="${data.lopApDung || ''}" placeholder="Ví dụ: 10A1, 10A2">
+                        
                         <h3 style="margin-top: 20px;">Quản lý Thời Gian Mở/Đóng</h3>
                         <label>Thời gian BẮT ĐẦU (Mở đề):</label>
                         <input type="datetime-local" id="editTestStartTime" value="${toDateTimeLocal(data.thoiGianMo)}">
@@ -1904,6 +2022,10 @@ HS003,Lê Văn C,10A1</code></pre>
                     const newTime = parseInt(document.getElementById('editTestTime').value);
                     const newStartTime = document.getElementById('editTestStartTime').value || null;
                     const newEndTime = document.getElementById('editTestEndTime').value || null;
+                    
+                    const newTestSubject = document.getElementById('editTestSubject').value.trim();
+                    const newTargetClass = document.getElementById('editTestTargetClass').value.trim(); 
+                    
                     const msg = document.getElementById('editTestMsg');
                     
                     msg.style.display = 'block';
@@ -1921,7 +2043,9 @@ HS003,Lê Văn C,10A1</code></pre>
                             tenDe: newName, 
                             thoiGianLamBai: newTime,
                             thoiGianMo: newStartTime, 
-                            thoiGianDong: newEndTime 
+                            thoiGianDong: newEndTime,
+                            monHoc: newTestSubject, // CẬP NHẬT MÔN
+                            lopApDung: newTargetClass
                         });
                         msg.innerText = `Đã cập nhật đề thi "${newName}" thành công!`;
                         msg.style.color = 'green';
@@ -2075,7 +2199,7 @@ HS003,Lê Văn C,10A1</code></pre>
                     questionDiv.appendChild(promptP);
 
                     const userAnswer = userAnswers[index]; 
-                    const correctAnswer = q.answer;
+                    const correctAnswer = decodeURIComponent(atob(q.answer)); 
 
                     q.options.forEach(option => {
                         const optionSpan = document.createElement('span');

@@ -224,23 +224,19 @@
              }
         }
     </style>
-    <!-- SDK Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     
-    <!-- THÊM THƯ VIỆN seedrandom.js TỪ CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/seedrandom/3.0.5/seedrandom.min.js"></script>
 </head>
 <body>
 
-    <!-- THANH THỜI GIAN -->
     <div id="timer-bar">
         Thời gian: <span id="timer">--:--</span>
     </div>
 
     <div class="page-grid">
         
-        <!-- CỘT 1: KHU VỰC BÀI THI -->
         <div class="test-area">
             <div class="container">
                 <h1 id="testTitle">Bài kiểm tra</h1>
@@ -250,13 +246,10 @@
                 <div id="loading">Đang tải đề thi, vui lòng chờ...</div>
                 
                 <form id="testForm">
-                    <!-- Câu hỏi sẽ được chèn vào đây, mỗi div.question là một câu -->
-                </form>
+                    </form>
 
-                <!-- KHU VỰC ĐIỀU HƯỚNG VÀ NỘP BÀI -->
                 <div id="quiz-controls" style="display: none;">
                     
-                    <!-- Nút điều hướng -->
                     <div class="question-navigation">
                         <button id="prevBtn" class="nav-btn" disabled>
                             <span style="font-size: 1.2em;">&larr;</span> Câu trước
@@ -266,13 +259,11 @@
                         </button>
                     </div>
 
-                    <!-- Nút nộp bài (Chỉ hiển thị khi không phải là câu cuối cùng hoặc đã hoàn thành) -->
                     <button id="submitBtn" onclick="submitTest()" disabled>
                         Nộp bài (Chưa hoàn thành)
                     </button>
                 </div>
                 
-                <!-- Khu vực nút quay lại khi lỗi -->
                 <div id="error-actions" style="text-align: center; display: none;">
                     <a href="select-test.html" id="back-button">
                         Quay lại trang Chọn đề
@@ -281,7 +272,6 @@
             </div>
         </div>
 
-        <!-- CỘT 2: BẢNG THEO DÕI TIẾN ĐỘ -->
         <div class="progress-tracker">
             <h3>Tiến độ bài làm</h3>
             <div id="progress-status">
@@ -289,13 +279,10 @@
             </div>
             <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;">
             <div id="question-map-container" class="question-map">
-                <!-- Các ô vuông câu hỏi sẽ được chèn vào đây -->
-            </div>
+                </div>
         </div>
 
-    </div> <!-- End .page-grid -->
-
-    <script>
+    </div> <script>
         // *** Dán firebaseConfig của bạn vào đây ***
         const firebaseConfig = {
           apiKey: "AIzaSyDmRq3djRZHElhC2T_EYsU7v5vrzwRyybY",
@@ -347,6 +334,34 @@
         // --- MỚI: BIẾN THEO DÕI NÂNG CAO (ĐÃ PHỤC HỒI) ---
         let checkFocusInterval = null; 
         let isFocused = true; // Theo dõi trạng thái focus của cửa sổ
+
+        // ==========================================
+        // 🚨 BẪY CHỐNG DEVTOOLS & CHUỘT PHẢI CỦA BÉ LÔI 🚨
+        // ==========================================
+        document.addEventListener('contextmenu', e => e.preventDefault()); // Cấm chuột phải
+
+        document.addEventListener('keydown', function(e) {
+            // Chặn F12 và các phím tắt mở DevTools
+            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || (e.ctrlKey && e.key === 'U')) {
+                e.preventDefault();
+                if (typeof daNopBai !== 'undefined' && !daNopBai) {
+                    synchronousSubmitOnUnload(true, "Gian lận (Cố tình dùng phím tắt mở Công cụ Nhà phát triển)");
+                    window.location.replace('results.html');
+                }
+            }
+        });
+
+        // "Đóng băng" trình duyệt nếu cố tình mở DevTools từ trước lúc vào trang
+        setInterval(function() {
+            const start = performance.now();
+            debugger; // Lệnh này làm trình duyệt khựng lại nếu F12 đang mở
+            const end = performance.now();
+            if (end - start > 100 && typeof daNopBai !== 'undefined' && !daNopBai) {
+                synchronousSubmitOnUnload(true, "Gian lận (Sử dụng Công cụ Nhà phát triển / Hack điểm)");
+                window.location.replace('results.html');
+            }
+        }, 1000);
+        // ==========================================
 
         // --- DOM Elements ---
         const testForm = document.getElementById('testForm');
@@ -664,9 +679,19 @@
                     questionIndex++;
                 });
 
-                // CẬP NHẬT BIẾN TOÀN CỤC SAU KHI XÁO TRỘN
-                fullQuestionObjects = loadedQuestions; 
-                correctAnswers = loadedQuestions.map(q => q.answer); // Đáp án gốc vẫn giữ nguyên
+                // ==========================================
+                // 🔐 CẬP NHẬT BIẾN TOÀN CỤC VÀ MÃ HÓA ĐÁP ÁN (Base64) 🔐
+                // ==========================================
+                fullQuestionObjects = loadedQuestions.map(q => {
+                    let safeQuestion = { ...q };
+                    // Mã hóa đáp án ngay lập tức. Học sinh dùng F12 soi object chỉ thấy ký tự lạ!
+                    safeQuestion.answer = btoa(encodeURIComponent(q.answer)); 
+                    return safeQuestion;
+                });
+
+                // Lấy mảng đáp án đã mã hóa
+                correctAnswers = fullQuestionObjects.map(q => q.answer); 
+                // ==========================================
 
                 loadingDiv.style.display = 'none';
                 quizControls.style.display = 'block';
@@ -682,9 +707,6 @@
                 // *** KÍCH HOẠT KIỂM TRA NÂNG CAO SAU KHI TẢI ***
                 startAdvancedFocusCheck();
                 
-                // *** LOẠI BỎ CÁC LISTENER ĐƯỢC GÁN TRONG PHIÊN TRƯỚC VÀ GÁN LẠI TẠI PHẠM VI TOÀN CỤC ***
-                // Chức năng nút điều hướng đã được gỡ bỏ khỏi đây và chuyển xuống phạm vi toàn cục.
-
             } catch (error) {
                 console.error("Lỗi khi tải câu hỏi: ", error);
                 loadingDiv.innerText = "Lỗi khi tải đề thi. Vui lòng kiểm tra lại.";
@@ -693,10 +715,6 @@
         }
         
         // --- HÀM CHỐNG GIAN LẬN (Math.seedrandom cần thiết cho Xáo trộn lựa chọn) ---
-        // Đã xóa định nghĩa seedrandom nội bộ và thay bằng tải từ CDN
-        
-        // Khởi tạo Math.random ban đầu bằng Math.seedrandom với Math.random() để đảm bảo
-        // việc gọi Math.random() trong hàm shuffleArray vẫn dùng phương pháp ngẫu nhiên được seed
         Math.seedrandom(Math.random());
 
         // --- HÀM ĐẾM NGƯỢC (Không đổi) ---
@@ -881,15 +899,20 @@
             let score = 0;
             const userAnswers = userSelections; 
             
-            // Lấy đáp án gốc để chấm điểm
+            // ==========================================
+            // 🔐 LẤY ĐÁP ÁN (ĐÃ MÃ HÓA) ĐỂ CHẤM ĐIỂM 🔐
+            // ==========================================
             correctAnswers = fullQuestionObjects.map(q => q.answer); 
 
-            correctAnswers.forEach((answer, index) => {
+            correctAnswers.forEach((encodedAnswer, index) => {
                 const userAnswer = userAnswers[index];
-                if (userAnswer === answer) {
+                // Mã hóa câu trả lời của học sinh rồi mới đem so sánh với đáp án chuẩn
+                if (userAnswer && btoa(encodeURIComponent(userAnswer)) === encodedAnswer) {
                     score++;
                 }
             });
+            // ==========================================
+
             const totalQuestions = correctAnswers.length;
             const finalScore = (totalQuestions > 0) ? (score / totalQuestions) * 10 : 0;
             
@@ -906,8 +929,8 @@
                 nopTuDong: isAutoSubmit, 
                 lyDoNopTuDong: autoSubmitReason,
                 answeredCount: globalAnsweredCount,
-                userAnswers: userSelections,         
-                quizData: fullQuestionObjects     // Lưu trữ câu hỏi đã xáo trộn để hiển thị kết quả đúng
+                userAnswers: userSelections,         
+                quizData: fullQuestionObjects     // Lưu trữ câu hỏi đã xáo trộn để hiển thị kết quả đúng
             };
 
             // --- Lưu vào localStorage (đồng bộ) ---
@@ -951,15 +974,18 @@
             let score = 0;
             const userAnswers = userSelections; 
 
-            // Lấy đáp án gốc để chấm điểm
+            // ==========================================
+            // 🔐 LẤY ĐÁP ÁN (ĐÃ MÃ HÓA) ĐỂ CHẤM ĐIỂM 🔐
+            // ==========================================
             correctAnswers = fullQuestionObjects.map(q => q.answer); 
 
-            correctAnswers.forEach((answer, index) => {
+            correctAnswers.forEach((encodedAnswer, index) => {
                 const userAnswer = userAnswers[index];
-                if (userAnswer === answer) {
+                if (userAnswer && btoa(encodeURIComponent(userAnswer)) === encodedAnswer) {
                     score++;
                 }
             });
+            // ==========================================
             
             const totalQuestions = correctAnswers.length;
             const finalScore = (totalQuestions > 0) ? (score / totalQuestions) * 10 : 0;
@@ -989,8 +1015,8 @@
                         nopTuDong: isAutoSubmit, 
                         lyDoNopTuDong: autoSubmitReason,
                         answeredCount: globalAnsweredCount, 
-                        userAnswers: userSelections,         
-                        quizData: fullQuestionObjects     // Lưu trữ câu hỏi đã xáo trộn cho từng HS
+                        userAnswers: userSelections,         
+                        quizData: fullQuestionObjects     // Lưu trữ câu hỏi đã xáo trộn cho từng HS
                     });
 
                     // Lưu ID bài nộp để trang results.html tải về 

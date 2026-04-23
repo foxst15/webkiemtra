@@ -185,13 +185,11 @@
 
     <div class="grid-container">
         
-        <!-- HEADER (Giới thiệu và Chào mừng) -->
         <header>
             <h1 id="welcome-message">HỆ THỐNG KIỂM TRA </h1>
             <button id="logout-btn">Đăng xuất</button>
         </header>
 
-        <!-- SIDEBAR (Thông tin học sinh và Ảnh đại diện) -->
         <aside>
             <h2>Thông tin cá nhân</h2>
             <div id="avatar-container">
@@ -209,7 +207,6 @@
             </div>
         </aside>
 
-        <!-- MAIN CONTENT (Các lựa chọn) -->
         <main>
             <h2>Các tính năng chính</h2>
             <div class="menu">
@@ -223,7 +220,6 @@
         </main>
     </div>
     
-    <!-- FOOTER (Bản quyền và Liên hệ) -->
     <footer>
         Bản quyền thuộc về THẦY HẢI. Mọi thắc mắc xin liên hệ qua email: 
         <a href="mailto:nguyenvanhai.10a3@gmail.com">nguyenvanhai.10a3@gmail.com</a>
@@ -231,9 +227,8 @@
 
     <script>
         const AVATAR_KEY = 'studentAvatar';
-        // *** ĐÃ CẬP NHẬT: URL ảnh đại diện mặc định từ liên kết của bạn ***
-        const DEFAULT_AVATAR = 'https://th.bing.com/th/id/R.f58bd7f73934e1145c97570943087ec6?rik=41HmRGohn%2fnBJg&riu=http%3a%2f%2fwww.acsoft.vn%3a8081%2fresources%2fimages%2favatar.jpg&ehk=4oftGWjeo8XsGu%2fcHG2dUJubsKryVLuNa58H9D3TNKA%3d&risl=&pid=ImgRaw&r=0';
-
+        // *** ĐÃ CẬP NHẬT: URL ảnh đại diện API mới, xịn xò và bảo mật HTTPS 100% ***
+        const DEFAULT_AVATAR = 'https://ui-avatars.com/api/?name=HS&background=007bff&color=fff&size=150';
 
         // --- LOGIC TẢI THÔNG TIN VÀ CHÀO MỪNG ---
         const studentName = localStorage.getItem('studentName');
