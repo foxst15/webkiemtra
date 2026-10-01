@@ -1,34 +1,60 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bài kiểm tra</title>
     <style>
         /* CSS cơ bản giữ nguyên */
-        body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;margin:0;padding:1.5rem;background-color:#f0f2f5; padding-top: 80px;}
-        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 1.5rem;
+            background-color: #f0f2f5;
+            padding-top: 80px;
+        }
+
         /* Thay đổi container thành grid để chia 2 cột */
         .page-grid {
             max-width: 1200px;
             margin: 0 auto;
             display: grid;
-            grid-template-columns: 1fr 300px; /* Bài thi | Bảng theo dõi */
+            grid-template-columns: 1fr 300px;
+            /* Bài thi | Bảng theo dõi */
             gap: 20px;
             padding: 0 10px;
         }
-        .container{
-            background:#fff;
-            padding:2rem;
-            border-radius:12px;
-            box-shadow:0 4px 12px rgba(0,0,0,.05)
+
+        .container {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .05)
         }
-        h1{text-align:center;color:#333}
-        #studentInfo{font-size:1.1em;font-weight:600;padding:1rem;background:#e9ecef;border-radius:8px;color:#333}
-        
+
+        h1 {
+            text-align: center;
+            color: #333
+        }
+
+        #studentInfo {
+            font-size: 1.1em;
+            font-weight: 600;
+            padding: 1rem;
+            background: #e9ecef;
+            border-radius: 8px;
+            color: #333
+        }
+
         /* Ẩn tất cả câu hỏi, chỉ hiển thị câu hỏi hiện tại */
-        .question { display: none; }
-        .question.active { display: block; }
+        .question {
+            display: none;
+        }
+
+        .question.active {
+            display: block;
+        }
 
         /* *** THÊM MỚI: CSS Cho đoạn văn bản *** */
         .comprehension-text {
@@ -41,13 +67,13 @@
             line-height: 1.6;
             text-align: left;
             /* Giữ nguyên định dạng xuống dòng và khoảng trắng */
-            white-space: pre-wrap; 
+            white-space: pre-wrap;
         }
-        
-        .question-image { 
-            max-width: 100%; 
-            max-height: 350px; 
-            margin: 10px 0 20px 0; 
+
+        .question-image {
+            max-width: 100%;
+            max-height: 350px;
+            margin: 10px 0 20px 0;
             border-radius: 8px;
             object-fit: contain;
             border: 1px solid #ddd;
@@ -59,8 +85,10 @@
             margin-top: 20px;
             /* *** THÊM: Cho phép xuống hàng trên mobile *** */
             flex-wrap: wrap;
-            gap: 10px; /* Thêm khoảng cách nếu xuống hàng */
+            gap: 10px;
+            /* Thêm khoảng cách nếu xuống hàng */
         }
+
         .nav-btn {
             background-color: #6c757d;
             color: white;
@@ -71,42 +99,80 @@
             font-weight: 600;
             transition: background-color 0.2s;
             /* *** THÊM: Thiết lập cơ bản cho mobile *** */
-            flex-grow: 1; /* Cho phép nút dãn ra */
-            min-width: 150px; /* Độ rộng tối thiểu */
+            flex-grow: 1;
+            /* Cho phép nút dãn ra */
+            min-width: 150px;
+            /* Độ rộng tối thiểu */
         }
+
         .nav-btn:hover:not(:disabled) {
             background-color: #5a6268;
         }
+
         .nav-btn:disabled {
             background-color: #aaa;
             cursor: not-allowed;
         }
 
 
-        .question p{font-weight:600;font-size:1.1rem;margin-bottom:1rem}
-        .options{margin-left:.5rem}
-        .options label{display:block;margin-bottom:.75rem;font-size:1rem;cursor:pointer;padding:.75rem;border-radius:8px;transition:background-color .2s}
-        .options label:hover{background-color:#f8f9fa}
-        .options input[type=radio]{margin-right:.75rem}
-        
+        .question p {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 1rem
+        }
+
+        .options {
+            margin-left: .5rem
+        }
+
+        .options label {
+            display: block;
+            margin-bottom: .75rem;
+            font-size: 1rem;
+            cursor: pointer;
+            padding: .75rem;
+            border-radius: 8px;
+            transition: background-color .2s
+        }
+
+        .options label:hover {
+            background-color: #f8f9fa
+        }
+
+        .options input[type=radio] {
+            margin-right: .75rem
+        }
+
         /* Nút nộp bài */
-        #submitBtn{
-            background-color:#28a745;
-            color:#fff;
-            padding:.75rem 1.5rem;
-            border:none;
-            border-radius:8px;
-            cursor:pointer;
-            font-size:1.1rem;
-            font-weight:600;
-            margin-top:1rem;
-            transition:background-color .2s;
+        #submitBtn {
+            background-color: #28a745;
+            color: #fff;
+            padding: .75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            transition: background-color .2s;
             width: 100%;
         }
-        #submitBtn:hover{background-color:#218838}
-        #submitBtn:disabled{background-color:#aaa;cursor:not-allowed}
-        #loading { font-size: 1.2em; text-align: center; font-weight: bold; }
-        
+
+        #submitBtn:hover {
+            background-color: #218838
+        }
+
+        #submitBtn:disabled {
+            background-color: #aaa;
+            cursor: not-allowed
+        }
+
+        #loading {
+            font-size: 1.2em;
+            text-align: center;
+            font-weight: bold;
+        }
+
         /* CSS cho nút quay lại khi lỗi */
         #back-button {
             margin-top: 20px;
@@ -124,58 +190,67 @@
 
         /* *** CSS BẢNG THEO DÕI TIẾN ĐỘ *** */
         .progress-tracker {
-            position: sticky; 
-            top: 100px; 
+            position: sticky;
+            top: 100px;
             height: fit-content;
             background: #fff;
             padding: 15px;
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             text-align: center;
         }
+
         .progress-tracker h3 {
             margin-top: 0;
             color: #007bff;
             border-bottom: 2px solid #eee;
             padding-bottom: 10px;
         }
+
         .question-map {
             display: grid;
-            grid-template-columns: repeat(5, 1fr); 
+            grid-template-columns: repeat(5, 1fr);
             gap: 10px;
             margin-bottom: 20px;
         }
+
         .q-box {
             width: 100%;
-            padding-top: 100%; 
+            padding-top: 100%;
             position: relative;
             cursor: pointer;
             border-radius: 6px;
             border: 1px solid #ddd;
-            background-color: #f8f8f8; /* Màu mặc định: Chưa chọn */
+            background-color: #f8f8f8;
+            /* Màu mặc định: Chưa chọn */
             transition: background-color 0.2s;
             font-size: 0.9em;
             font-weight: 600;
         }
+
         .q-box span {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
         }
+
         .q-box.answered {
-            background-color: #28a745; /* Màu xanh: Đã chọn */
+            background-color: #28a745;
+            /* Màu xanh: Đã chọn */
             color: white;
             border-color: #218838;
         }
-        .q-box.current { /* Đánh dấu câu hỏi hiện tại */
-            border: 3px solid #ffc107; 
+
+        .q-box.current {
+            /* Đánh dấu câu hỏi hiện tại */
+            border: 3px solid #ffc107;
             box-shadow: 0 0 5px rgba(255, 193, 7, 0.5);
         }
-        
+
         /* CSS CHO THANH THỜI GIAN */
         #timer-bar {
-            position: fixed; 
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
@@ -186,49 +261,59 @@
             font-size: 1.5em;
             font-weight: bold;
             z-index: 1000;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            transition: background-color 0.3s; 
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s;
         }
-        #timer-bar.warning { 
-            background-color: #dc3545; 
+
+        #timer-bar.warning {
+            background-color: #dc3545;
         }
 
         /* Tương thích điện thoại (Responsive) */
         @media (max-width: 900px) {
             .page-grid {
-                grid-template-columns: 1fr; /* Xếp chồng 1 cột */
+                grid-template-columns: 1fr;
+                /* Xếp chồng 1 cột */
                 padding: 0 10px;
             }
+
             .progress-tracker {
-                position: relative; /* Bỏ sticky trên mobile */
+                position: relative;
+                /* Bỏ sticky trên mobile */
                 top: 0;
                 margin-top: 20px;
             }
+
             body {
-                padding-top: 80px; 
+                padding-top: 80px;
             }
         }
+
         @media (max-width: 600px) {
             .container {
                 padding: 1.5rem;
             }
+
             /* *** THAY ĐỔI: CSS nút điều hướng trên mobile *** */
             .nav-btn {
-                min-width: calc(50% - 5px); /* Cho 2 nút nằm cạnh nhau */
+                min-width: calc(50% - 5px);
+                /* Cho 2 nút nằm cạnh nhau */
             }
+
             /* Nếu màn hình quá hẹp, 2 nút tự xuống hàng 100% nhờ flex-wrap */
-             @media (max-width: 350px) {
+            @media (max-width: 350px) {
                 .nav-btn {
                     min-width: 100%;
                 }
-             }
+            }
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/seedrandom/3.0.5/seedrandom.min.js"></script>
 </head>
+
 <body>
 
     <div id="timer-bar">
@@ -236,7 +321,7 @@
     </div>
 
     <div class="page-grid">
-        
+
         <div class="test-area">
             <div class="container">
                 <h1 id="testTitle">Bài kiểm tra</h1>
@@ -244,12 +329,12 @@
                 <hr style="border: 0; border-top: 1px solid #eee; margin: 2rem 0;">
 
                 <div id="loading">Đang tải đề thi, vui lòng chờ...</div>
-                
+
                 <form id="testForm">
-                    </form>
+                </form>
 
                 <div id="quiz-controls" style="display: none;">
-                    
+
                     <div class="question-navigation">
                         <button id="prevBtn" class="nav-btn" disabled>
                             <span style="font-size: 1.2em;">&larr;</span> Câu trước
@@ -263,7 +348,7 @@
                         Nộp bài (Chưa hoàn thành)
                     </button>
                 </div>
-                
+
                 <div id="error-actions" style="text-align: center; display: none;">
                     <a href="select-test.html" id="back-button">
                         Quay lại trang Chọn đề
@@ -279,26 +364,27 @@
             </div>
             <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;">
             <div id="question-map-container" class="question-map">
-                </div>
+            </div>
         </div>
 
-    </div> <script>
+    </div>
+    <script>
         // *** Dán firebaseConfig của bạn vào đây ***
         const firebaseConfig = {
-          apiKey: "AIzaSyDmRq3djRZHElhC2T_EYsU7v5vrzwRyybY",
-          authDomain: "webkiemtra-66cdc.firebaseapp.com",
-          projectId: "webkiemtra-66cdc",
-          storageBucket: "webkiemtra-66cdc.firebasestorage.app",
-          messagingSenderId: "181113887829",
-          appId: "1:181113887829:web:49535ee20d85b7395948dc"
+            apiKey: "AIzaSyDmRq3djRZHElhC2T_EYsU7v5vrzwRyybY",
+            authDomain: "webkiemtra-66cdc.firebaseapp.com",
+            projectId: "webkiemtra-66cdc",
+            storageBucket: "webkiemtra-66cdc.firebasestorage.app",
+            messagingSenderId: "181113887829",
+            appId: "1:181113887829:web:49535ee20d85b7395948dc"
         };
-        
+
         let db;
         try {
             firebase.initializeApp(firebaseConfig);
             db = firebase.firestore();
-        } catch (e) { alert("Lỗi cấu hình Firebase!"); }
-        
+        } catch (e) {alert("Lỗi cấu hình Firebase!");}
+
         // *** MỚI: KIỂM TRA BÀI NỘP CHỜ (DO RELOAD/UNLOAD) ***
         // Phải thực hiện trước khi làm bất cứ điều gì khác
         if (localStorage.getItem('pendingSubmission')) {
@@ -306,7 +392,7 @@
             console.log("Phát hiện bài nộp đang chờ, đang chuyển hướng...");
             window.location.replace('results.html');
             // Dừng script ngay lập tức để tránh chạy code bên dưới
-            throw new Error("Chuyển hướng đến kết quả."); 
+            throw new Error("Chuyển hướng đến kết quả.");
         }
 
         // --- Lấy thông tin ---
@@ -315,35 +401,37 @@
         const selectedTestId = localStorage.getItem('selectedTestId');
         const selectedTestName = localStorage.getItem('selectedTestName');
         const testTimeMinutes = parseInt(localStorage.getItem('selectedTestTime') || 15, 10);
-        
+
         // --- Biến toàn cục ---
-        let correctAnswers = []; 
+        let correctAnswers = [];
         let fullQuestionObjects = [];
-        let timerInterval = null; 
-        let daNopBai = false; 
-        let globalTimeLeft = 0; 
-        let isCheating = false; 
-        let cheatTimeout = null; 
-        let cheatCountDown = 0; 
-        let cheatTimerInterval = null; 
+        let timerInterval = null;
+        let daNopBai = false;
+        let globalTimeLeft = 0;
+        let isCheating = false;
+        let cheatTimeout = null;
+        let cheatCountDown = 0;
+        let cheatTimerInterval = null;
         let globalAnsweredCount = 0; // Biến lưu số câu đã chọn
-        
+
         let userSelections = []; // Mảng theo dõi câu trả lời của HS (null hoặc giá trị)
         let currentQuestionIndex = 0; // Câu hỏi hiện tại
 
         // --- MỚI: BIẾN THEO DÕI NÂNG CAO (ĐÃ PHỤC HỒI) ---
-        let checkFocusInterval = null; 
+        let checkFocusInterval = null;
         let isFocused = true; // Theo dõi trạng thái focus của cửa sổ
+        let isAntiCheatEnabled = true;
 
         // ==========================================
         // 🚨 BẪY CHỐNG DEVTOOLS & CHUỘT PHẢI CỦA BÉ LÔI 🚨
         // ==========================================
         document.addEventListener('contextmenu', e => e.preventDefault()); // Cấm chuột phải
 
-        document.addEventListener('keydown', function(e) {
+        document.addEventListener('keydown', function (e) {
             // Chặn F12 và các phím tắt mở DevTools
             if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || (e.ctrlKey && e.key === 'U')) {
                 e.preventDefault();
+                if (!isAntiCheatEnabled) return;
                 if (typeof daNopBai !== 'undefined' && !daNopBai) {
                     synchronousSubmitOnUnload(true, "Gian lận (Cố tình dùng phím tắt mở Công cụ Nhà phát triển)");
                     window.location.replace('results.html');
@@ -352,7 +440,8 @@
         });
 
         // "Đóng băng" trình duyệt nếu cố tình mở DevTools từ trước lúc vào trang
-        setInterval(function() {
+        setInterval(function () {
+            if (!isAntiCheatEnabled) return;
             const start = performance.now();
             debugger; // Lệnh này làm trình duyệt khựng lại nếu F12 đang mở
             const end = performance.now();
@@ -382,21 +471,22 @@
 
         document.getElementById('studentInfo').innerText = `Thí sinh: ${studentName} - Lớp: ${studentClass}`;
         document.getElementById('testTitle').innerText = selectedTestName || "Bài kiểm tra";
-        
-        
+
+
         // *** CẬP NHẬT: Chặn nút Back/Forward (PHỤC HỒI LOGIC NỘP BÀI NGAY) ***
         // Thêm một mục giả vào lịch sử để "bẫy" nút back
-        history.pushState(null, null, location.href); 
-        
+        history.pushState(null, null, location.href);
+
         /* *** CẬP NHẬT: Kích hoạt onpopstate để bắt nút Back/Forward (PHỤC HỒI) *** */
-        window.onpopstate = function() {
+        window.onpopstate = function () {
             // Đẩy lại lịch sử một lần nữa để "khóa" người dùng
-            history.pushState(null, null, location.href); 
-            
+            history.pushState(null, null, location.href);
+            if (!isAntiCheatEnabled) return;
+
             if (!daNopBai) {
                 // Nếu chưa nộp bài, đây là hành vi gian lận -> NỘP NGAY
                 synchronousSubmitOnUnload(true, "Bấm nút 'Back/Forward' của trình duyệt");
-                window.location.replace('results.html'); 
+                window.location.replace('results.html');
             }
         };
 
@@ -409,7 +499,7 @@
             seconds = seconds < 10 ? '0' + seconds : seconds;
             return `${minutes}:${seconds}`;
         }
-        
+
         // HÀM XÁO TRỘN FISHER-YATES SHUFFLE
         function shuffleArray(array) {
             // Sử dụng Math.random() mặc định (đã được ghi đè bởi seedrandom)
@@ -430,18 +520,18 @@
             // 1. Ẩn/Hiện câu hỏi
             const questions = document.querySelectorAll('.question');
             questions.forEach(q => q.classList.remove('active'));
-            
+
             // Xử lý trường hợp không tìm thấy câu hỏi (lỗi)
             if (questions.length === 0) return;
-            
+
             questions[index].classList.add('active');
 
             // 2. Cập nhật nút điều hướng
             prevBtn.disabled = (index === 0);
-            
+
             // Nếu là câu cuối, nút Next bị ẩn
             nextBtn.style.display = (index === totalQuestions - 1) ? 'none' : 'block';
-            
+
             // Nút Submit chỉ hiển thị khi là câu cuối cùng
             submitButton.style.display = (index === totalQuestions - 1) ? 'block' : 'none';
 
@@ -452,17 +542,17 @@
             if (qBoxes.length > 0) {
                 qBoxes[index].classList.add('current');
             }
-            
+
             // 4. Kéo màn hình lên đầu câu hỏi (chỉ trên desktop)
             if (window.innerWidth > 900) { // 900px là breakpoint grid
-                questions[index].scrollIntoView({ behavior: 'auto', block: 'start' });
+                questions[index].scrollIntoView({behavior: 'auto', block: 'start'});
             }
         }
 
 
         // --- HÀM TẠO BẢNG THEO DÕI TIẾN ĐỘ ---
         function createQuestionMap(totalQuestions) {
-            questionMapContainer.innerHTML = ''; 
+            questionMapContainer.innerHTML = '';
             totalQuestionsCountSpan.innerText = totalQuestions;
 
             for (let i = 0; i < totalQuestions; i++) {
@@ -470,7 +560,7 @@
                 qBox.className = 'q-box';
                 qBox.dataset.index = i;
                 qBox.innerHTML = `<span>${i + 1}</span>`;
-                
+
                 // Thêm sự kiện click để nhảy đến câu hỏi
                 qBox.addEventListener('click', () => {
                     showQuestion(i);
@@ -479,15 +569,15 @@
                 questionMapContainer.appendChild(qBox);
             }
         }
-        
+
         // --- HÀM CẬP NHẬT TRẠNG THÁI TIẾN ĐỘ ---
         function updateProgress() {
             let answeredCount = 0;
             const questionBoxes = questionMapContainer.querySelectorAll('.q-box');
-            
+
             userSelections.forEach((selection, index) => {
                 const qBox = questionBoxes[index];
-                
+
                 if (selection !== null && selection !== undefined) {
                     answeredCount++;
                     if (qBox) {
@@ -502,15 +592,15 @@
 
             globalAnsweredCount = answeredCount; // Cập nhật biến toàn cục
             answeredCountSpan.innerText = answeredCount;
-            
+
             // KIỂM TRA ĐIỀU KIỆN NỘP BÀI
             const totalQuestions = userSelections.length;
             const isCompleted = (answeredCount === totalQuestions && totalQuestions > 0);
-            
+
             // Cập nhật trạng thái nút nộp bài (luôn là disabled trừ khi hoàn thành)
             submitButton.disabled = !isCompleted;
-            submitButton.innerText = isCompleted 
-                ? "Nộp bài (HOÀN THÀNH)" 
+            submitButton.innerText = isCompleted
+                ? "Nộp bài (HOÀN THÀNH)"
                 : `Nộp bài (Cần ${totalQuestions - answeredCount} câu)`;
         }
 
@@ -518,7 +608,7 @@
         function setupAnswerTracking() {
             const totalQuestions = fullQuestionObjects.length;
             userSelections = new Array(totalQuestions).fill(null);
-            
+
             testForm.addEventListener('change', (e) => {
                 if (e.target.type === 'radio' && e.target.name.startsWith('question')) {
                     const index = parseInt(e.target.name.replace('question', ''), 10);
@@ -531,9 +621,10 @@
 
         // --- HÀM KIỂM TRA TẬP TRUNG NÂNG CAO (PHÁT HIỆN LỚP PHỦ AI) ---
         function startAdvancedFocusCheck() {
-            if (checkFocusInterval) return; 
+            if (checkFocusInterval) return;
 
             checkFocusInterval = setInterval(() => {
+                if (!isAntiCheatEnabled) return;
                 if (daNopBai) {
                     clearInterval(checkFocusInterval);
                     checkFocusInterval = null;
@@ -542,10 +633,10 @@
 
                 // Kiểm tra 1: Mất tiêu điểm (focus) không đồng bộ
                 if (!document.hasFocus()) {
-                    if (!isFocused) return; 
+                    if (!isFocused) return;
                     isFocused = false;
                     console.warn("CẢNH BÁO: Phát hiện mất tiêu điểm không đồng bộ (Lớp phủ AI)");
-                    
+
                     // Thực hiện nộp bài ngay lập tức
                     synchronousSubmitOnUnload(true, "Gian lận (Mất tiêu điểm do Lớp phủ/Trợ lý AI)");
                     window.location.replace('results.html');
@@ -553,9 +644,9 @@
                 } else {
                     isFocused = true;
                 }
-                
+
                 // Kiểm tra 2 (Desktop/Cửa sổ): Phát hiện thay đổi kích thước/chia màn hình
-                if (window.innerWidth < 400 || window.innerHeight < 300) { 
+                if (window.innerWidth < 400 || window.innerHeight < 300) {
                     console.warn("CẢNH BÁO: Phát hiện thay đổi kích thước cửa sổ bất thường!");
                     synchronousSubmitOnUnload(true, "Gian lận (Thay đổi kích thước cửa sổ)");
                     window.location.replace('results.html');
@@ -563,31 +654,43 @@
 
             }, 500); // Kiểm tra mỗi 500ms (0.5 giây)
         }
-        
+
         // --- TẢI CÂU HỎI (Cập nhật logic tạo HTML) ---
         async function loadQuiz() {
             loadingDiv.style.display = 'block';
-            
+
             // Tạo một ID duy nhất cho phiên làm bài này để sử dụng làm hạt giống xáo trộn
             // Ghi đè Math.random() bằng Math.seedrandom()
             const uniqueStudentSeed = studentName + studentClass + selectedTestId + new Date().getTime();
-            Math.seedrandom(uniqueStudentSeed); 
+            Math.seedrandom(uniqueStudentSeed);
+
+            try {
+                const testDoc = await db.collection("dethi").doc(selectedTestId).get();
+                if (testDoc.exists) {
+                    const testData = testDoc.data();
+                    // Nếu trường chongGianLan là false thì gán false, còn lại mặc định là true
+                    isAntiCheatEnabled = (testData.chongGianLan !== false);
+                    console.log("Trạng thái chống gian lận của đề này:", isAntiCheatEnabled ? "BẬT" : "TẮT");
+                }
+            } catch (e) {
+                console.error("Lỗi lấy cấu hình đề thi:", e);
+            }
 
             try {
                 const snapshot = await db.collection("dethi").doc(selectedTestId).collection("cauhoi").get();
                 if (snapshot.empty) {
                     loadingDiv.innerText = "Lỗi: Đề thi này chưa có câu hỏi. Vui lòng quay lại.";
-                    errorActionsDiv.style.display = 'block'; 
+                    errorActionsDiv.style.display = 'block';
                     return;
                 }
-                
-                let loadedQuestions = []; 
+
+                let loadedQuestions = [];
                 snapshot.forEach(doc => {
                     const q = doc.data();
                     q.id = doc.id;
-                    loadedQuestions.push(q); 
+                    loadedQuestions.push(q);
                 });
-                
+
                 // 1. SẮP XẾP TRONG BỘ NHỚ (Đảm bảo câu cũ/mới đều có thứ tự ban đầu)
                 loadedQuestions.sort((a, b) => {
                     const indexA = a.index !== undefined && a.index !== null ? a.index : -1;
@@ -608,7 +711,7 @@
                 // 2. XÁO TRỘN CÂU HỎI (Nếu không phải Tiếng Việt/English)
                 const testNameLower = selectedTestName.toLowerCase();
                 const shouldShuffleQuestions = !testNameLower.includes("tiếng việt") && !testNameLower.includes("english");
-                
+
                 if (shouldShuffleQuestions) {
                     shuffleArray(loadedQuestions); // Áp dụng xáo trộn câu hỏi
                     console.log("Đề thi đã được xáo trộn câu hỏi.");
@@ -617,37 +720,37 @@
                 }
 
 
-                testForm.innerHTML = ''; 
-                
+                testForm.innerHTML = '';
+
                 let questionIndex = 0;
                 loadedQuestions.forEach(q => {
-                    
+
                     // *** THỰC HIỆN XÁO TRỘN LỰA CHỌN (LUÔN LUÔN XÁO TRỘN) ***
                     let originalOptions = [...q.options];
-                    
+
                     // Tạo mảng chỉ số [0, 1, 2, 3] và xáo trộn nó
                     let optionIndices = [0, 1, 2, 3];
                     shuffleArray(optionIndices);
-                    
+
                     // Xây dựng lại mảng options và lưu trữ ánh xạ đáp án
                     let shuffledOptions = optionIndices.map(i => originalOptions[i]);
 
                     // Lưu trữ lại mảng options đã xáo trộn cho bài nộp
-                    q.shuffledOptions = shuffledOptions; 
-                    
-                    
+                    q.shuffledOptions = shuffledOptions;
+
+
                     // 3. TẠO HTML CÂU HỎI
                     let questionDiv = document.createElement('div');
                     questionDiv.className = 'question';
-                    questionDiv.id = `question${questionIndex}`; 
-                    
+                    questionDiv.id = `question${questionIndex}`;
+
                     // Hiển thị Đoạn văn/Ảnh (giữ nguyên)
                     if (q.comprehensionText) {
                         const textPassage = document.createElement('div');
                         textPassage.className = 'comprehension-text';
                         textPassage.innerText = q.comprehensionText;
                         questionDiv.appendChild(textPassage);
-                    } 
+                    }
                     else if (q.imageUrl) {
                         const image = document.createElement('img');
                         image.src = q.imageUrl;
@@ -658,12 +761,12 @@
                     let promptP = document.createElement('p');
                     promptP.innerText = `${questionIndex + 1}. ${q.prompt}`;
                     questionDiv.appendChild(promptP);
-                    
+
                     let optionsDiv = document.createElement('div');
                     optionsDiv.className = 'options';
-                    
+
                     // Sử dụng MẢNG ĐÃ XÁO TRỘN để tạo radio button
-                    shuffledOptions.forEach(option => { 
+                    shuffledOptions.forEach(option => {
                         let label = document.createElement('label');
                         let input = document.createElement('input');
                         input.type = 'radio';
@@ -673,7 +776,7 @@
                         label.append(` ${option}`);
                         optionsDiv.appendChild(label);
                     });
-                    
+
                     questionDiv.appendChild(optionsDiv);
                     testForm.appendChild(questionDiv);
                     questionIndex++;
@@ -683,37 +786,37 @@
                 // 🔐 CẬP NHẬT BIẾN TOÀN CỤC VÀ MÃ HÓA ĐÁP ÁN (Base64) 🔐
                 // ==========================================
                 fullQuestionObjects = loadedQuestions.map(q => {
-                    let safeQuestion = { ...q };
+                    let safeQuestion = {...q};
                     // Mã hóa đáp án ngay lập tức. Học sinh dùng F12 soi object chỉ thấy ký tự lạ!
-                    safeQuestion.answer = btoa(encodeURIComponent(q.answer)); 
+                    safeQuestion.answer = btoa(encodeURIComponent(q.answer));
                     return safeQuestion;
                 });
 
                 // Lấy mảng đáp án đã mã hóa
-                correctAnswers = fullQuestionObjects.map(q => q.answer); 
+                correctAnswers = fullQuestionObjects.map(q => q.answer);
                 // ==========================================
 
                 loadingDiv.style.display = 'none';
                 quizControls.style.display = 'block';
-                
+
                 // Khởi tạo các tính năng
-                createQuestionMap(loadedQuestions.length); 
-                setupAnswerTracking(); 
+                createQuestionMap(loadedQuestions.length);
+                setupAnswerTracking();
                 showQuestion(0); // Bắt đầu ở câu hỏi đầu tiên
-                
-                startTimer(testTimeMinutes * 60); 
+
+                startTimer(testTimeMinutes * 60);
                 setupAntiCheat();
 
                 // *** KÍCH HOẠT KIỂM TRA NÂNG CAO SAU KHI TẢI ***
                 startAdvancedFocusCheck();
-                
+
             } catch (error) {
                 console.error("Lỗi khi tải câu hỏi: ", error);
                 loadingDiv.innerText = "Lỗi khi tải đề thi. Vui lòng kiểm tra lại.";
                 errorActionsDiv.style.display = 'block';
             }
         }
-        
+
         // --- HÀM CHỐNG GIAN LẬN (Math.seedrandom cần thiết cho Xáo trộn lựa chọn) ---
         Math.seedrandom(Math.random());
 
@@ -724,13 +827,13 @@
             const timerBarElement = document.getElementById('timer-bar');
 
             timerInterval = setInterval(() => {
-                if (daNopBai) { 
+                if (daNopBai) {
                     clearInterval(timerInterval);
                     return;
                 }
-                
-                if (!isCheating) { 
-                    globalTimeLeft--; 
+
+                if (!isCheating) {
+                    globalTimeLeft--;
                 }
 
                 if (globalTimeLeft < 0) {
@@ -742,7 +845,7 @@
                     timerElement.innerText = "HẾT GIỜ";
                     timerBarElement.classList.add('warning');
                     autoSubmit();
-                    return; 
+                    return;
                 }
 
                 if (isCheating) {
@@ -755,21 +858,21 @@
                     timerElement.innerText = formatTime(globalTimeLeft);
                     timerBarElement.classList.remove('warning');
                 }
-                
+
             }, 1000);
         }
 
         // --- HÀM TỰ ĐỘNG NỘP BÀI (Hết giờ) ---
         function autoSubmit() {
-            if (daNopBai) return; 
-            submitTest(true, "Hết giờ"); 
+            if (daNopBai) return;
+            submitTest(true, "Hết giờ");
         }
 
         // --- HÀM CHỐNG GIAN LẬN (ĐÃ KHẮC PHỤC LỖI LOGIC NỘP BÀI) ---
         function startCheatWarning(reason) {
-            if (daNopBai || isCheating) return; 
-            isCheating = true; 
-            cheatCountDown = 3; 
+            if (daNopBai || isCheating) return;
+            isCheating = true;
+            cheatCountDown = 3;
 
             // Cập nhật text ngay lập tức
             document.getElementById('timer').innerText = `CẢNH BÁO: QUAY LẠI! (${cheatCountDown}s)`;
@@ -777,42 +880,42 @@
 
             // Xóa bộ đếm giây cũ (nếu có)
             if (cheatTimerInterval) clearInterval(cheatTimerInterval);
-            
+
             cheatTimerInterval = setInterval(() => {
                 cheatCountDown--;
                 if (cheatCountDown < 0) {
-                    cheatCountDown = 0; 
+                    cheatCountDown = 0;
                 }
                 // Cập nhật text trên thanh timer
-                if(isCheating) { 
+                if (isCheating) {
                     document.getElementById('timer').innerText = `CẢNH BÁO: QUAY LẠI! (${cheatCountDown}s)`;
                 }
             }, 1000);
 
             // Xóa timeout cũ (nếu có)
             if (cheatTimeout) clearTimeout(cheatTimeout);
-            
+
             cheatTimeout = setTimeout(() => {
                 if (daNopBai) return;
                 // Chỉ nộp bài nếu vẫn đang trong trạng thái gian lận (Rời chuột desktop)
-                if(isCheating) {
-                    submitTest(true, reason); 
+                if (isCheating) {
+                    submitTest(true, reason);
                 }
             }, 3000);
         }
-        
+
         function stopCheatWarning() {
-             if (cheatTimeout) {
-                clearTimeout(cheatTimeout); 
+            if (cheatTimeout) {
+                clearTimeout(cheatTimeout);
                 cheatTimeout = null;
             }
             if (cheatTimerInterval) {
-                clearInterval(cheatTimerInterval); 
+                clearInterval(cheatTimerInterval);
                 cheatTimerInterval = null;
             }
             isCheating = false;
-            cheatCountDown = 0; 
-            
+            cheatCountDown = 0;
+
             // Khôi phục lại thanh timer
             if (!daNopBai) {
                 const timerBarElement = document.getElementById('timer-bar');
@@ -822,11 +925,12 @@
                 document.getElementById('timer').innerText = formatTime(globalTimeLeft);
             }
         }
-        
+
         function setupAntiCheat() {
-            
+
             // 1. Chuyển Tab/Ứng dụng (visibilitychange) -> NỘP NGAY
             document.addEventListener('visibilitychange', () => {
+                if (!isAntiCheatEnabled) return;
                 if (daNopBai) return;
                 if (document.hidden) {
                     synchronousSubmitOnUnload(true, "Chuyển tab/ứng dụng");
@@ -836,41 +940,45 @@
                     stopCheatWarning();
                 }
             });
-            
+
             // 2. Mất Tập trung (Blur Event - Lớp phủ AI) -> NỘP NGAY
             window.addEventListener('blur', () => {
+                if (!isAntiCheatEnabled) return;
                 if (daNopBai) return;
                 // Chỉ kích hoạt nếu tab không bị ẩn (vì visibilitychange đã xử lý)
                 if (!document.hidden) {
-                     synchronousSubmitOnUnload(true, "Mất tập trung (Lớp phủ Blur)");
-                     window.location.replace('results.html');
+                    synchronousSubmitOnUnload(true, "Mất tập trung (Lớp phủ Blur)");
+                    window.location.replace('results.html');
                 }
             });
-            
+
             // 3. Quay lại (Focus Event) - HỦY CẢNH BÁO RỜI CHUỘT
             window.addEventListener('focus', () => {
-                 if (daNopBai) return;
-                 stopCheatWarning();
+                if (!isAntiCheatEnabled) return;
+                if (daNopBai) return;
+                stopCheatWarning();
             });
 
             // 4. Rời chuột (Chỉ Desktop) -> CẢNH BÁO 3 GIÂY
             document.body.addEventListener('mouseleave', () => {
-                if(window.innerWidth > 900) { // Chỉ chạy trên Desktop
+                if (!isAntiCheatEnabled) return;
+                if (window.innerWidth > 900) { // Chỉ chạy trên Desktop
                     startCheatWarning("Rời khỏi trang (Desktop)");
                 }
             });
             // 5. Quay lại bằng chuột (Chỉ Desktop)
             document.body.addEventListener('mouseenter', () => {
-                 if(window.innerWidth > 900) {
+                if (window.innerWidth > 900) {
                     stopCheatWarning();
-                 }
+                }
             });
-            
+
             // 6. Chặn F5 và Ctrl+R (Nộp bài ngay lập tức)
-            document.addEventListener('keydown', function(e) {
+            document.addEventListener('keydown', function (e) {
                 if ((e.key === 'r' && e.ctrlKey) || e.key === 'F5') {
+                    if (!isAntiCheatEnabled) return;
                     if (!daNopBai) {
-                        e.preventDefault(); 
+                        e.preventDefault();
                         synchronousSubmitOnUnload(true, "Gian lận (Bấm F5/Reload)");
                         window.location.replace('results.html'); // Chuyển đi ngay
                     }
@@ -878,7 +986,7 @@
             });
 
             // 7. Chặn Reload bằng click chuột hoặc đóng tab (Nộp bài ngay lập tức)
-            window.onbeforeunload = function(e) {
+            window.onbeforeunload = function (e) {
                 if (!daNopBai) {
                     // Chỉ lưu dữ liệu đồng bộ, không return thông báo để trình duyệt đóng nhanh
                     synchronousSubmitOnUnload(true, "Tải lại / Rời khỏi trang");
@@ -888,21 +996,21 @@
 
         // *** HÀM NỘP BÀI ĐỒNG BỘ (CHO F5/RELOAD/BACK) ***
         function synchronousSubmitOnUnload(isAutoSubmit = true, autoSubmitReason = "Rời khỏi trang") {
-            if (daNopBai) return; 
-            daNopBai = true; 
-            clearInterval(timerInterval); 
+            if (daNopBai) return;
+            daNopBai = true;
+            clearInterval(timerInterval);
             if (cheatTimeout) clearTimeout(cheatTimeout);
-            if (cheatTimerInterval) clearInterval(cheatTimerInterval); 
+            if (cheatTimerInterval) clearInterval(cheatTimerInterval);
             if (checkFocusInterval) clearInterval(checkFocusInterval); // DỪNG KIỂM TRA NÂNG CAO
-            
+
             // --- Chấm điểm (đồng bộ) ---
             let score = 0;
-            const userAnswers = userSelections; 
-            
+            const userAnswers = userSelections;
+
             // ==========================================
             // 🔐 LẤY ĐÁP ÁN (ĐÃ MÃ HÓA) ĐỂ CHẤM ĐIỂM 🔐
             // ==========================================
-            correctAnswers = fullQuestionObjects.map(q => q.answer); 
+            correctAnswers = fullQuestionObjects.map(q => q.answer);
 
             correctAnswers.forEach((encodedAnswer, index) => {
                 const userAnswer = userAnswers[index];
@@ -915,69 +1023,69 @@
 
             const totalQuestions = correctAnswers.length;
             const finalScore = (totalQuestions > 0) ? (score / totalQuestions) * 10 : 0;
-            
+
             // --- Tạo đối tượng lưu trữ (đồng bộ) ---
             const submissionData = {
                 hoTen: studentName,
                 lop: studentClass,
                 diemSo: finalScore.toFixed(2),
                 soCauDung: score,
-                tongSoCau: totalQuestions, 
+                tongSoCau: totalQuestions,
                 deThiId: selectedTestId,
                 tenDeThi: selectedTestName,
                 // thoiGianNop SẼ ĐƯỢC THÊM BỞI results.html
-                nopTuDong: isAutoSubmit, 
+                nopTuDong: isAutoSubmit,
                 lyDoNopTuDong: autoSubmitReason,
                 answeredCount: globalAnsweredCount,
-                userAnswers: userSelections,         
+                userAnswers: userSelections,
                 quizData: fullQuestionObjects     // Lưu trữ câu hỏi đã xáo trộn để hiển thị kết quả đúng
             };
 
             // --- Lưu vào localStorage (đồng bộ) ---
             localStorage.setItem('pendingSubmission', JSON.stringify(submissionData));
-            
+
             // Lưu các thông tin cơ bản để results.html hiển thị ngay
             localStorage.setItem('score', finalScore.toFixed(2));
             localStorage.setItem('totalQuestions', totalQuestions);
             localStorage.setItem('correctCount', score);
-            localStorage.setItem('answeredCount', globalAnsweredCount); 
+            localStorage.setItem('answeredCount', globalAnsweredCount);
             localStorage.setItem('isAutoSubmit', isAutoSubmit);
         }
 
 
         // --- HÀM NỘP BÀI (BẤM NÚT) ---
         async function submitTest(isAutoSubmit = false, autoSubmitReason = null) {
-            if (daNopBai) return; 
+            if (daNopBai) return;
 
             if (!isAutoSubmit) {
-                 let confirmMsg = "Bạn có chắc chắn muốn nộp bài không?";
-                 if (userSelections.includes(null)) {
-                     confirmMsg = "Vẫn còn câu chưa trả lời. Bạn có chắc chắn muốn nộp bài không?";
-                 }
-                 // Sử dụng confirm() thay vì alert()
-                 if (!window.confirm(confirmMsg)) {
-                     return; 
-                 }
+                let confirmMsg = "Bạn có chắc chắn muốn nộp bài không?";
+                if (userSelections.includes(null)) {
+                    confirmMsg = "Vẫn còn câu chưa trả lời. Bạn có chắc chắn muốn nộp bài không?";
+                }
+                // Sử dụng confirm() thay vì alert()
+                if (!window.confirm(confirmMsg)) {
+                    return;
+                }
             }
-            
-            daNopBai = true; 
-            clearInterval(timerInterval); 
+
+            daNopBai = true;
+            clearInterval(timerInterval);
             if (cheatTimeout) clearTimeout(cheatTimeout);
-            if (cheatTimerInterval) clearInterval(cheatTimerInterval); 
+            if (cheatTimerInterval) clearInterval(cheatTimerInterval);
             if (checkFocusInterval) clearInterval(checkFocusInterval); // DỪNG KIỂM TRA NÂNG CAO
 
             const submitButton = document.getElementById('submitBtn');
             submitButton.disabled = true;
             submitButton.innerText = "Đang nộp bài...";
-            
+
             // --- Chấm điểm ---
             let score = 0;
-            const userAnswers = userSelections; 
+            const userAnswers = userSelections;
 
             // ==========================================
             // 🔐 LẤY ĐÁP ÁN (ĐÃ MÃ HÓA) ĐỂ CHẤM ĐIỂM 🔐
             // ==========================================
-            correctAnswers = fullQuestionObjects.map(q => q.answer); 
+            correctAnswers = fullQuestionObjects.map(q => q.answer);
 
             correctAnswers.forEach((encodedAnswer, index) => {
                 const userAnswer = userAnswers[index];
@@ -986,17 +1094,17 @@
                 }
             });
             // ==========================================
-            
+
             const totalQuestions = correctAnswers.length;
             const finalScore = (totalQuestions > 0) ? (score / totalQuestions) * 10 : 0;
-            
+
             // Lưu vào localStorage (cho trang results)
             localStorage.setItem('score', finalScore.toFixed(2));
             localStorage.setItem('totalQuestions', totalQuestions);
             localStorage.setItem('correctCount', score);
-            localStorage.setItem('answeredCount', globalAnsweredCount); 
+            localStorage.setItem('answeredCount', globalAnsweredCount);
             localStorage.setItem('isAutoSubmit', isAutoSubmit);
-            
+
             // Xóa bài nộp chờ (nếu có)
             localStorage.removeItem('pendingSubmission');
 
@@ -1008,14 +1116,14 @@
                         lop: studentClass,
                         diemSo: finalScore.toFixed(2),
                         soCauDung: score,
-                        tongSoCau: totalQuestions, 
+                        tongSoCau: totalQuestions,
                         deThiId: selectedTestId,
                         tenDeThi: selectedTestName,
                         thoiGianNop: firebase.firestore.FieldValue.serverTimestamp(),
-                        nopTuDong: isAutoSubmit, 
+                        nopTuDong: isAutoSubmit,
                         lyDoNopTuDong: autoSubmitReason,
-                        answeredCount: globalAnsweredCount, 
-                        userAnswers: userSelections,         
+                        answeredCount: globalAnsweredCount,
+                        userAnswers: userSelections,
                         quizData: fullQuestionObjects     // Lưu trữ câu hỏi đã xáo trộn cho từng HS
                     });
 
@@ -1026,7 +1134,7 @@
                     console.error("Lỗi khi lưu kết quả: ", error);
                 }
             }
-            
+
             // Chuyển sang trang kết quả
             window.location.replace('results.html'); // Dùng replace để thay thế lịch sử
         }
@@ -1045,8 +1153,9 @@
         if (localStorage.getItem('pendingSubmission')) {
             window.location.replace('results.html');
         } else {
-            loadQuiz(); 
+            loadQuiz();
         }
     </script>
 </body>
+
 </html>
