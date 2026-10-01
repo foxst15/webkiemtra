@@ -1983,7 +1983,7 @@ HS003,Lê Văn C,10A1</code></pre>
             modalBackdrop.style.display = 'block';
             modalTitle.innerText = `Chỉnh sửa Đề: ${testName}`;
             modalBody.innerHTML = 'Đang tải thông tin đề...';
-            const isCheatChecked = (data.chongGianLan !== false) ? 'checked' : '';
+           
 
             try {
                 const docRef = await db.collection("dethi").doc(testId).get();
@@ -1992,6 +1992,7 @@ HS003,Lê Văn C,10A1</code></pre>
                     return;
                 }
                 const data = docRef.data();
+                const isCheatChecked = (data.chongGianLan !== false) ? 'checked' : '';
 
                 const toDateTimeLocal = (isoString) => {
                     if (!isoString) return '';
