@@ -417,10 +417,11 @@
         let userSelections = []; // Mảng theo dõi câu trả lời của HS (null hoặc giá trị)
         let currentQuestionIndex = 0; // Câu hỏi hiện tại
 
-        // --- MỚI: BIẾN THEO DÕI NÂNG CAO (ĐÃ PHỤC HỒI) ---
+        // --- MỚI: BIẾN THEO DÕI NÂNG CAO ---
         let checkFocusInterval = null;
         let isFocused = true; // Theo dõi trạng thái focus của cửa sổ
-        let isAntiCheatEnabled = true;
+        let isAntiCheatEnabled = false; // BÉ LÔI FIX: Mặc định tắt, đợi tải đề xong mới bật!
+        let isQuizReady = false; // BÉ LÔI FIX: Cờ đánh dấu thời gian châm chước
 
         // ==========================================
         // 🚨 BẪY CHỐNG DEVTOOLS & CHUỘT PHẢI CỦA BÉ LÔI 🚨
@@ -431,7 +432,7 @@
             // Chặn F12 và các phím tắt mở DevTools
             if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || (e.ctrlKey && e.key === 'U')) {
                 e.preventDefault();
-                if (!isAntiCheatEnabled) return;
+                if (!isAntiCheatEnabled || !isQuizReady) return; // BÉ LÔI FIX
                 if (typeof daNopBai !== 'undefined' && !daNopBai) {
                     synchronousSubmitOnUnload(true, "Gian lận (Cố tình dùng phím tắt mở Công cụ Nhà phát triển)");
                     window.location.replace('results.html');
@@ -441,7 +442,7 @@
 
         // "Đóng băng" trình duyệt nếu cố tình mở DevTools từ trước lúc vào trang
         setInterval(function () {
-            if (!isAntiCheatEnabled) return;
+            if (!isAntiCheatEnabled || !isQuizReady) return; // BÉ LÔI FIX
             const start = performance.now();
             debugger; // Lệnh này làm trình duyệt khựng lại nếu F12 đang mở
             const end = performance.now();
@@ -481,7 +482,7 @@
         window.onpopstate = function () {
             // Đẩy lại lịch sử một lần nữa để "khóa" người dùng
             history.pushState(null, null, location.href);
-            if (!isAntiCheatEnabled) return;
+            if (!isAntiCheatEnabled || !isQuizReady) return; // BÉ LÔI FIX
 
             if (!daNopBai) {
                 // Nếu chưa nộp bài, đây là hành vi gian lận -> NỘP NGAY
@@ -624,7 +625,7 @@
             if (checkFocusInterval) return;
 
             checkFocusInterval = setInterval(() => {
-                if (!isAntiCheatEnabled) return;
+                if (!isAntiCheatEnabled || !isQuizReady) return; // BÉ LÔI FIX
                 if (daNopBai) {
                     clearInterval(checkFocusInterval);
                     checkFocusInterval = null;
@@ -664,6 +665,7 @@
             const uniqueStudentSeed = studentName + studentClass + selectedTestId + new Date().getTime();
             Math.seedrandom(uniqueStudentSeed);
 
+            // BÉ LÔI FIX: Đọc cấu hình từ Firebase xem Admin có cho phép Tắt chống gian lận không
             try {
                 const testDoc = await db.collection("dethi").doc(selectedTestId).get();
                 if (testDoc.exists) {
@@ -809,6 +811,12 @@
 
                 // *** KÍCH HOẠT KIỂM TRA NÂNG CAO SAU KHI TẢI ***
                 startAdvancedFocusCheck();
+                
+                // BÉ LÔI FIX: Cho học sinh 2 giây "châm chước" để ổn định cửa sổ trình duyệt rồi mới sập bẫy!
+                setTimeout(() => {
+                    isQuizReady = true;
+                    console.log("Hệ thống chống gian lận đã SẴN SÀNG! Mlem mlem~");
+                }, 2000);
 
             } catch (error) {
                 console.error("Lỗi khi tải câu hỏi: ", error);
@@ -930,7 +938,7 @@
 
             // 1. Chuyển Tab/Ứng dụng (visibilitychange) -> NỘP NGAY
             document.addEventListener('visibilitychange', () => {
-                if (!isAntiCheatEnabled) return;
+                if (!isAntiCheatEnabled || !isQuizReady) return; // BÉ LÔI FIX
                 if (daNopBai) return;
                 if (document.hidden) {
                     synchronousSubmitOnUnload(true, "Chuyển tab/ứng dụng");
@@ -943,7 +951,7 @@
 
             // 2. Mất Tập trung (Blur Event - Lớp phủ AI) -> NỘP NGAY
             window.addEventListener('blur', () => {
-                if (!isAntiCheatEnabled) return;
+                if (!isAntiCheatEnabled || !isQuizReady) return; // BÉ LÔI FIX
                 if (daNopBai) return;
                 // Chỉ kích hoạt nếu tab không bị ẩn (vì visibilitychange đã xử lý)
                 if (!document.hidden) {
@@ -954,20 +962,21 @@
 
             // 3. Quay lại (Focus Event) - HỦY CẢNH BÁO RỜI CHUỘT
             window.addEventListener('focus', () => {
-                if (!isAntiCheatEnabled) return;
+                if (!isAntiCheatEnabled || !isQuizReady) return; // BÉ LÔI FIX
                 if (daNopBai) return;
                 stopCheatWarning();
             });
 
             // 4. Rời chuột (Chỉ Desktop) -> CẢNH BÁO 3 GIÂY
             document.body.addEventListener('mouseleave', () => {
-                if (!isAntiCheatEnabled) return;
+                if (!isAntiCheatEnabled || !isQuizReady) return; // BÉ LÔI FIX
                 if (window.innerWidth > 900) { // Chỉ chạy trên Desktop
                     startCheatWarning("Rời khỏi trang (Desktop)");
                 }
             });
             // 5. Quay lại bằng chuột (Chỉ Desktop)
             document.body.addEventListener('mouseenter', () => {
+                if (!isAntiCheatEnabled || !isQuizReady) return; // BÉ LÔI FIX
                 if (window.innerWidth > 900) {
                     stopCheatWarning();
                 }
@@ -976,7 +985,7 @@
             // 6. Chặn F5 và Ctrl+R (Nộp bài ngay lập tức)
             document.addEventListener('keydown', function (e) {
                 if ((e.key === 'r' && e.ctrlKey) || e.key === 'F5') {
-                    if (!isAntiCheatEnabled) return;
+                    if (!isAntiCheatEnabled || !isQuizReady) return; // BÉ LÔI FIX
                     if (!daNopBai) {
                         e.preventDefault();
                         synchronousSubmitOnUnload(true, "Gian lận (Bấm F5/Reload)");
