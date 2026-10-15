@@ -45,7 +45,6 @@
         #admin-nav button { background-color: transparent; color: #555; padding: 10px 20px; border: none; border-bottom: 4px solid transparent; font-size: 1.1em; font-weight: 600; }
         #admin-nav button.active { color: #007bff; border-bottom-color: #007bff; }
         
-        /* BỘ LỌC ĐƯỢC THIẾT KẾ GỌN GÀNG ĐẸP MẮT */
         .filter-container-custom {
             background: #f8f9fa;
             border: 1px solid #e3e6f0;
@@ -71,7 +70,7 @@
         }
         .filter-row { display: flex; gap: 10px; flex-wrap: wrap; }
 
-        /* BÉ LÔI FIX: CHIA KHU VỰC QUẢN LÝ ĐỀ THI VÀ CÂU HỎI SONG SONG */
+        /* TAB QUẢN LÝ ĐỀ THI & CÂU HỎI */
         #test-manager-view { 
             display: none; 
             grid-template-columns: 360px 1fr; 
@@ -79,7 +78,6 @@
             align-items: start;
         }
 
-        /* GRID BÊN TRONG CỤM CÂU HỎI: FORM TRÁI - DANH SÁCH CÂU HỎI PHẢI */
         .question-manager-grid {
             display: grid;
             grid-template-columns: 360px 1fr;
@@ -89,6 +87,94 @@
         }
 
         #create-test-view { display: none; }
+
+        /* STYLES TRỰC QUAN CHO TAB TẠO ĐỀ THI MỚI */
+        .create-form-section {
+            background: #f8f9fa;
+            border: 1px solid #e3e6f0;
+            border-radius: 10px;
+            padding: 18px;
+            margin-bottom: 20px;
+        }
+        .create-form-section h3 {
+            margin-top: 0;
+            margin-bottom: 14px;
+            font-size: 1.05em;
+            color: #007bff;
+            border-bottom: 2px solid #e0eaff;
+            padding-bottom: 6px;
+        }
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .class-badges-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+            min-height: 38px;
+            padding: 8px;
+            background: #fff;
+            border: 1px dashed #ced4da;
+            border-radius: 8px;
+            align-items: center;
+        }
+        .class-badge-item {
+            background-color: #007bff;
+            color: #fff;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.88em;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 4px rgba(0,123,255,0.2);
+        }
+        .class-badge-item .remove-badge {
+            cursor: pointer;
+            font-weight: bold;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+        .class-badge-item .remove-badge:hover {
+            background: rgba(255,255,255,0.8);
+            color: #dc3545;
+        }
+        .custom-toggle-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #fff;
+            padding: 9px 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            height: 42px;
+            box-sizing: border-box;
+        }
+        .custom-toggle-box input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            margin: 0;
+        }
+        .submit-create-btn {
+            font-size: 1.1em;
+            padding: 12px 20px;
+            font-weight: bold;
+            background-color: #28a745;
+            box-shadow: 0 4px 10px rgba(40,167,69,0.3);
+            width: 100%;
+        }
         
         button.add-btn { background-color: #28a745; }
         button.delete-btn { background-color: #dc3545; font-size: 0.8em; padding: 5px 10px; }
@@ -173,13 +259,6 @@
             background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
         #modal-close { position: absolute; top: 15px; right: 20px; font-size: 2em; font-weight: bold; cursor: pointer; border: none; background: none; }
-        
-        .review-question { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
-        .review-question p { font-weight: bold; }
-        .review-option { display: block; padding: 8px; border-radius: 5px; margin: 5px 0; }
-        .review-option.correct { background-color: #d4edda; border: 1px solid #c3e6cb; font-weight: bold; }
-        .review-option.wrong { background-color: #f8d7da; border: 1px solid #f5c6cb; text-decoration: line-through; }
-        .review-option.unanswered { background-color: #f8f9fa; border: 1px solid #dee2e6; color: #6c757d; font-style: italic; font-weight: bold; }
 
         .avatar-upload-section { margin-bottom: 20px; padding: 15px; border-bottom: 1px solid #eee; text-align: center; }
         #current-admin-avatar { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #007bff; margin-bottom: 10px; }
@@ -195,6 +274,7 @@
         @media (max-width: 1200px) {
             #test-manager-view { grid-template-columns: 1fr; }
             .question-manager-grid { grid-template-columns: 1fr; }
+            .form-grid-2 { grid-template-columns: 1fr; }
             .options-grid { grid-template-columns: 1fr; }
             #student-manager-view { grid-template-columns: 1fr; }
             #account-manager-view { grid-template-columns: 1fr; }
@@ -239,7 +319,6 @@
 
         <!-- TAB QUẢN LÝ ĐỀ THI & CÂU HỎI -->
         <div id="test-manager-view">
-            <!-- CỘT 1: DANH SÁCH ĐỀ THI -->
             <div class="card">
                 <h2>Danh Sách Đề Thi</h2>
                 
@@ -281,12 +360,10 @@
                 </div>
             </div>
 
-            <!-- CỘT 2: QUẢN LÝ CÂU HỎI (CÓ FORM TRÁI - DANH SÁCH CÂU HỎI BÊN PHẢI) -->
             <div class="card" id="question-manager">
                  <h2 id="question-manager-title">Bấm chọn một đề thi ở danh sách bên trái để quản lý câu hỏi</h2>
                  
                  <div class="question-manager-grid">
-                     <!-- SUB-COLUMN TRÁI: FORM THÊM / SỬA CÂU HỎI -->
                      <div class="q-form-col">
                          <div class="toggle-buttons">
                             <button id="toggle-add-single" class="active">Thêm từng câu</button>
@@ -354,7 +431,6 @@ D. Lựa chọn D
                          </form>
                      </div>
 
-                     <!-- SUB-COLUMN PHẢI: DANH SÁCH CÂU HỎI TRONG ĐỀ SẮP THEO LIST BÊN PHẢI -->
                      <div class="q-list-col" id="question-list-container" style="display: none;">
                         <div id="question-batch-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px; border: 1px solid #eee;">
                             <div>
@@ -371,49 +447,92 @@ D. Lựa chọn D
             </div>
         </div>
 
-        <!-- TAB TẠO ĐỀ THI MỚI -->
-        <div id="create-test-view" class="card" style="max-width: 800px; margin: 0 auto;">
-            <h2>Tạo Đề Thi Mới</h2>
+        <!-- TAB TẠO ĐỀ THI MỚI (THIẾT KẾ TRỰC QUAN TỐI ƯU) -->
+        <div id="create-test-view" class="card" style="max-width: 900px; margin: 0 auto;">
+            <h2>✨ Khởi Tạo Đề Thi Mới</h2>
             <form id="createTestForm">
-                <label>Tên đề thi mới:</label>
-                <input type="text" id="testName" placeholder="Ví dụ: Kiểm tra Lập trình Web - D23_TH01, D23_TH02" required>
+                
+                <!-- NHÓM 1: THÔNG TIN CƠ BẢN -->
+                <div class="create-form-section">
+                    <h3>📌 1. Thông tin chung</h3>
+                    <div class="form-grid-2">
+                        <div>
+                            <label>Tên đề thi mới (*):</label>
+                            <input type="text" id="testName" placeholder="Ví dụ: Kiểm tra Lập trình Web" required>
+                        </div>
+                        <div>
+                            <label>Môn học (Phân loại):</label>
+                            <input type="text" id="testSubject" placeholder="Ví dụ: Lập trình Web, Cơ sở dữ liệu">
+                        </div>
+                    </div>
+                </div>
 
-                <label style="color: #dc3545; font-weight: bold; margin-top: 15px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                <input type="checkbox" id="testAntiCheat" checked style="width: 20px; height: 20px; margin: 0; cursor: pointer;">
-                   Bật tính năng chống gian lận (Chuyển tab/Thoát màn hình)
-                </label>
-                
-                <label>Thời gian làm bài (phút):</label>
-                <input type="number" id="testTime" placeholder="Ví dụ: 45" required min="1">
-                
-                <label>Thời gian BẮT ĐẦU (Tùy chọn):</label>
-                <input type="datetime-local" id="testStartTime">
-                
-                <label>Thời gian KẾT THÚC (Tùy chọn):</label>
-                <input type="datetime-local" id="testEndTime">
-                
-                <label style="color: #007bff; font-weight: bold; margin-top: 10px; display: block;">Môn học (Tùy chọn):</label>
-                <input type="text" id="testSubject" placeholder="Ví dụ: Lập trình Web, Cơ sở dữ liệu">
+                <!-- NHÓM 2: PHẠM VI ÁP DỤNG -->
+                <div class="create-form-section">
+                    <h3>🏫 2. Phạm vi áp dụng (Cấp & Lớp)</h3>
+                    <div class="form-grid-2">
+                        <div>
+                            <label>Cấp học:</label>
+                            <select id="createTestLevel" onchange="updateCreateTestClassSelect()">
+                                <option value="">-- Chọn tất cả các cấp --</option>
+                                <option value="1">Cấp 1 (Lớp 1-5)</option>
+                                <option value="2">Cấp 2 (Lớp 6-9)</option>
+                                <option value="3">Cấp 3 (Lớp 10-12)</option>
+                                <option value="uni" selected>Đại học / Cao đẳng</option>
+                                <option value="other">Khác</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Bấm menu để chọn thêm Lớp:</label>
+                            <select id="createTestTargetClassSelect" onchange="addClassBadgeFromSelect()">
+                            </select>
+                        </div>
+                    </div>
 
-                <label style="color: #28a745; font-weight: bold; margin-top: 10px; display: block;">Cấp học:</label>
-                <select id="createTestLevel" onchange="updateCreateTestClassSelect()" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 8px;">
-                    <option value="">-- Chọn tất cả cấp --</option>
-                    <option value="1">Cấp 1 (Lớp 1-5)</option>
-                    <option value="2">Cấp 2 (Lớp 6-9)</option>
-                    <option value="3">Cấp 3 (Lớp 10-12)</option>
-                    <option value="uni" selected>Đại học / Cao đẳng</option>
-                    <option value="other">Khác</option>
-                </select>
+                    <label style="font-size: 0.9em; font-weight: 600; color: #495057; display: block; margin-top: 5px;">
+                        Danh sách các Lớp được phép làm đề này:
+                    </label>
+                    <div id="selected-classes-badges" class="class-badges-container">
+                        <span style="color: #6c757d; font-size: 0.88em; font-style: italic;">Chưa chọn lớp nào (Để trống = Cho phép TẤT CẢ các lớp)</span>
+                    </div>
 
-                <label style="color: #28a745; font-weight: bold; display: block;">Lớp áp dụng (Bấm chọn menu để thêm nhiều lớp):</label>
-                <select id="createTestTargetClassSelect" onchange="handleClassSelectChange('createTestTargetClassSelect', 'createTestTargetClassInput')" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 8px;"></select>
-                <input type="text" id="createTestTargetClassInput" placeholder="Ví dụ: D23_TH01, D23_TH02 (Để trống = Cho phép tất cả)" style="margin-bottom: 10px;">
-                
-                <button type="submit" class="add-btn" style="width: 100%; margin-top: 10px;">Tạo Đề Thi Mới</button>
+                    <input type="text" id="createTestTargetClassInput" oninput="syncBadgesFromInput()" placeholder="Hoặc tự gõ các lớp phân cách bằng dấu phẩy (VD: D23_TH01, D23_TH02)...">
+                </div>
+
+                <!-- NHÓM 3: THỜI GIAN VÀ CHỐNG GIAN LẬN -->
+                <div class="create-form-section">
+                    <h3>⚙️ 3. Cấu hình làm bài & Thời gian</h3>
+                    <div class="form-grid-2">
+                        <div>
+                            <label>Thời gian làm bài (Phút) (*):</label>
+                            <input type="number" id="testTime" placeholder="45" required min="1">
+                        </div>
+                        <div>
+                            <label>Chống gian lận:</label>
+                            <div class="custom-toggle-box">
+                                <input type="checkbox" id="testAntiCheat" checked>
+                                <span style="font-weight: 600; color: #dc3545;">Bật cảnh báo / nộp bài khi chuyển tab</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2" style="margin-top: 10px;">
+                        <div>
+                            <label>Thời gian BẮT ĐẦU (Mở đề - Tùy chọn):</label>
+                            <input type="datetime-local" id="testStartTime">
+                        </div>
+                        <div>
+                            <label>Thời gian KẾT THÚC (Đóng đề - Tùy chọn):</label>
+                            <input type="datetime-local" id="testEndTime">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="add-btn submit-create-btn">🚀 LƯU & TẠO ĐỀ THI MỚI</button>
             </form>
         </div>
 
-        <!-- TAB QUẢN LÝ HỌC SINH / SINH VIÊN (CHỈ HIỆN KHI CHỌN CẤP VÀ LỚP) -->
+        <!-- TAB QUẢN LÝ HỌC SINH -->
         <div id="student-manager-view">
             <div class="card">
                 <h2>Quản lý Mã Học Sinh / Sinh Viên</h2>
@@ -489,7 +608,7 @@ D. Lựa chọn D
             </div>
         </div>
 
-        <!-- TAB KẾT QUẢ (YÊU CẦU LỌC CẤP & LỚP MỚI HIỂN THỊ) -->
+        <!-- TAB KẾT QUẢ -->
         <div id="results-view" class="card">
             <h2>Danh sách Kết Quả Kiểm Tra</h2>
             
@@ -664,13 +783,70 @@ D. Lựa chọn D
             return "uni";
         }
 
+        // BÉ LÔI FIX: HÀM QUẢN LÝ THẺ HUY HIỆU (BADGES) TRỰC QUAN CHO CÁC LỚP ÁP DỤNG
+        window.renderClassBadges = function() {
+            const input = document.getElementById('createTestTargetClassInput');
+            const container = document.getElementById('selected-classes-badges');
+            
+            const rawVal = input.value.trim();
+            const classes = rawVal ? rawVal.split(',').map(c => c.trim()).filter(Boolean) : [];
+            
+            container.innerHTML = '';
+            
+            if (classes.length === 0) {
+                container.innerHTML = '<span style="color: #6c757d; font-size: 0.88em; font-style: italic;">Chưa chọn lớp nào (Để trống = Cho phép TẤT CẢ các lớp)</span>';
+                return;
+            }
+
+            classes.forEach(cls => {
+                const badge = document.createElement('span');
+                badge.className = 'class-badge-item';
+                badge.innerHTML = `
+                    <span>Lớp: <b>${cls}</b></span>
+                    <span class="remove-badge" onclick="removeClassBadge('${cls}')">✕</span>
+                `;
+                container.appendChild(badge);
+            });
+        };
+
+        window.addClassBadgeFromSelect = function() {
+            const select = document.getElementById('createTestTargetClassSelect');
+            const input = document.getElementById('createTestTargetClassInput');
+            const val = select.value;
+
+            if (!val || val === 'manual') return;
+
+            let currentVal = input.value.trim();
+            let classes = currentVal ? currentVal.split(',').map(c => c.trim()).filter(Boolean) : [];
+
+            if (!classes.includes(val)) {
+                classes.push(val);
+            }
+
+            input.value = classes.join(', ');
+            select.value = "";
+            renderClassBadges();
+        };
+
+        window.removeClassBadge = function(clsToRemove) {
+            const input = document.getElementById('createTestTargetClassInput');
+            let currentVal = input.value.trim();
+            let classes = currentVal ? currentVal.split(',').map(c => c.trim()).filter(Boolean) : [];
+
+            classes = classes.filter(c => c !== clsToRemove);
+            input.value = classes.join(', ');
+            renderClassBadges();
+        };
+
+        window.syncBadgesFromInput = function() {
+            renderClassBadges();
+        };
+
         window.updateCreateTestClassSelect = function() {
             const level = document.getElementById('createTestLevel').value;
             const select = document.getElementById('createTestTargetClassSelect');
-            const input = document.getElementById('createTestTargetClassInput');
 
             select.innerHTML = '';
-            input.style.display = 'block';
 
             let realClasses = new Set();
             allStudentsCache.forEach(student => {
@@ -690,7 +866,7 @@ D. Lựa chọn D
             defaultOpt.value = "";
             defaultOpt.text = sortedClasses.length > 0 
                 ? `-- Bấm chọn để thêm Lớp vào danh sách (${sortedClasses.length} lớp) --` 
-                : "-- Chưa có học sinh/sinh viên thuộc cấp này trong CSDL --";
+                : "-- Chưa có lớp thuộc cấp này --";
             select.appendChild(defaultOpt);
 
             sortedClasses.forEach(cls => {
@@ -699,11 +875,6 @@ D. Lựa chọn D
                 opt.text = `+ Thêm Lớp ${cls}`;
                 select.appendChild(opt);
             });
-
-            const manualOpt = document.createElement('option');
-            manualOpt.value = "manual";
-            manualOpt.text = "✏️ Tự nhập lớp khác...";
-            select.appendChild(manualOpt);
         };
 
         window.updateClassSelect = function(levelId, selectId, inputId) {
@@ -828,7 +999,6 @@ D. Lựa chọn D
             renderTestList();
         };
 
-        // BÉ LÔI FIX: CẬP NHẬT LỚP CHO TAB QUẢN LÝ HỌC SINH VÀ TAB KẾT QUẢ
         function updateStudentClassOptions() {
             const selectClass = document.getElementById('filter-student-class');
             selectClass.innerHTML = '<option value="">-- Bước 2: Chọn Lớp --</option>';
@@ -884,7 +1054,7 @@ D. Lựa chọn D
             const pass = document.getElementById('adminPassword').value;
             auth.signInWithEmailAndPassword(email, pass)
                 .catch((error) => {
-                    errorMsg.innerText = "Email hoặc Mật khẩu không đúng!";
+                    errorMsg.innerText = "Email hoặc mật khẩu không đúng!";
                     errorMsg.style.display = 'block';
                 });
         });
@@ -987,8 +1157,6 @@ D. Lựa chọn D
             }
         });
 
-        // --- KHU VỰC LOGIC CHÍNH ---
-        
         let selectedSubmissionIds = new Set();
         let selectedQuestionIds = new Set();
         let selectedTestIds = new Set(); 
@@ -1018,7 +1186,6 @@ D. Lựa chọn D
                 }, error => { console.error("Lỗi đồng bộ Học sinh: ", error); });
             }
 
-            // PILLS CHO TAB ĐỀ THI
             const testPillBtns = document.querySelectorAll('#test-level-pills .level-pill-btn');
             testPillBtns.forEach(btn => {
                 btn.addEventListener('click', (e) => {
@@ -1031,7 +1198,6 @@ D. Lựa chọn D
                 });
             });
 
-            // BÉ LÔI FIX: PILLS CHO TAB QUẢN LÝ HỌC SINH
             const studentPillBtns = document.querySelectorAll('#student-level-pills .level-pill-btn');
             studentPillBtns.forEach(btn => {
                 btn.addEventListener('click', (e) => {
@@ -1044,7 +1210,6 @@ D. Lựa chọn D
                 });
             });
 
-            // PILLS CHO TAB KẾT QUẢ
             const resultsPillBtns = document.querySelectorAll('#results-level-pills .level-pill-btn');
             resultsPillBtns.forEach(btn => {
                 btn.addEventListener('click', (e) => {
@@ -1056,25 +1221,6 @@ D. Lựa chọn D
                     renderResultsList();
                 });
             });
-
-            const docxFileInput = document.getElementById('docxFileInput');
-            if (docxFileInput) {
-                docxFileInput.addEventListener('change', function(e) {
-                    const file = e.target.files[0];
-                    if (!file) return;
-                    const reader = new FileReader();
-                    reader.onload = function(loadEvent) {
-                        const arrayBuffer = loadEvent.target.result;
-                        mammoth.extractRawText({arrayBuffer: arrayBuffer})
-                            .then(function(result){
-                                document.getElementById('bulkQuestionsText').value = result.value;
-                                alert("Đã bóc tách file Word thành công! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧");
-                            })
-                            .catch(function(err){ alert("Lỗi đọc file Word."); });
-                    };
-                    reader.readAsArrayBuffer(file);
-                });
-            }
 
             const navTests = document.getElementById('nav-tests');
             const navCreateTest = document.getElementById('nav-create-test');
@@ -1116,10 +1262,6 @@ D. Lựa chọn D
 
             const createStudentForm = document.getElementById('createStudentForm');
             const studentListDiv = document.getElementById('student-list');
-            const toggleAddStudentSingle = document.getElementById('toggle-add-student-single');
-            const toggleAddStudentBulk = document.getElementById('toggle-add-student-bulk');
-            const addStudentFormContainer = document.getElementById('addStudentFormContainer');
-            const addBulkStudentForm = document.getElementById('addBulkStudentForm');
 
             const resultsTableBody = document.getElementById('results-table-body');
             const resultsCount = document.getElementById('results-count');
@@ -1127,11 +1269,6 @@ D. Lựa chọn D
             const deleteSelectedBtn = document.getElementById('delete-selected-btn');
             const selectedCountSpan = document.getElementById('selected-count');
 
-            const createAdminForm = document.getElementById('createAdminForm');
-            const createAdminMsg = document.getElementById('create-admin-msg');
-            const changePasswordForm = document.getElementById('changePasswordForm');
-            const changePassMsg = document.getElementById('change-pass-msg');
-            
             function setActiveTab(activeNav, activeView) {
                 [navTests, navCreateTest, navStudents, navResults, navAccount].forEach(nav => nav.classList.remove('active'));
                 [testManagerView, createTestView, studentManagerView, resultsView, accountManagerView].forEach(view => view.style.display = 'none');
@@ -1149,7 +1286,6 @@ D. Lựa chọn D
                 deleteSelectedTestsBtn.style.display = selectedTestIds.size > 0 ? 'inline-block' : 'none';
             }
 
-            // RENDER DANH SÁCH ĐỀ THI
             window.renderTestList = function() {
                 const classFilter = filterTestClass.value.toLowerCase();
                 const subjectFilter = filterTestSubject.value.toLowerCase();
@@ -1279,7 +1415,6 @@ D. Lựa chọn D
                 updateQuestionBatchActionsUI();
             }
             
-            // BÉ LÔI FIX: HIỂN THỊ DANH SÁCH CÂU HỎI TRONG ĐỀ SẮP XẾP BÊN PHẢI DẠNG LIST
             function loadQuestionList(testId) {
                 if (questionListener) questionListener();
                 qListDiv.innerHTML = '<p>Đang tải câu hỏi...</p>';
@@ -1395,7 +1530,6 @@ D. Lựa chọn D
                 addQuestionForm.reset(); 
             }
 
-            // BÉ LÔI FIX: RENDER DANH SÁCH HỌC SINH / SINH VIÊN KHI VÀ CHỈ KHI ĐÃ CHỌN CẤP VÀ LỚP
             window.renderStudentList = function() {
                 const selectedClass = document.getElementById('filter-student-class').value;
                 const query = document.getElementById('student-search-input').value.toLowerCase();
@@ -1480,7 +1614,6 @@ D. Lựa chọn D
                 } catch (error) { console.error("Lỗi xóa bài làm: ", error); }
             }
 
-            // RENDER XEM KẾT QUẢ KHI VÀ CHỈ KHI CHỌN CẤP VÀ LỚP
             window.renderResultsList = function() {
                 const selectedClass = document.getElementById('filter-results-class').value;
                 const query = document.getElementById('results-search-input').value.toLowerCase();
@@ -1563,6 +1696,7 @@ D. Lựa chọn D
             navCreateTest.addEventListener('click', () => {
                 setActiveTab(navCreateTest, createTestView);
                 updateCreateTestClassSelect();
+                renderClassBadges();
             });
             navStudents.addEventListener('click', () => {
                 setActiveTab(navStudents, studentManagerView);
@@ -1590,19 +1724,8 @@ D. Lựa chọn D
             });
             
             deleteSelectedTestsBtn.addEventListener('click', deleteSelectedTests);
-            
-            testListDiv.addEventListener('change', (e) => {
-                if (e.target.classList.contains('test-row-checkbox')) {
-                    const id = e.target.dataset.id;
-                    if (e.target.checked) selectedTestIds.add(id);
-                    else {
-                        selectedTestIds.delete(id);
-                        selectAllTestsCheckbox.checked = false;
-                    }
-                    updateTestBatchUI();
-                }
-            });
 
+            // BÉ LÔI FIX: XỬ LÝ KHỞI TẠO ĐỀ THI MỚI CHUẨN XÁC
             createTestForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const testName = document.getElementById('testName').value;
@@ -1631,7 +1754,8 @@ D. Lựa chọn D
                         chongGianLan: isAntiCheat
                     });
                     createTestForm.reset();
-                    alert("Tạo đề thi thành công! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧");
+                    renderClassBadges();
+                    alert("Khởi tạo đề thi mới thành công! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧");
                     navTests.click(); 
                 } catch (error) { console.error("Lỗi tạo đề: ", error); }
             });
@@ -1677,107 +1801,6 @@ D. Lựa chọn D
                 toggleAddBulk.classList.remove('active');
                 toggleAddComprehension.classList.add('active'); 
             });
-            
-            addQuestionForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                if (!selectedTestId) return;
-                const fileInput = document.getElementById('questionImageFile');
-                const imageUrlInput = document.getElementById('questionImageUrl');
-                let finalImageUrl = imageUrlInput.value.trim();
-                const file = fileInput.files[0];
-                if (file) {
-                    if (file.size > MAX_IMAGE_SIZE_KB * 1024) {
-                        alert(`Lỗi: Tệp quá lớn. Max: ${MAX_IMAGE_SIZE_KB} KB.`);
-                        return;
-                    }
-                    try {
-                        finalImageUrl = await fileToBase64(file); 
-                    } catch (error) { return; }
-                } else if (finalImageUrl === '') {
-                     finalImageUrl = null;
-                }
-                const prompt = document.getElementById('prompt').value;
-                const options = [ document.getElementById('opt1').value, document.getElementById('opt2').value, document.getElementById('opt3').value, document.getElementById('opt4').value ];
-                const answer = document.getElementById('answer').value;
-                if (!options.includes(answer)) { 
-                    alert("Lỗi: Đáp án đúng phải là 1 trong 4 lựa chọn."); 
-                    return; 
-                }
-                
-                const questionData = { 
-                    prompt: prompt, options: options, answer: answer, imageUrl: finalImageUrl, 
-                    comprehensionText: null, index: currentQuestionCount + 1, 
-                };
-
-                try {
-                    if (isEditingQuestionId) {
-                        await db.collection("dethi").doc(selectedTestId).collection("cauhoi").doc(isEditingQuestionId).update({
-                            prompt: prompt, options: options, answer: answer, imageUrl: finalImageUrl, comprehensionText: null
-                        });
-                    } else {
-                        await db.collection("dethi").doc(selectedTestId).collection("cauhoi").add(questionData);
-                    }
-                    resetQuestionFormState(); 
-                } catch (error) { alert("Lỗi khi thêm/cập nhật câu hỏi!"); }
-            });
-
-            addBulkQuestionForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                if (!selectedTestId) return;
-                const text = document.getElementById('bulkQuestionsText').value;
-                const blocks = text.split(/\n\s*\n/); 
-                let questionsToAdd = [];
-                for (const block of blocks) {
-                    const lines = block.split('\n').map(l => l.trim()).filter(l => l !== "");
-                    if (lines.length < 6) continue;
-                    const prompt = lines[0];
-                    const options = [ lines[1].substring(lines[1].indexOf(".") + 1).trim(), lines[2].substring(lines[2].indexOf(".") + 1).trim(), lines[3].substring(lines[3].indexOf(".") + 1).trim(), lines[4].substring(lines[4].indexOf(".") + 1).trim() ];
-                    const answerLine = lines[5];
-                    const answerText = answerLine.substring(answerLine.indexOf(":") + 1).trim();
-                    let finalAnswer = "";
-                    if (options.includes(answerText)) { finalAnswer = answerText; }
-                    else {
-                        const letter = answerText.toUpperCase();
-                        if (letter === 'A') finalAnswer = options[0];
-                        else if (letter === 'B') finalAnswer = options[1];
-                        else if (letter === 'C') finalAnswer = options[2];
-                        else if (letter === 'D') finalAnswer = options[3];
-                    }
-                    if (finalAnswer) questionsToAdd.push({ prompt: prompt, options: options, answer: finalAnswer, imageUrl: null, comprehensionText: null });
-                }
-                if (questionsToAdd.length > 0) {
-                    const batch = db.batch();
-                    const collectionRef = db.collection("dethi").doc(selectedTestId).collection("cauhoi");
-                    let nextIndex = currentQuestionCount;
-                    questionsToAdd.forEach(q => { 
-                        const docRef = collectionRef.doc(); 
-                        nextIndex++;
-                        batch.set(docRef, { ...q, index: nextIndex }); 
-                    });
-                    await batch.commit();
-                    alert(`Đã thêm thành công ${questionsToAdd.length} câu hỏi!`);
-                    addBulkQuestionForm.reset();
-                }
-            });
-
-            createStudentForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const maHS = document.getElementById('studentCode').value.trim();
-                const hoTen = document.getElementById('studentFullName').value.trim();
-                const levelVal = document.getElementById('studentLevel').value;
-                const selectVal = document.getElementById('studentClassSelect').value;
-                const inputVal = document.getElementById('studentClassInput').value.trim();
-                
-                let lop = (levelVal === 'uni' || levelVal === 'other' || selectVal === 'manual') ? inputVal : selectVal;
-
-                if (!maHS || !hoTen || !lop) return;
-                try {
-                    const docRef = db.collection('hocsinh').doc(maHS);
-                    await docRef.set({ hoTen: hoTen, lop: lop, capHoc: levelVal });
-                    alert(`Tạo thành công: ${hoTen}`);
-                    createStudentForm.reset();
-                } catch (error) { console.error("Lỗi tạo Mã HSSV: ", error); }
-            });
 
             if (!window.resultsListener) {
                 window.resultsListener = db.collection("ketqua").onSnapshot(snapshot => {
@@ -1795,29 +1818,6 @@ D. Lựa chọn D
                     renderResultsList(); 
                 });
             }
-            
-            deleteSelectedBtn.addEventListener('click', deleteSelectedSubmissions);
-
-            selectAllCheckbox.addEventListener('change', (e) => {
-                const isChecked = e.target.checked;
-                const checkboxes = resultsTableBody.querySelectorAll('.row-checkbox');
-                selectedSubmissionIds.clear();
-                checkboxes.forEach(checkbox => {
-                    checkbox.checked = isChecked;
-                    if (isChecked) selectedSubmissionIds.add(checkbox.dataset.id);
-                });
-                updateBatchActionsUI();
-            });
-
-            resultsTableBody.addEventListener('click', (e) => {
-                const submissionId = e.target.dataset.id;
-                if (!submissionId) return;
-                if (e.target.classList.contains('detail-btn')) {
-                    showSubmissionDetail(submissionId);
-                } else if (e.target.classList.contains('single-delete-btn')) { 
-                    deleteSubmission(submissionId, e.target.dataset.name || 'Học sinh');
-                }
-            });
 
             navTests.click(); 
         } 
@@ -1859,25 +1859,6 @@ D. Lựa chọn D
                     });
                     alert("Cập nhật thành công!");
                     modalBackdrop.style.display = 'none';
-                });
-            } catch (error) { console.error(error); }
-        }
-
-        async function showSubmissionDetail(submissionId) {
-            modalBackdrop.style.display = 'block';
-            modalTitle.innerText = "Chi tiết bài làm";
-            try {
-                const docRef = await db.collection("ketqua").doc(submissionId).get();
-                if (!docRef.exists) return;
-                const data = docRef.data();
-                modalTitle.innerText = `Bài làm của: ${data.hoTen} - Lớp: ${data.lop}`;
-                modalBody.innerHTML = ''; 
-
-                data.quizData.forEach((q, index) => {
-                    const questionDiv = document.createElement('div');
-                    questionDiv.className = 'review-question';
-                    questionDiv.innerHTML = `<p>${index + 1}. ${q.prompt}</p>`;
-                    modalBody.appendChild(questionDiv);
                 });
             } catch (error) { console.error(error); }
         }
