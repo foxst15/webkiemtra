@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trang Quản Trị </title>
+    <title>Trang Quản Trị - Bé Lôi System</title>
     <style>
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
@@ -88,7 +88,6 @@
 
         #create-test-view { display: none; }
 
-        /* STYLES TRỰC QUAN CHO TAB TẠO ĐỀ THI MỚI */
         .create-form-section {
             background: #f8f9fa;
             border: 1px solid #e3e6f0;
@@ -285,6 +284,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -447,12 +447,11 @@ D. Lựa chọn D
             </div>
         </div>
 
-        <!-- TAB TẠO ĐỀ THI MỚI (THIẾT KẾ TRỰC QUAN TỐI ƯU) -->
+        <!-- TAB TẠO ĐỀ THI MỚI -->
         <div id="create-test-view" class="card" style="max-width: 900px; margin: 0 auto;">
             <h2>✨ Khởi Tạo Đề Thi Mới</h2>
             <form id="createTestForm">
                 
-                <!-- NHÓM 1: THÔNG TIN CƠ BẢN -->
                 <div class="create-form-section">
                     <h3>📌 1. Thông tin chung</h3>
                     <div class="form-grid-2">
@@ -467,7 +466,6 @@ D. Lựa chọn D
                     </div>
                 </div>
 
-                <!-- NHÓM 2: PHẠM VI ÁP DỤNG -->
                 <div class="create-form-section">
                     <h3>🏫 2. Phạm vi áp dụng (Cấp & Lớp)</h3>
                     <div class="form-grid-2">
@@ -499,7 +497,6 @@ D. Lựa chọn D
                     <input type="text" id="createTestTargetClassInput" oninput="syncBadgesFromInput()" placeholder="Hoặc tự gõ các lớp phân cách bằng dấu phẩy (VD: D23_TH01, D23_TH02)...">
                 </div>
 
-                <!-- NHÓM 3: THỜI GIAN VÀ CHỐNG GIAN LẬN -->
                 <div class="create-form-section">
                     <h3>⚙️ 3. Cấu hình làm bài & Thời gian</h3>
                     <div class="form-grid-2">
@@ -532,13 +529,13 @@ D. Lựa chọn D
             </form>
         </div>
 
-        <!-- TAB QUẢN LÝ HỌC SINH -->
+        <!-- TAB QUẢN LÝ HỌC SINH / SINH VIÊN (EXCEL HIGH-PERFORMANCE) -->
         <div id="student-manager-view">
             <div class="card">
                 <h2>Quản lý Mã Học Sinh / Sinh Viên</h2>
                  <div class="toggle-buttons">
                     <button id="toggle-add-student-single" class="active">Thêm từng HS/SV</button>
-                    <button id="toggle-add-student-bulk">Thêm hàng loạt</button>
+                    <button id="toggle-add-student-bulk">Thêm hàng loạt (Excel/CSV)</button>
                  </div>
 
                 <div id="addStudentFormContainer" style="display: block;">
@@ -569,10 +566,19 @@ D. Lựa chọn D
                 </div>
                 
                 <form id="addBulkStudentForm" style="display: none; margin-top: 15px;">
-                    <p>Dán danh sách vào đây. Mỗi HS/SV một dòng theo định dạng:</p>
-                    <pre><code>MãHSSV,TênHọcSinh,Lớp</code></pre>
-                    <textarea id="bulkStudentsText" rows="15" style="width: 100%; font-family: monospace;"></textarea>
-                    <button type="submit" class="add-btn" style="width: 100%;">Thêm Hàng Loạt</button>
+                    <div style="background: #e2f0d9; padding: 12px; border-radius: 8px; margin-bottom: 12px; border: 1px dashed #28a745;">
+                        <label style="font-weight: bold; color: #28a745; display: block; margin-bottom: 5px; font-size: 0.95em;">
+                            📊 Tải dữ liệu từ File Excel (.xlsx, .xls):
+                        </label>
+                        <input type="file" id="excelStudentFileInput" accept=".xlsx, .xls" style="display: block; width: 100%; margin-bottom: 5px;">
+                        <small style="color: #555;">Hệ thống sẽ tự động tìm 3 cột <b>Mã HSSV</b>, <b>Họ Tên</b>, <b>Lớp</b> trong file Excel và trích xuất vào khung bên dưới.</small>
+                    </div>
+
+                    <p style="font-size: 0.88em; margin-bottom: 5px;">HOẶC Dán trực tiếp danh sách (mỗi người 1 dòng theo dạng `Mã,Tên,Lớp`):</p>
+                    <pre style="font-size: 0.8em; padding: 8px;"><code>d23480201012,Nguyễn Văn A,D23_TH01
+d23480201013,Trần Thị B,D23_TH01</code></pre>
+                    <textarea id="bulkStudentsText" rows="12" style="width: 100%; font-family: monospace;"></textarea>
+                    <button type="submit" class="add-btn" style="width: 100%;">Lưu Hàng Loạt Vào CSDL</button>
                 </form>
             </div>
 
@@ -709,6 +715,7 @@ D. Lựa chọn D
         </div>
     </div>
 
+    <!-- MODAL POPUP -->
     <div id="modal-backdrop">
         <div id="modal-content">
             <button id="modal-close">&times;</button>
@@ -783,7 +790,6 @@ D. Lựa chọn D
             return "uni";
         }
 
-        // BÉ LÔI FIX: HÀM QUẢN LÝ THẺ HUY HIỆU (BADGES) TRỰC QUAN CHO CÁC LỚP ÁP DỤNG
         window.renderClassBadges = function() {
             const input = document.getElementById('createTestTargetClassInput');
             const container = document.getElementById('selected-classes-badges');
@@ -1186,6 +1192,78 @@ D. Lựa chọn D
                 }, error => { console.error("Lỗi đồng bộ Học sinh: ", error); });
             }
 
+            // LẮNG NGHE SỰ KIỆN ĐỌC FILE EXCEL CỦA HỌC SINH
+            const excelFileInput = document.getElementById('excelStudentFileInput');
+            if (excelFileInput) {
+                excelFileInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        try {
+                            const data = new Uint8Array(event.target.result);
+                            const workbook = XLSX.read(data, { type: 'array' });
+                            const firstSheetName = workbook.SheetNames[0];
+                            const worksheet = workbook.Sheets[firstSheetName];
+                            const jsonRows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                            if (!jsonRows || jsonRows.length === 0) {
+                                alert("File Excel trống hoặc không có dữ liệu!");
+                                return;
+                            }
+
+                            let maIndex = 0, tenIndex = 1, lopIndex = 2;
+                            let startRow = 0;
+
+                            const firstRow = jsonRows[0].map(cell => String(cell || '').trim().toLowerCase());
+                            let foundHeader = false;
+
+                            firstRow.forEach((headerText, idx) => {
+                                if (headerText.includes('mã') || headerText.includes('msv') || headerText.includes('mshs')) {
+                                    maIndex = idx;
+                                    foundHeader = true;
+                                } else if (headerText.includes('tên') || headerText.includes('họ') || headerText.includes('ho ten')) {
+                                    tenIndex = idx;
+                                    foundHeader = true;
+                                } else if (headerText.includes('lớp') || headerText.includes('lop')) {
+                                    lopIndex = idx;
+                                    foundHeader = true;
+                                }
+                            });
+
+                            if (foundHeader) startRow = 1;
+
+                            let parsedLines = [];
+                            for (let i = startRow; i < jsonRows.length; i++) {
+                                const row = jsonRows[i];
+                                if (!row || row.length === 0) continue;
+
+                                const ma = row[maIndex] ? String(row[maIndex]).trim() : '';
+                                const ten = row[tenIndex] ? String(row[tenIndex]).trim() : '';
+                                const lop = row[lopIndex] ? String(row[lopIndex]).trim() : '';
+
+                                if (ma && ten && lop) {
+                                    parsedLines.push(`${ma},${ten},${lop}`);
+                                }
+                            }
+
+                            if (parsedLines.length > 0) {
+                                document.getElementById('bulkStudentsText').value = parsedLines.join('\n');
+                                alert(`Bé Lôi đã trích xuất thành công ${parsedLines.length} người từ file Excel! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧\nChủ nhân kiểm tra lại ở khung bên dưới và bấm "Lưu Hàng Loạt Vào CSDL" nhé!`);
+                            } else {
+                                alert("Không tìm thấy dòng dữ liệu hợp lệ trong file Excel! Xin đảm bảo file chứa 3 cột: Mã, Họ Tên, Lớp.");
+                            }
+
+                        } catch (err) {
+                            console.error(err);
+                            alert("Lỗi đọc file Excel! Xin chủ nhân kiểm tra định dạng file ạ.");
+                        }
+                    };
+                    reader.readAsArrayBuffer(file);
+                });
+            }
+
             const testPillBtns = document.querySelectorAll('#test-level-pills .level-pill-btn');
             testPillBtns.forEach(btn => {
                 btn.addEventListener('click', (e) => {
@@ -1221,6 +1299,25 @@ D. Lựa chọn D
                     renderResultsList();
                 });
             });
+
+            const docxFileInput = document.getElementById('docxFileInput');
+            if (docxFileInput) {
+                docxFileInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = function(loadEvent) {
+                        const arrayBuffer = loadEvent.target.result;
+                        mammoth.extractRawText({arrayBuffer: arrayBuffer})
+                            .then(function(result){
+                                document.getElementById('bulkQuestionsText').value = result.value;
+                                alert("Đã bóc tách file Word thành công! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧");
+                            })
+                            .catch(function(err){ alert("Lỗi đọc file Word."); });
+                    };
+                    reader.readAsArrayBuffer(file);
+                });
+            }
 
             const navTests = document.getElementById('nav-tests');
             const navCreateTest = document.getElementById('nav-create-test');
@@ -1261,6 +1358,7 @@ D. Lựa chọn D
             const addComprehensionForm = document.getElementById('addComprehensionForm'); 
 
             const createStudentForm = document.getElementById('createStudentForm');
+            const addBulkStudentForm = document.getElementById('addBulkStudentForm');
             const studentListDiv = document.getElementById('student-list');
 
             const resultsTableBody = document.getElementById('results-table-body');
@@ -1284,6 +1382,16 @@ D. Lựa chọn D
             function updateTestBatchUI() {
                 selectedTestsCountSpan.innerText = selectedTestIds.size;
                 deleteSelectedTestsBtn.style.display = selectedTestIds.size > 0 ? 'inline-block' : 'none';
+            }
+
+            function updateQuestionBatchActionsUI() {
+                selectedQuestionsCountSpan.innerText = selectedQuestionIds.size;
+                deleteSelectedQuestionsBtn.style.display = selectedQuestionIds.size > 0 ? 'inline-block' : 'none';
+            }
+
+            function updateBatchActionsUI() {
+                selectedCountSpan.innerText = selectedSubmissionIds.size;
+                deleteSelectedBtn.style.display = selectedSubmissionIds.size > 0 ? 'inline-block' : 'none';
             }
 
             window.renderTestList = function() {
@@ -1376,7 +1484,7 @@ D. Lựa chọn D
                     testListDiv.appendChild(item);
                 });
             }
-            
+
             async function deleteTest(testId, testName) {
                 if (!confirm(`XÓA ĐỀ THI: "${testName}"?`)) return;
                 try {
@@ -1400,7 +1508,7 @@ D. Lựa chọn D
                 } catch (error) { console.error("Lỗi xóa hàng loạt đề:", error); } 
                 finally { updateTestBatchUI(); }
             }
-            
+
             function selectTest(testId, testName) {
                 selectedTestId = testId; 
                 qManagerDiv.style.display = 'block';
@@ -1414,7 +1522,7 @@ D. Lựa chọn D
                 selectAllQuestionsCheckbox.checked = false;
                 updateQuestionBatchActionsUI();
             }
-            
+
             function loadQuestionList(testId) {
                 if (questionListener) questionListener();
                 qListDiv.innerHTML = '<p>Đang tải câu hỏi...</p>';
@@ -1492,13 +1600,13 @@ D. Lựa chọn D
                     } catch (error) { console.error("Lỗi xóa câu hỏi: ", error); }
                 }
             }
-            
+
             function resetQuestionManager() {
                 selectedTestId = null;
                 if (questionListener) questionListener();
                 qManagerDiv.style.display = 'none';
             }
-            
+
             window.editQuestion = async function(questionId) {
                 if (!selectedTestId) return;
                 document.getElementById('toggle-add-single').click();
@@ -1520,7 +1628,7 @@ D. Lựa chọn D
                     document.getElementById('questionImageUrl').value = isBase64 ? '' : q.imageUrl || '';
                 } catch (error) { resetQuestionFormState(); }
             }
-            
+
             function resetQuestionFormState() {
                 isEditingQuestionId = null;
                 document.getElementById('addQuestionForm').querySelector('h3').innerText = "Thêm câu hỏi mới";
@@ -1585,33 +1693,10 @@ D. Lựa chọn D
                     studentListDiv.appendChild(item);
                 });
             }
-            
+
             async function deleteStudent(maHS, hoTen) {
                 if (!confirm(`XÓA Mã HSSV "${maHS}" của "${hoTen}"?`)) return;
                 try { await db.collection('hocsinh').doc(maHS).delete(); } catch (error) { console.error("Lỗi xóa Mã: ", error); }
-            }
-
-            function updateBatchActionsUI() {
-                selectedCountSpan.innerText = selectedSubmissionIds.size;
-                deleteSelectedBtn.style.display = selectedSubmissionIds.size > 0 ? 'inline-block' : 'none';
-            }
-            
-            function updateQuestionBatchActionsUI() {
-                selectedQuestionsCountSpan.innerText = selectedQuestionIds.size;
-                deleteSelectedQuestionsBtn.style.display = selectedQuestionIds.size > 0 ? 'inline-block' : 'none';
-            }
-
-            async function deleteSelectedSubmissions() {
-                if (selectedSubmissionIds.size === 0) return;
-                if (!confirm(`XÓA ${selectedSubmissionIds.size} bài làm đã chọn?`)) return;
-
-                const batch = db.batch();
-                selectedSubmissionIds.forEach(id => batch.delete(db.collection("ketqua").doc(id)));
-                try {
-                    await batch.commit();
-                    selectedSubmissionIds.clear();
-                    selectAllCheckbox.checked = false;
-                } catch (error) { console.error("Lỗi xóa bài làm: ", error); }
             }
 
             window.renderResultsList = function() {
@@ -1691,41 +1776,20 @@ D. Lựa chọn D
                     try { await db.collection("ketqua").doc(submissionId).delete(); } catch (error) { console.error("Lỗi xóa: ", error); }
                 }
             }
-            
-            navTests.addEventListener('click', () => setActiveTab(navTests, testManagerView));
-            navCreateTest.addEventListener('click', () => {
-                setActiveTab(navCreateTest, createTestView);
-                updateCreateTestClassSelect();
-                renderClassBadges();
-            });
-            navStudents.addEventListener('click', () => {
-                setActiveTab(navStudents, studentManagerView);
-                renderStudentList();
-            });
-            navResults.addEventListener('click', () => {
-                setActiveTab(navResults, resultsView);
-                renderResultsList(); 
-            });
-            navAccount.addEventListener('click', () => setActiveTab(navAccount, accountManagerView));
-            
-            document.getElementById('test-search-input').addEventListener('input', renderTestList);
-            document.getElementById('student-search-input').addEventListener('input', renderStudentList);
-            document.getElementById('results-search-input').addEventListener('input', renderResultsList);
 
-            selectAllTestsCheckbox.addEventListener('change', (e) => {
-                const isChecked = e.target.checked;
-                const checkboxes = testListDiv.querySelectorAll('.test-row-checkbox');
-                selectedTestIds.clear();
-                checkboxes.forEach(checkbox => {
-                    checkbox.checked = isChecked;
-                    if (isChecked) selectedTestIds.add(checkbox.dataset.id);
-                });
-                updateTestBatchUI();
-            });
-            
-            deleteSelectedTestsBtn.addEventListener('click', deleteSelectedTests);
+            async function deleteSelectedSubmissions() {
+                if (selectedSubmissionIds.size === 0) return;
+                if (!confirm(`XÓA ${selectedSubmissionIds.size} bài làm đã chọn?`)) return;
 
-            // BÉ LÔI FIX: XỬ LÝ KHỞI TẠO ĐỀ THI MỚI CHUẨN XÁC
+                const batch = db.batch();
+                selectedSubmissionIds.forEach(id => batch.delete(db.collection("ketqua").doc(id)));
+                try {
+                    await batch.commit();
+                    selectedSubmissionIds.clear();
+                    selectAllCheckbox.checked = false;
+                } catch (error) { console.error("Lỗi xóa bài làm: ", error); }
+            }
+
             createTestForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const testName = document.getElementById('testName').value;
@@ -1760,21 +1824,239 @@ D. Lựa chọn D
                 } catch (error) { console.error("Lỗi tạo đề: ", error); }
             });
 
-            if (!window.testListListener) {
-                window.testListListener = db.collection("dethi").onSnapshot(snapshot => {
-                    testLoadingDiv.style.display = 'none';
-                    allTestsCache = []; 
-                    snapshot.forEach(doc => {
-                        allTestsCache.push({ id: doc.id, ...doc.data() });
-                    });
-                    
-                    updateTestClassAndSubjectOptions();
-                    renderTestList(); 
-                }, error => { 
-                    console.error("Lỗi tải danh sách đề: ", error); 
-                    testLoadingDiv.innerText = "Lỗi tải danh sách đề.";
+            createStudentForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const maHS = document.getElementById('studentCode').value.trim();
+                const hoTen = document.getElementById('studentFullName').value.trim();
+                const levelVal = document.getElementById('studentLevel').value;
+                const selectVal = document.getElementById('studentClassSelect').value;
+                const inputVal = document.getElementById('studentClassInput').value.trim();
+                
+                let lop = (levelVal === 'uni' || levelVal === 'other' || selectVal === 'manual') ? inputVal : selectVal;
+
+                if (!maHS || !hoTen || !lop) return;
+                try {
+                    const docRef = db.collection('hocsinh').doc(maHS);
+                    await docRef.set({ hoTen: hoTen, lop: lop, capHoc: levelVal });
+                    alert(`Tạo thành công Mã HSSV: ${maHS} (${hoTen})`);
+                    createStudentForm.reset();
+                } catch (error) { console.error("Lỗi tạo Mã HSSV: ", error); }
+            });
+
+            addBulkStudentForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const text = document.getElementById('bulkStudentsText').value.trim();
+                const defaultLevel = document.getElementById('studentLevel').value || 'uni';
+                if (!text) {
+                    alert("Vui lòng nhập danh sách hoặc chọn file Excel.");
+                    return;
+                }
+                const lines = text.split('\n');
+                const batch = db.batch();
+                let addedCount = 0;
+                let errorList = [];
+                lines.forEach((line, index) => {
+                    line = line.trim();
+                    if (!line) return; 
+                    const parts = line.split(',');
+                    if (parts.length === 3) {
+                        const maHS = parts[0].trim();
+                        const hoTen = parts[1].trim();
+                        const lop = parts[2].trim();
+                        if (maHS && hoTen && lop) {
+                            const docRef = db.collection('hocsinh').doc(maHS);
+                            batch.set(docRef, { hoTen: hoTen, lop: lop, capHoc: defaultLevel });
+                            addedCount++;
+                        } else {
+                            errorList.push(index + 1);
+                        }
+                    } else {
+                        errorList.push(index + 1);
+                    }
                 });
-            }
+
+                if (addedCount === 0 && errorList.length > 0) {
+                     alert(`Không thêm được ai. Lỗi định dạng ở các dòng: ${errorList.join(', ')}.\nĐịnh dạng phải là: MãHSSV,HọTên,Lớp`);
+                     return;
+                }
+
+                try {
+                    await batch.commit();
+                    let successMsg = `Đã thêm/cập nhật thành công ${addedCount} người vào CSDL! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧`;
+                    if (errorList.length > 0) {
+                        successMsg += `\nĐã bỏ qua ${errorList.length} dòng bị lỗi (Dòng: ${errorList.join(', ')}).`;
+                    }
+                    alert(successMsg);
+                    addBulkStudentForm.reset();
+                } catch (error) {
+                    console.error("Lỗi thêm hàng loạt: ", error);
+                    alert("Lỗi khi lưu vào CSDL. Xin vui lòng thử lại.");
+                }
+            });
+
+            addQuestionForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!selectedTestId) return;
+                const fileInput = document.getElementById('questionImageFile');
+                const imageUrlInput = document.getElementById('questionImageUrl');
+                let finalImageUrl = imageUrlInput.value.trim();
+                const file = fileInput.files[0];
+                if (file) {
+                    if (file.size > MAX_IMAGE_SIZE_KB * 1024) {
+                        alert(`Lỗi: Tệp quá lớn. Max: ${MAX_IMAGE_SIZE_KB} KB.`);
+                        return;
+                    }
+                    try {
+                        finalImageUrl = await fileToBase64(file); 
+                    } catch (error) { return; }
+                } else if (finalImageUrl === '') {
+                     finalImageUrl = null;
+                }
+                const prompt = document.getElementById('prompt').value;
+                const options = [ document.getElementById('opt1').value, document.getElementById('opt2').value, document.getElementById('opt3').value, document.getElementById('opt4').value ];
+                const answer = document.getElementById('answer').value;
+                if (!options.includes(answer)) { 
+                    alert("Lỗi: Đáp án đúng phải là 1 trong 4 lựa chọn."); 
+                    return; 
+                }
+                
+                const questionData = { 
+                    prompt: prompt, options: options, answer: answer, imageUrl: finalImageUrl, 
+                    comprehensionText: null, index: currentQuestionCount + 1, 
+                };
+
+                try {
+                    if (isEditingQuestionId) {
+                        await db.collection("dethi").doc(selectedTestId).collection("cauhoi").doc(isEditingQuestionId).update({
+                            prompt: prompt, options: options, answer: answer, imageUrl: finalImageUrl, comprehensionText: null
+                        });
+                    } else {
+                        await db.collection("dethi").doc(selectedTestId).collection("cauhoi").add(questionData);
+                    }
+                    resetQuestionFormState(); 
+                } catch (error) { alert("Lỗi khi thêm/cập nhật câu hỏi!"); }
+            });
+
+            addBulkQuestionForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!selectedTestId) return;
+                const text = document.getElementById('bulkQuestionsText').value;
+                const blocks = text.split(/\n\s*\n/); 
+                let questionsToAdd = [];
+                for (const block of blocks) {
+                    const lines = block.split('\n').map(l => l.trim()).filter(l => l !== "");
+                    if (lines.length < 6) continue;
+                    const prompt = lines[0];
+                    const options = [ lines[1].substring(lines[1].indexOf(".") + 1).trim(), lines[2].substring(lines[2].indexOf(".") + 1).trim(), lines[3].substring(lines[3].indexOf(".") + 1).trim(), lines[4].substring(lines[4].indexOf(".") + 1).trim() ];
+                    const answerLine = lines[5];
+                    const answerText = answerLine.substring(answerLine.indexOf(":") + 1).trim();
+                    let finalAnswer = "";
+                    if (options.includes(answerText)) { finalAnswer = answerText; }
+                    else {
+                        const letter = answerText.toUpperCase();
+                        if (letter === 'A') finalAnswer = options[0];
+                        else if (letter === 'B') finalAnswer = options[1];
+                        else if (letter === 'C') finalAnswer = options[2];
+                        else if (letter === 'D') finalAnswer = options[3];
+                    }
+                    if (finalAnswer) questionsToAdd.push({ prompt: prompt, options: options, answer: finalAnswer, imageUrl: null, comprehensionText: null });
+                }
+                if (questionsToAdd.length > 0) {
+                    const batch = db.batch();
+                    const collectionRef = db.collection("dethi").doc(selectedTestId).collection("cauhoi");
+                    let nextIndex = currentQuestionCount;
+                    questionsToAdd.forEach(q => { 
+                        const docRef = collectionRef.doc(); 
+                        nextIndex++;
+                        batch.set(docRef, { ...q, index: nextIndex }); 
+                    });
+                    await batch.commit();
+                    alert(`Đã thêm thành công ${questionsToAdd.length} câu hỏi!`);
+                    addBulkQuestionForm.reset();
+                }
+            });
+
+            document.getElementById('test-search-input').addEventListener('input', renderTestList);
+            document.getElementById('student-search-input').addEventListener('input', renderStudentList);
+            document.getElementById('results-search-input').addEventListener('input', renderResultsList);
+
+            selectAllTestsCheckbox.addEventListener('change', (e) => {
+                const isChecked = e.target.checked;
+                const checkboxes = testListDiv.querySelectorAll('.test-row-checkbox');
+                selectedTestIds.clear();
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                    if (isChecked) selectedTestIds.add(checkbox.dataset.id);
+                });
+                updateTestBatchUI();
+            });
+            
+            deleteSelectedTestsBtn.addEventListener('click', deleteSelectedTests);
+
+            selectAllQuestionsCheckbox.addEventListener('change', (e) => {
+                const isChecked = e.target.checked;
+                const checkboxes = qListDiv.querySelectorAll('.question-row-checkbox');
+                selectedQuestionIds.clear();
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                    if (isChecked) selectedQuestionIds.add(checkbox.dataset.id);
+                });
+                updateQuestionBatchActionsUI();
+            });
+
+            deleteSelectedQuestionsBtn.addEventListener('click', async () => {
+                if (selectedQuestionIds.size === 0 || !selectedTestId) return;
+                if (!confirm(`XÓA ${selectedQuestionIds.size} câu hỏi đã chọn?`)) return;
+                try {
+                    const batch = db.batch();
+                    selectedQuestionIds.forEach(id => {
+                        batch.delete(db.collection("dethi").doc(selectedTestId).collection("cauhoi").doc(id));
+                    });
+                    await batch.commit();
+                    selectedQuestionIds.clear();
+                    selectAllQuestionsCheckbox.checked = false;
+                } catch (err) { console.error(err); }
+                finally { updateQuestionBatchActionsUI(); }
+            });
+
+            selectAllCheckbox.addEventListener('change', (e) => {
+                const isChecked = e.target.checked;
+                const checkboxes = resultsTableBody.querySelectorAll('.row-checkbox');
+                selectedSubmissionIds.clear();
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                    if (isChecked) selectedSubmissionIds.add(checkbox.dataset.id);
+                });
+                updateBatchActionsUI();
+            });
+
+            deleteSelectedBtn.addEventListener('click', deleteSelectedSubmissions);
+
+            resultsTableBody.addEventListener('click', (e) => {
+                const submissionId = e.target.dataset.id;
+                if (!submissionId) return;
+                if (e.target.classList.contains('detail-btn')) {
+                    showSubmissionDetail(submissionId);
+                } else if (e.target.classList.contains('single-delete-btn')) { 
+                    deleteSubmission(submissionId, e.target.dataset.name || 'Học sinh');
+                }
+            });
+
+            navTests.addEventListener('click', () => setActiveTab(navTests, testManagerView));
+            navCreateTest.addEventListener('click', () => {
+                setActiveTab(navCreateTest, createTestView);
+                updateCreateTestClassSelect();
+                renderClassBadges();
+            });
+            navStudents.addEventListener('click', () => {
+                setActiveTab(navStudents, studentManagerView);
+                renderStudentList();
+            });
+            navResults.addEventListener('click', () => {
+                setActiveTab(navResults, resultsView);
+                renderResultsList(); 
+            });
+            navAccount.addEventListener('click', () => setActiveTab(navAccount, accountManagerView));
 
             toggleAddSingle.addEventListener('click', () => {
                 addQuestionForm.style.display = 'block';
@@ -1802,6 +2084,32 @@ D. Lựa chọn D
                 toggleAddComprehension.classList.add('active'); 
             });
 
+            document.getElementById('toggle-add-student-single').addEventListener('click', () => {
+                document.getElementById('addStudentFormContainer').style.display = 'block';
+                document.getElementById('addBulkStudentForm').style.display = 'none';
+                document.getElementById('toggle-add-student-single').classList.add('active');
+                document.getElementById('toggle-add-student-bulk').classList.remove('active');
+            });
+            document.getElementById('toggle-add-student-bulk').addEventListener('click', () => {
+                document.getElementById('addStudentFormContainer').style.display = 'none';
+                document.getElementById('addBulkStudentForm').style.display = 'block';
+                document.getElementById('toggle-add-student-single').classList.remove('active');
+                document.getElementById('toggle-add-student-bulk').classList.add('active');
+            });
+
+            if (!window.testListListener) {
+                window.testListListener = db.collection("dethi").onSnapshot(snapshot => {
+                    testLoadingDiv.style.display = 'none';
+                    allTestsCache = []; 
+                    snapshot.forEach(doc => {
+                        allTestsCache.push({ id: doc.id, ...doc.data() });
+                    });
+                    
+                    updateTestClassAndSubjectOptions();
+                    renderTestList(); 
+                });
+            }
+
             if (!window.resultsListener) {
                 window.resultsListener = db.collection("ketqua").onSnapshot(snapshot => {
                     allResultsCache = []; 
@@ -1809,11 +2117,6 @@ D. Lựa chọn D
                         let data = doc.data();
                         data.id = doc.id; 
                         allResultsCache.push(data); 
-                    });
-                    allResultsCache.sort((a, b) => {
-                        const timeA = a.thoiGianNop ? a.thoiGianNop.toMillis() : 0;
-                        const timeB = b.thoiGianNop ? b.thoiGianNop.toMillis() : 0;
-                        return timeB - timeA;
                     });
                     renderResultsList(); 
                 });
@@ -1860,6 +2163,58 @@ D. Lựa chọn D
                     alert("Cập nhật thành công!");
                     modalBackdrop.style.display = 'none';
                 });
+            } catch (error) { console.error(error); }
+        }
+
+        async function showEditStudentModal(maHS, hoTen, lop) {
+            modalBackdrop.style.display = 'block';
+            modalTitle.innerText = `Sửa Mã HSSV: ${maHS}`;
+            modalBody.innerHTML = `
+                <form id="editStudentModalForm">
+                    <label>Họ và Tên:</label>
+                    <input type="text" id="editStudentFullName" value="${hoTen}" required>
+                    <label>Lớp:</label>
+                    <input type="text" id="editStudentClass" value="${lop}" required>
+                    <button type="submit" class="add-btn" style="width: 100%; margin-top: 15px;">Cập Nhật Thông Tin</button>
+                </form>
+            `;
+
+            document.getElementById('editStudentModalForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const newName = document.getElementById('editStudentFullName').value.trim();
+                const newClass = document.getElementById('editStudentClass').value.trim();
+                try {
+                    await db.collection('hocsinh').doc(maHS).update({ hoTen: newName, lop: newClass });
+                    alert("Cập nhật thành công!");
+                    modalBackdrop.style.display = 'none';
+                } catch (err) { alert("Lỗi khi cập nhật!"); }
+            });
+        }
+
+        async function showSubmissionDetail(submissionId) {
+            modalBackdrop.style.display = 'block';
+            modalTitle.innerText = "Chi tiết bài làm";
+            try {
+                const docRef = await db.collection("ketqua").doc(submissionId).get();
+                if (!docRef.exists) return;
+                const data = docRef.data();
+                modalTitle.innerText = `Bài làm của: ${data.hoTen} - Lớp: ${data.lop}`;
+                modalBody.innerHTML = ''; 
+
+                if (data.quizData) {
+                    data.quizData.forEach((q, index) => {
+                        const questionDiv = document.createElement('div');
+                        questionDiv.style.marginBottom = "15px";
+                        questionDiv.style.borderBottom = "1px solid #eee";
+                        questionDiv.style.paddingBottom = "10px";
+                        questionDiv.innerHTML = `
+                            <p style="font-weight: bold; margin-bottom: 5px;">Câu ${index + 1}: ${q.prompt}</p>
+                            <p style="color: #28a745; margin: 2px 0;">✔ Đáp án đúng: <b>${q.answer}</b></p>
+                            <p style="color: #007bff; margin: 2px 0;">👉 Thí sinh chọn: <b>${q.userChoice || 'Không chọn'}</b></p>
+                        `;
+                        modalBody.appendChild(questionDiv);
+                    });
+                }
             } catch (error) { console.error(error); }
         }
 
