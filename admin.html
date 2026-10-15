@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trang Quản Trị</title>
+    <title>Trang Quản Trị </title>
     <style>
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
@@ -55,7 +55,7 @@
         #admin-nav button { background-color: transparent; color: #555; padding: 10px 20px; border: none; border-bottom: 4px solid transparent; font-size: 1.1em; font-weight: 600; }
         #admin-nav button.active { color: #007bff; border-bottom-color: #007bff; }
         
-        /* BỘ LỌC ĐƯỢC THIẾT KẾ LẠI GỌN GÀNG ĐẸP MẮT */
+        /* BỘ LỌC ĐƯỢC THIẾT KẾ GỌN GÀNG ĐẸP MẮT */
         .filter-container-custom {
             background: #f8f9fa;
             border: 1px solid #e3e6f0;
@@ -353,7 +353,8 @@
                         <button type="button" class="level-pill-btn" data-level="1">Cấp 1 (1-5)</button>
                         <button type="button" class="level-pill-btn" data-level="2">Cấp 2 (6-9)</button>
                         <button type="button" class="level-pill-btn" data-level="3">Cấp 3 (10-12)</button>
-                        <button type="button" class="level-pill-btn" data-level="uni">Đại học/Khác</button>
+                        <button type="button" class="level-pill-btn" data-level="uni">Đại học</button>
+                        <button type="button" class="level-pill-btn" data-level="other">Khác</button>
                     </div>
 
                     <div class="filter-row">
@@ -476,12 +477,12 @@ D. Lựa chọn D
             </div>
         </div>
 
-        <!-- TAB TẠO ĐỀ THI MỚI (LẤY LỚP TỪ DỮ LIỆU HỌC SINH THỰC TẾ) -->
+        <!-- TAB TẠO ĐỀ THI MỚI -->
         <div id="create-test-view" class="card" style="max-width: 800px; margin: 0 auto;">
             <h2>Tạo Đề Thi Mới</h2>
             <form id="createTestForm">
                 <label>Tên đề thi mới:</label>
-                <input type="text" id="testName" placeholder="Ví dụ: Kiểm tra 15p Toán 10" required>
+                <input type="text" id="testName" placeholder="Ví dụ: Kiểm tra Lập trình Web - D23_TH01" required>
 
                 <label style="color: #dc3545; font-weight: bold; margin-top: 15px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
                 <input type="checkbox" id="testAntiCheat" checked style="width: 20px; height: 20px; margin: 0; cursor: pointer;">
@@ -489,7 +490,7 @@ D. Lựa chọn D
                 </label>
                 
                 <label>Thời gian làm bài (phút):</label>
-                <input type="number" id="testTime" placeholder="Ví dụ: 15" required min="1">
+                <input type="number" id="testTime" placeholder="Ví dụ: 45" required min="1">
                 
                 <label>Thời gian BẮT ĐẦU (Tùy chọn):</label>
                 <input type="datetime-local" id="testStartTime">
@@ -498,56 +499,56 @@ D. Lựa chọn D
                 <input type="datetime-local" id="testEndTime">
                 
                 <label style="color: #007bff; font-weight: bold; margin-top: 10px; display: block;">Môn học (Tùy chọn, để phân loại):</label>
-                <input type="text" id="testSubject" placeholder="Ví dụ: Toán, Ngữ Văn, Tiếng Anh">
+                <input type="text" id="testSubject" placeholder="Ví dụ: Lập trình Web, Cơ sở dữ liệu">
 
                 <label style="color: #28a745; font-weight: bold; margin-top: 10px; display: block;">Cấp học:</label>
                 <select id="createTestLevel" onchange="updateCreateTestClassSelect()" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 8px;">
-                    <option value="">Tất cả Cấp học</option>
+                    <option value="">-- Chọn tất cả cấp --</option>
                     <option value="1">Cấp 1 (Lớp 1-5)</option>
                     <option value="2">Cấp 2 (Lớp 6-9)</option>
-                    <option value="3" selected>Cấp 3 (Lớp 10-12)</option>
-                    <option value="uni">Đại học</option>
+                    <option value="3">Cấp 3 (Lớp 10-12)</option>
+                    <option value="uni" selected>Đại học / Cao đẳng</option>
                     <option value="other">Khác</option>
                 </select>
 
-                <label style="color: #28a745; font-weight: bold; display: block;">Lớp áp dụng (Lấy thực tế từ CSDL Học Sinh):</label>
+                <label style="color: #28a745; font-weight: bold; display: block;">Lớp áp dụng (Lấy từ CSDL Học sinh/Sinh viên):</label>
                 <select id="createTestTargetClassSelect" onchange="handleClassSelectChange('createTestTargetClassSelect', 'createTestTargetClassInput')" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 8px;"></select>
-                <input type="text" id="createTestTargetClassInput" placeholder="Ví dụ: 10A1, 10A2..." style="display:none; margin-bottom: 10px;">
+                <input type="text" id="createTestTargetClassInput" placeholder="Ví dụ: D23_TH01, K47_CNTT..." style="display:none; margin-bottom: 10px;">
                 
                 <button type="submit" class="add-btn" style="width: 100%; margin-top: 10px;">Tạo Đề Thi Mới</button>
             </form>
         </div>
 
-        <!-- TAB QUẢN LÝ HỌC SINH -->
+        <!-- TAB QUẢN LÝ HỌC SINH / SINH VIÊN -->
         <div id="student-manager-view">
             <div class="card">
-                <h2>Quản lý Mã Học Sinh</h2>
+                <h2>Quản lý Mã Học Sinh / Sinh Viên</h2>
                  <div class="toggle-buttons">
-                    <button id="toggle-add-student-single" class="active">Thêm từng HS</button>
+                    <button id="toggle-add-student-single" class="active">Thêm từng HS/SV</button>
                     <button id="toggle-add-student-bulk">Thêm hàng loạt</button>
                  </div>
 
                 <div id="addStudentFormContainer" style="display: block;">
                     <form id="createStudentForm" style="margin-bottom: 20px; margin-top: 15px;">
-                        <label>Mã Học Sinh (Dùng để đăng nhập):</label>
-                        <input type="text" id="studentCode" placeholder="Ví dụ: HS10A3001 (Viết liền, không dấu)" required>
+                        <label>Mã HS / Sinh Viên (Dùng để đăng nhập):</label>
+                        <input type="text" id="studentCode" placeholder="Ví dụ: d23480201012 hoặc HS10A3001" required>
                         
-                        <label>Họ và Tên Học Sinh:</label>
+                        <label>Họ và Tên Học sinh / Sinh viên:</label>
                         <input type="text" id="studentFullName" placeholder="Ví dụ: Nguyễn Văn A" required>
                         
                         <label>Cấp học:</label>
                         <select id="studentLevel" onchange="updateClassSelect('studentLevel', 'studentClassSelect', 'studentClassInput')" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 8px;">
                             <option value="1">Cấp 1 (Lớp 1-5)</option>
                             <option value="2">Cấp 2 (Lớp 6-9)</option>
-                            <option value="3" selected>Cấp 3 (Lớp 10-12)</option>
-                            <option value="uni">Đại học</option>
+                            <option value="3">Cấp 3 (Lớp 10-12)</option>
+                            <option value="uni" selected>Đại học / Cao đẳng</option>
                             <option value="other">Khác (Tự nhập)</option>
                         </select>
 
                         <label>Lớp:</label>
                         <select id="studentClassSelect" onchange="handleClassSelectChange('studentClassSelect', 'studentClassInput')" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 8px;">
                         </select>
-                        <input type="text" id="studentClassInput" placeholder="Vui lòng nhập tên lớp..." style="display:none; margin-bottom: 10px;">
+                        <input type="text" id="studentClassInput" placeholder="Vui lòng nhập tên lớp (Ví dụ: D23_TH01)..." style="display:none; margin-bottom: 10px;">
                         
                         <button type="submit" class="add-btn" style="width: 100%;">Tạo Mã Mới</button>
                     </form>
@@ -555,21 +556,21 @@ D. Lựa chọn D
                 </div>
                 
                 <form id="addBulkStudentForm" style="display: none; margin-top: 15px;">
-                    <p>Dán danh sách vào đây. Mỗi học sinh một dòng theo định dạng:</p>
-                    <pre><code>MãHS,TênHọcSinh,Lớp</code></pre>
-                    <p><strong>Ví dụ:</strong></p>
-                    <pre><code>HS001,Nguyễn Văn A,10A1
-HS002,Trần Thị B,10A2
-HS003,Lê Văn C,10A1</code></pre>
+                    <p>Dán danh sách vào đây. Mỗi HS/SV một dòng theo định dạng:</p>
+                    <pre><code>MãHSSV,TênHọcSinh,Lớp</code></pre>
+                    <p><strong>Ví dụ Lớp Đại học / Cao đẳng:</strong></p>
+                    <pre><code>d23480201012,Nguyễn Văn A,D23_TH01
+d23480201013,Trần Thị B,D23_TH01
+d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                     <textarea id="bulkStudentsText" rows="15" style="width: 100%; font-family: monospace;"></textarea>
                     <button type="submit" class="add-btn" style="width: 100%;">Thêm Hàng Loạt</button>
                 </form>
 
             </div>
             <div class="card" id="student-list-manager">
-                 <h2>Danh sách Học Sinh</h2>
+                 <h2>Danh sách Học Sinh / Sinh Viên</h2>
                  
-                 <input type="search" id="student-search-input" placeholder="Tìm kiếm Tên, Mã HS..." style="margin-bottom: 10px;">
+                 <input type="search" id="student-search-input" placeholder="Tìm kiếm Tên, Mã HS/SV..." style="margin-bottom: 10px;">
                  <div class="filter-row">
                     <select id="filter-student-class" class="filter-select"><option value="">-- Tất cả các Lớp --</option></select>
                  </div>
@@ -585,7 +586,7 @@ HS003,Lê Văn C,10A1</code></pre>
             <h2>Danh sách Kết Quả</h2>
             
             <label for="results-search-input" style="font-weight: 600;">Lọc Kết Quả:</label>
-            <input type="search" id="results-search-input" placeholder="Lọc theo Tên HS, Lớp, Tên đề thi..." style="margin-bottom: 15px;">
+            <input type="search" id="results-search-input" placeholder="Lọc theo Tên HS/SV, Lớp, Tên đề thi..." style="margin-bottom: 15px;">
             
             <div id="batch-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-top: 1px solid #eee; padding-top: 15px;">
                 <p style="display: flex; align-items: center; gap: 15px;">
@@ -699,25 +700,41 @@ HS003,Lê Văn C,10A1</code></pre>
             auth = firebase.auth(); 
         } catch (e) { alert("Lỗi cấu hình Firebase!"); }
 
-        // BÉ LÔI FIX: Thuật toán suy luận cấp học cho các đề thi cũ không có thuộc tính capHoc
+        // BÉ LÔI FIX: Thuật toán nhận diện Cấp học chính xác
+        // Ưu tiên đọc thuộc tính capHoc lưu sẵn. Nếu không có, chỉ coi là Cấp 1-3 nếu tên lớp BẮT ĐẦU bằng 1-12 theo chuẩn phổ thông.
+        function getStudentCapHoc(student) {
+            if (student.capHoc) return student.capHoc;
+            if (!student.lop) return "other";
+            
+            const lopStr = student.lop.trim();
+            // Regex chuẩn phổ thông: Bắt đầu chính xác bằng số 1->12 (ví dụ 10A1, 12C3, 6B, 1A)
+            const k12Match = lopStr.match(/^([1-9]|1[0-2])([A-Za-z])/);
+            if (k12Match) {
+                const num = parseInt(k12Match[1], 10);
+                if (num >= 1 && num <= 5) return "1";
+                if (num >= 6 && num <= 9) return "2";
+                if (num >= 10 && num <= 12) return "3";
+            }
+            // Tất cả tên lớp Đại học (D23_TH01, K47_CNTT...) hoặc không trùng phổ thông đều coi là Đại học
+            return "uni";
+        }
+
         function getTestCapHoc(test) {
             if (test.capHoc) return test.capHoc;
             if (!test.lopApDung || test.lopApDung.trim() === "") return "all";
             
-            const lopUpper = test.lopApDung.toUpperCase();
-            const numbers = lopUpper.match(/\d+/g);
-            if (numbers) {
-                for (let numStr of numbers) {
-                    let num = parseInt(numStr, 10);
-                    if (num >= 1 && num <= 5) return "1";
-                    if (num >= 6 && num <= 9) return "2";
-                    if (num >= 10 && num <= 12) return "3";
-                }
+            const lopStr = test.lopApDung.trim();
+            const k12Match = lopStr.match(/^([1-9]|1[0-2])([A-Za-z])/);
+            if (k12Match) {
+                const num = parseInt(k12Match[1], 10);
+                if (num >= 1 && num <= 5) return "1";
+                if (num >= 6 && num <= 9) return "2";
+                if (num >= 10 && num <= 12) return "3";
             }
-            return "other";
+            return "uni";
         }
 
-        // BÉ LÔI FIX: Cập nhật danh sách Lớp thực tế từ dữ liệu Quản lý Học sinh vào Tab "Tạo Đề Thi Mới"
+        // BÉ LÔI FIX: Cập nhật danh sách Lớp thực tế từ dữ liệu Quản lý Học sinh/Sinh viên vào Tab "Tạo Đề Thi Mới"
         window.updateCreateTestClassSelect = function() {
             const level = document.getElementById('createTestLevel').value;
             const select = document.getElementById('createTestTargetClassSelect');
@@ -727,24 +744,13 @@ HS003,Lê Văn C,10A1</code></pre>
             input.style.display = 'none';
             select.style.display = 'block';
 
-            // Lấy các Lớp thực tế tồn tại trong CSDL Học sinh
             let realClasses = new Set();
             allStudentsCache.forEach(student => {
                 if (student.lop && student.lop.trim()) {
                     const lopStr = student.lop.trim();
-                    
-                    // Phân loại cấp học từ tên lớp
-                    let numMatch = lopStr.match(/\d+/);
-                    let cap = "other";
-                    if (numMatch) {
-                        let num = parseInt(numMatch[0], 10);
-                        if (num >= 1 && num <= 5) cap = "1";
-                        else if (num >= 6 && num <= 9) cap = "2";
-                        else if (num >= 10 && num <= 12) cap = "3";
-                    }
+                    const studentCap = getStudentCapHoc(student);
 
-                    // Nếu chọn "Tất cả cấp" hoặc lớp thuộc đúng cấp học được chọn
-                    if (!level || level === "other" || level === "uni" || cap === level) {
+                    if (!level || studentCap === level) {
                         realClasses.add(lopStr);
                     }
                 }
@@ -752,15 +758,13 @@ HS003,Lê Văn C,10A1</code></pre>
 
             const sortedClasses = Array.from(realClasses).sort();
 
-            // Option 1: Mặc định áp dụng cho tất cả
             const defaultOpt = document.createElement('option');
             defaultOpt.value = "";
             defaultOpt.text = sortedClasses.length > 0 
                 ? `-- Chọn Lớp thực tế (${sortedClasses.length} lớp hiện có) --` 
-                : "-- Chưa có học sinh thuộc cấp này trong CSDL --";
+                : "-- Chưa có học sinh/sinh viên thuộc cấp này trong CSDL --";
             select.appendChild(defaultOpt);
 
-            // Các Option Lớp thực tế
             sortedClasses.forEach(cls => {
                 const opt = document.createElement('option');
                 opt.value = cls;
@@ -768,7 +772,6 @@ HS003,Lê Văn C,10A1</code></pre>
                 select.appendChild(opt);
             });
 
-            // Option Tự nhập
             const manualOpt = document.createElement('option');
             manualOpt.value = "manual";
             manualOpt.text = "✏️ Tự nhập lớp khác...";
@@ -973,10 +976,9 @@ HS003,Lê Văn C,10A1</code></pre>
         
         function initializeAdminApp() {
             
-            // Khởi tạo các menu dropdown chọn lớp
             updateClassSelect('studentLevel', 'studentClassSelect', 'studentClassInput');
             
-            // LẮNG NGHE DỮ LIỆU HỌC SINH THỜI GIAN THỰC ĐỂ TỰ ĐỘNG LÊN LỚP THỰC TẾ
+            // LẮNG NGHE DỮ LIỆU HỌC SINH/SINH VIÊN THỜI GIAN THỰC
             if (!window.studentsListener) {
                 window.studentsListener = db.collection('hocsinh').onSnapshot(snapshot => {
                     allStudentsCache = [];
@@ -984,23 +986,20 @@ HS003,Lê Văn C,10A1</code></pre>
                         allStudentsCache.push({ id: doc.id, ...doc.data() });
                     });
                     
-                    // Sắp xếp danh sách học sinh
                     allStudentsCache.sort((a, b) => {
                         const lopCompare = (a.lop || '').localeCompare(b.lop || '');
                         if (lopCompare !== 0) return lopCompare;
                         return (a.hoTen || '').localeCompare(b.hoTen || '');
                     });
 
-                    // Cập nhật lại dropdown lớp trong CẢ Tab "Tạo Đề Thi Mới" lẫn Bộ lọc
                     updateCreateTestClassSelect();
                     updateFilterDropdowns();
                     renderStudentList();
                 }, error => {
-                    console.error("Lỗi đồng bộ dữ liệu Học sinh: ", error);
+                    console.error("Lỗi đồng bộ dữ liệu Học sinh/Sinh viên: ", error);
                 });
             }
 
-            // Thiết lập sự kiện click cho bộ lọc Cấp học dạng Pills
             const pillBtns = document.querySelectorAll('.level-pill-btn');
             pillBtns.forEach(btn => {
                 btn.addEventListener('click', (e) => {
@@ -1013,7 +1012,6 @@ HS003,Lê Văn C,10A1</code></pre>
                 });
             });
 
-            // Logic đọc file Word (.docx)
             const docxFileInput = document.getElementById('docxFileInput');
             if (docxFileInput) {
                 docxFileInput.addEventListener('change', function(e) {
@@ -1189,9 +1187,10 @@ HS003,Lê Văn C,10A1</code></pre>
                     }
 
                     const isOldTest = !test.capHoc;
+                    const badgeText = test.capHoc === "uni" ? "Đại học" : (test.capHoc ? `Cấp ${test.capHoc}` : "Đề cũ");
                     const badgeHtml = isOldTest 
-                        ? `<span class="tag-badge tag-badge-old">Đề cũ</span>` 
-                        : `<span class="tag-badge tag-badge-level">Cấp ${test.capHoc}</span>`;
+                        ? `<span class="tag-badge tag-badge-old">${badgeText}</span>` 
+                        : `<span class="tag-badge tag-badge-level">${badgeText}</span>`;
 
                     item.innerHTML = `
                         <div style="flex-shrink: 0; margin-right: 12px;">
@@ -1440,7 +1439,7 @@ HS003,Lê Văn C,10A1</code></pre>
                 studentListLoading.style.display = 'none';
 
                 if (filteredStudents.length === 0) {
-                    studentListDiv.innerHTML = '<p>Không tìm thấy học sinh nào khớp với bộ lọc.</p>';
+                    studentListDiv.innerHTML = '<p>Không tìm thấy học sinh/sinh viên nào khớp với bộ lọc.</p>';
                     return;
                 }
                                     
@@ -1454,7 +1453,7 @@ HS003,Lê Văn C,10A1</code></pre>
                                 <span class="student-name">${hs.hoTen}</span>
                                 <span class="lopHS">(Lớp: ${hs.lop})</span>
                             </div>
-                            <span class="maHS">Mã HS: ${hs.id}</span>
+                            <span class="maHS">Mã HSSV: ${hs.id}</span>
                         </div>
                         <div class="student-item-actions">
                             <button class="detail-btn edit-student-btn" data-id="${hs.id}" data-name="${hs.hoTen}" data-lop="${hs.lop}">Sửa</button>
@@ -1475,12 +1474,12 @@ HS003,Lê Văn C,10A1</code></pre>
             }
             
             async function deleteStudent(maHS, hoTen) {
-                if (!confirm(`Bạn có chắc muốn XÓA Mã HS "${maHS}" của học sinh "${hoTen}"?`)) return;
+                if (!confirm(`Bạn có chắc muốn XÓA Mã HSSV "${maHS}" của "${hoTen}"?`)) return;
                 try {
                     await db.collection('hocsinh').doc(maHS).delete();
                 } catch (error) {
-                    console.error("Lỗi xóa Mã HS: ", error);
-                    alert("Lỗi khi xóa Mã HS.");
+                    console.error("Lỗi xóa Mã HSSV: ", error);
+                    alert("Lỗi khi xóa Mã HSSV.");
                 }
             }
 
@@ -1540,7 +1539,7 @@ HS003,Lê Văn C,10A1</code></pre>
 
                 try {
                     await batch.commit();
-                    alert(`Đã xóa thành công ${deleteCount} câu hỏi!`);
+                    alert(`Đã xóa thành công ${selectedQuestionIds.size} câu hỏi!`);
                 } catch (error) {
                     console.error("Lỗi khi xóa hàng loạt câu hỏi: ", error);
                     alert("Lỗi khi xóa hàng loạt. Vui lòng thử lại.");
@@ -1618,7 +1617,7 @@ HS003,Lê Văn C,10A1</code></pre>
             navTests.addEventListener('click', () => setActiveTab(navTests, testManagerView));
             navCreateTest.addEventListener('click', () => {
                 setActiveTab(navCreateTest, createTestView);
-                updateCreateTestClassSelect(); // Cập nhật lại lớp thực tế khi mở tab
+                updateCreateTestClassSelect();
             });
             navStudents.addEventListener('click', () => {
                 setActiveTab(navStudents, studentManagerView);
@@ -2006,6 +2005,7 @@ HS003,Lê Văn C,10A1</code></pre>
                 toggleAddStudentBulk.classList.add('active');
             });
             
+            // XỬ LÝ LƯU HỌC SINH/SINH VIÊN (LƯU TRỰC TIẾP CẤP HỌC VÀO CSDL)
             createStudentForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const maHS = document.getElementById('studentCode').value.trim();
@@ -2018,7 +2018,7 @@ HS003,Lê Văn C,10A1</code></pre>
                 let lop = (levelVal === 'uni' || levelVal === 'other' || selectVal === 'manual') ? inputVal : selectVal;
 
                 if (!maHS || !hoTen || !lop) {
-                    alert("Vui lòng nhập đủ Mã HS, Họ Tên và Lớp.");
+                    alert("Vui lòng nhập đủ Mã HSSV, Họ Tên và Lớp.");
                     return;
                 }
                 createStudentMsg.style.display = 'block';
@@ -2029,15 +2029,15 @@ HS003,Lê Văn C,10A1</code></pre>
                     const doc = await docRef.get();
                     if (doc.exists) {
                         createStudentMsg.style.color = 'red';
-                        createStudentMsg.innerText = `Lỗi: Mã HS "${maHS}" đã tồn tại. Vui lòng chọn mã khác.`;
+                        createStudentMsg.innerText = `Lỗi: Mã HSSV "${maHS}" đã tồn tại. Vui lòng chọn mã khác.`;
                     } else {
-                        await docRef.set({ hoTen: hoTen, lop: lop });
+                        await docRef.set({ hoTen: hoTen, lop: lop, capHoc: levelVal });
                         createStudentMsg.style.color = 'green';
                         createStudentMsg.innerText = `Tạo thành công: ${hoTen} (Mã: ${maHS})`;
                         createStudentForm.reset();
                     }
                 } catch (error) {
-                    console.error("Lỗi tạo Mã HS: ", error);
+                    console.error("Lỗi tạo Mã HSSV: ", error);
                     createStudentMsg.style.color = 'red';
                     createStudentMsg.innerText = "Lỗi khi kết nối CSDL.";
                 }
@@ -2046,6 +2046,7 @@ HS003,Lê Văn C,10A1</code></pre>
             addBulkStudentForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const text = document.getElementById('bulkStudentsText').value.trim();
+                const defaultLevel = document.getElementById('studentLevel').value || 'uni';
                 if (!text) {
                     alert("Vui lòng nhập danh sách.");
                     return;
@@ -2064,7 +2065,7 @@ HS003,Lê Văn C,10A1</code></pre>
                         const lop = parts[2].trim();
                         if (maHS && hoTen && lop) {
                             const docRef = db.collection('hocsinh').doc(maHS);
-                            batch.set(docRef, { hoTen: hoTen, lop: lop });
+                            batch.set(docRef, { hoTen: hoTen, lop: lop, capHoc: defaultLevel });
                             addedCount++;
                         } else {
                             errorList.push(index + 1);
@@ -2074,19 +2075,19 @@ HS003,Lê Văn C,10A1</code></pre>
                     }
                 });
                 if (addedCount === 0 && errorList.length > 0) {
-                     alert(`Không thêm được học sinh nào. Lỗi định dạng ở các dòng: ${errorList.join(', ')}.\nĐịnh dạng phải là: MaHS,Ten,Lop`);
+                     alert(`Không thêm được ai. Lỗi định dạng ở các dòng: ${errorList.join(', ')}.\nĐịnh dạng phải là: MaHSSV,Ten,Lop`);
                      return;
                 }
                 try {
                     await batch.commit();
-                    let successMsg = `Đã thêm/cập nhật thành công ${addedCount} học sinh!`;
+                    let successMsg = `Đã thêm/cập nhật thành công ${addedCount} người!`;
                     if (errorList.length > 0) {
                         successMsg += `\nĐã bỏ qua ${errorList.length} dòng bị lỗi định dạng (Dòng: ${errorList.join(', ')}).`;
                     }
                     alert(successMsg);
                     addBulkStudentForm.reset();
                 } catch (error) {
-                    console.error("Lỗi thêm hàng loạt HS: ", error);
+                    console.error("Lỗi thêm hàng loạt: ", error);
                     alert("Lỗi khi lưu hàng loạt. Vui lòng thử lại.");
                 }
             });
@@ -2145,7 +2146,7 @@ HS003,Lê Văn C,10A1</code></pre>
                 if (e.target.classList.contains('detail-btn')) {
                     showSubmissionDetail(submissionId);
                 } else if (e.target.classList.contains('single-delete-btn')) { 
-                    const studentName = e.target.dataset.name || 'Học sinh này';
+                    const studentName = e.target.dataset.name || 'Học sinh/Sinh viên này';
                     deleteSubmission(submissionId, studentName);
                 }
             });
@@ -2268,10 +2269,10 @@ HS003,Lê Văn C,10A1</code></pre>
                         <input type="number" id="editTestTime" value="${data.thoiGianLamBai}" required min="1">
                         
                         <label style="color: #007bff; font-weight: bold; margin-top: 10px; display: block;">Môn học (Để phân loại):</label>
-                        <input type="text" id="editTestSubject" value="${data.monHoc || ''}" placeholder="Ví dụ: Toán, Ngữ Văn">
+                        <input type="text" id="editTestSubject" value="${data.monHoc || ''}" placeholder="Ví dụ: Lập trình Web">
 
                         <label style="color: #28a745; font-weight: bold; margin-top: 10px; display: block;">Lớp áp dụng (Để trống = Mọi lớp):</label>
-                        <input type="text" id="editTestTargetClass" value="${data.lopApDung || ''}" placeholder="Ví dụ: 10A1, 10A2">
+                        <input type="text" id="editTestTargetClass" value="${data.lopApDung || ''}" placeholder="Ví dụ: D23_TH01">
                         
                         <h3 style="margin-top: 20px;">Quản lý Thời Gian Mở/Đóng</h3>
                         <label>Thời gian BẮT ĐẦU (Mở đề):</label>
@@ -2341,14 +2342,13 @@ HS003,Lê Văn C,10A1</code></pre>
         
         async function showEditStudentModal(oldMaHS, hoTen, lop) {
             modalBackdrop.style.display = 'block';
-            modalTitle.innerText = `Chỉnh sửa HS: ${hoTen}`;
+            modalTitle.innerText = `Chỉnh sửa HS/SV: ${hoTen}`;
             modalBody.innerHTML = `
                 <form id="editStudentForm" data-old-id="${oldMaHS}">
-                    <h3 style="margin-top: 0;">Thông tin Học sinh</h3>
+                    <h3 style="margin-top: 0;">Thông tin Học sinh / Sinh viên</h3>
                     
-                    <label>Mã Học Sinh (ID Đăng nhập):</label>
+                    <label>Mã HSSV (ID Đăng nhập):</label>
                     <input type="text" id="editMaHS" value="${oldMaHS}" required>
-                    <p style="font-size: 0.9em; color: #555; margin-top: -10px;">(Cẩn thận khi thay đổi. Nếu Mã HS thay đổi, học sinh phải dùng Mã mới để đăng nhập).</p>
 
                     <label>Họ và Tên:</label>
                     <input type="text" id="editHoTen" value="${hoTen}" required>
@@ -2389,7 +2389,7 @@ HS003,Lê Văn C,10A1</code></pre>
                         const checkRef = db.collection('hocsinh').doc(newId);
                         const checkDoc = await checkRef.get();
                         if (checkDoc.exists) {
-                            msg.innerText = `Lỗi: Mã HS "${newId}" mới đã tồn tại. Vui lòng chọn mã khác.`;
+                            msg.innerText = `Lỗi: Mã HSSV "${newId}" mới đã tồn tại. Vui lòng chọn mã khác.`;
                             msg.style.color = 'red';
                             return;
                         }
@@ -2397,14 +2397,14 @@ HS003,Lê Văn C,10A1</code></pre>
                         await checkRef.set(newData);
                         await db.collection('hocsinh').doc(oldId).delete();
                         
-                        msg.innerText = 'Đã thay đổi Mã HS và cập nhật thành công!';
+                        msg.innerText = 'Đã thay đổi Mã HSSV và cập nhật thành công!';
                         msg.style.color = 'green';
                     }
                     
                     setTimeout(() => modalBackdrop.style.display = 'none', 2000);
 
                 } catch (error) {
-                    console.error("Lỗi cập nhật học sinh: ", error);
+                    console.error("Lỗi cập nhật: ", error);
                     msg.innerText = "Lỗi khi lưu. Vui lòng thử lại.";
                     msg.style.color = 'red';
                 }
@@ -2492,7 +2492,7 @@ HS003,Lê Văn C,10A1</code></pre>
                     if (userAnswer === null) {
                         const unansweredSpan = document.createElement('span');
                         unansweredSpan.className = 'review-option unanswered';
-                        unansweredSpan.innerText = '[Học sinh đã bỏ trống câu này]';
+                        unansweredSpan.innerText = '[Chưa trả lời câu này]';
                         questionDiv.appendChild(unansweredSpan);
                     }
                     
