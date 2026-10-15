@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trang Quản Trị</title>
+    <title>Trang Quản Trị - Bé Lôi System</title>
     <style>
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
@@ -28,7 +28,7 @@
             border-radius: 8px; box-sizing: border-box; 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
-        button { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.2s; }
+        button { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
         button:hover { background-color: #0056b3; }
         
         #admin-header { 
@@ -55,13 +55,53 @@
         #admin-nav button { background-color: transparent; color: #555; padding: 10px 20px; border: none; border-bottom: 4px solid transparent; font-size: 1.1em; font-weight: 600; }
         #admin-nav button.active { color: #007bff; border-bottom-color: #007bff; }
         
-        select.filter-select {
-            padding: 10px; border: 1px solid #ccc; border-radius: 8px;
-            font-family: inherit; font-size: 0.95em; flex-grow: 1;
+        /* BỘ LỌC ĐƯỢC THIẾT KẾ LẠI GỌN GÀNG ĐẸP MẮT */
+        .filter-container-custom {
+            background: #f8f9fa;
+            border: 1px solid #e3e6f0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
         }
-        .filter-row { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;}
+        .level-pills-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .level-pill-btn {
+            background: #e9ecef;
+            color: #495057;
+            border: 1px solid #ced4da;
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .level-pill-btn:hover {
+            background: #dee2e6;
+        }
+        .level-pill-btn.active {
+            background: #007bff;
+            color: #fff;
+            border-color: #007bff;
+            box-shadow: 0 2px 6px rgba(0,123,255,0.3);
+        }
+        
+        select.filter-select {
+            padding: 9px 12px; 
+            border: 1px solid #ccc; 
+            border-radius: 8px;
+            font-family: inherit; 
+            font-size: 0.95em; 
+            flex-grow: 1;
+            background-color: #fff;
+        }
+        .filter-row { display: flex; gap: 10px; flex-wrap: wrap; }
 
-        #test-manager-view { display: none; grid-template-columns: 350px 1fr; gap: 20px; }
+        #test-manager-view { display: none; grid-template-columns: 380px 1fr; gap: 20px; }
         #create-test-view { display: none; }
         
         button.add-btn { background-color: #28a745; }
@@ -70,9 +110,9 @@
         .action-btn-delete { background-color: #dc3545; color: white; padding: 5px 10px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8em; margin-left: 5px;}
         .action-btn-delete:hover { background-color: #c82333; }
         
-        .test-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; }
-        .test-list-item:hover { background-color: #f8f9fa; }
-        .test-list-item.active { background-color: #e0eaff; font-weight: bold; }
+        .test-list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; border-radius: 8px; margin-bottom: 4px; transition: background 0.15s; }
+        .test-list-item:hover { background-color: #f1f3f5; }
+        .test-list-item.active { background-color: #e0eaff; border-left: 4px solid #007bff; font-weight: bold; }
         .test-item-info span { display: block; }
         .test-item-info .time { font-size: 0.9em; color: #555; }
         .test-item-info .creator { font-size: 0.8em; color: #007bff; font-style: italic; }
@@ -237,15 +277,16 @@
         #admin-avatar-input { display: none; }
         #avatar-upload-status { font-size: 0.8em; color: #28a745; margin-top: 5px; }
 
-        .placeholder-notice {
-            text-align: center;
-            padding: 30px;
-            color: #6c757d;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border: 1px dashed #ccc;
-            font-style: italic;
+        .tag-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: bold;
+            margin-right: 4px;
         }
+        .tag-badge-old { background-color: #e2e3e5; color: #383d41; }
+        .tag-badge-level { background-color: #cce5ff; color: #004085; }
 
         @media (max-width: 900px) {
             #test-manager-view { grid-template-columns: 1fr; }
@@ -300,23 +341,29 @@
             <div class="card">
                 <h2>Danh Sách Đề Thi</h2>
                 
-                <input type="search" id="test-search-input" placeholder="Tìm tên đề, Người tạo..." style="margin-bottom: 10px;">
+                <input type="search" id="test-search-input" placeholder="🔍 Tìm nhanh tên đề thi, người tạo..." style="margin-bottom: 12px;">
                 
-                <div class="filter-row">
-                    <select id="filter-test-level" class="filter-select" onchange="updateTestClassFilterOptions()">
-                        <option value="">-- Chọn Cấp học --</option>
-                        <option value="1">Cấp 1 (Lớp 1-5)</option>
-                        <option value="2">Cấp 2 (Lớp 6-9)</option>
-                        <option value="3">Cấp 3 (Lớp 10-12)</option>
-                        <option value="uni">Đại học</option>
-                        <option value="other">Khác</option>
-                    </select>
-                    <select id="filter-test-class" class="filter-select">
-                        <option value="">-- Chọn Lớp --</option>
-                    </select>
-                    <select id="filter-test-subject" class="filter-select">
-                        <option value="">-- Tất cả Môn học --</option>
-                    </select>
+                <!-- KHU VỰC BỘ LỌC ĐƯỢC LÀM LẠI ĐẸP & TRỰC QUAN -->
+                <div class="filter-container-custom">
+                    <label style="font-weight: 600; font-size: 0.9em; color: #495057; display: block; margin-bottom: 8px;">
+                        📌 Chọn Cấp học:
+                    </label>
+                    <div class="level-pills-group" id="level-pills-container">
+                        <button type="button" class="level-pill-btn active" data-level="">Tất cả đề</button>
+                        <button type="button" class="level-pill-btn" data-level="1">Cấp 1 (1-5)</button>
+                        <button type="button" class="level-pill-btn" data-level="2">Cấp 2 (6-9)</button>
+                        <button type="button" class="level-pill-btn" data-level="3">Cấp 3 (10-12)</button>
+                        <button type="button" class="level-pill-btn" data-level="uni">Đại học/Khác</button>
+                    </div>
+
+                    <div class="filter-row">
+                        <select id="filter-test-class" class="filter-select" onchange="renderTestList()">
+                            <option value="">-- Tất cả các Lớp --</option>
+                        </select>
+                        <select id="filter-test-subject" class="filter-select" onchange="renderTestList()">
+                            <option value="">-- Tất cả Môn học --</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div id="test-batch-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px; border: 1px solid #eee;">
@@ -328,7 +375,7 @@
                 </div>
 
                 <div id="test-list">
-                    <div id="test-loading" style="display:none;">Đang tải danh sách đề...</div>
+                    <div id="test-loading">Đang tải danh sách đề...</div>
                 </div>
             </div>
 
@@ -429,7 +476,7 @@ D. Lựa chọn D
             </div>
         </div>
 
-        <!-- TAB TẠO ĐỀ THI MỚI (TÁCH RIÊNG) -->
+        <!-- TAB TẠO ĐỀ THI MỚI (TÁCH RIÊNG KHỎI QUẢN LÝ ĐỀ THI) -->
         <div id="create-test-view" class="card" style="max-width: 800px; margin: 0 auto;">
             <h2>Tạo Đề Thi Mới</h2>
             <form id="createTestForm">
@@ -640,6 +687,7 @@ HS003,Lê Văn C,10A1</code></pre>
         let allStudentsCache = [];
         let allResultsCache = [];
 
+        let selectedLevelFilter = ""; // Cấp học đang chọn
         let currentQuestionCount = 0; 
         
         try {
@@ -650,7 +698,27 @@ HS003,Lê Văn C,10A1</code></pre>
             auth = firebase.auth(); 
         } catch (e) { alert("Lỗi cấu hình Firebase!"); }
 
-        // Sinh danh sách Lớp tự động
+        // BÉ LÔI FIX: Thuật toán suy luận cấp học cho các đề thi cũ không có thuộc tính capHoc
+        function getTestCapHoc(test) {
+            if (test.capHoc) return test.capHoc;
+            
+            // Nếu không ghi lớp áp dụng -> đề dùng chung mọi cấp
+            if (!test.lopApDung || test.lopApDung.trim() === "") return "all";
+            
+            const lopUpper = test.lopApDung.toUpperCase();
+            const numbers = lopUpper.match(/\d+/g);
+            if (numbers) {
+                for (let numStr of numbers) {
+                    let num = parseInt(numStr, 10);
+                    if (num >= 1 && num <= 5) return "1";
+                    if (num >= 6 && num <= 9) return "2";
+                    if (num >= 10 && num <= 12) return "3";
+                }
+            }
+            return "other";
+        }
+
+        // Sinh danh sách Lớp tự động cho Form Tạo HS / Đề Thi
         window.updateClassSelect = function(levelId, selectId, inputId) {
             const level = document.getElementById(levelId).value;
             const select = document.getElementById(selectId);
@@ -698,47 +766,31 @@ HS003,Lê Văn C,10A1</code></pre>
             }
         };
 
-        // Hàm sinh danh sách lọc lớp trong Tab Quản Lý Đề Thi
-        window.updateTestClassFilterOptions = function() {
-            const level = document.getElementById('filter-test-level').value;
-            const select = document.getElementById('filter-test-class');
-            select.innerHTML = '<option value="">-- Tất cả các Lớp --</option>';
+        // Cập nhật các Lớp có sẵn trong danh sách Đề dựa theo Cấp học được chọn
+        function updateTestClassFilterOptions() {
+            const selectClass = document.getElementById('filter-test-class');
+            selectClass.innerHTML = '<option value="">-- Tất cả các Lớp --</option>';
 
-            if (!level) {
-                renderTestList();
-                return;
-            }
-
-            let options = [];
-            if (level === '1') {
-                for (let i = 1; i <= 5; i++) ['A', 'B', 'C', 'D', 'E', 'G'].forEach(c => options.push(`${i}${c}`));
-            } else if (level === '2') {
-                for (let i = 6; i <= 9; i++) ['A', 'B', 'C', 'D', 'E', 'G'].forEach(c => options.push(`${i}${c}`));
-            } else if (level === '3') {
-                for (let i = 1; i <= 11; i++) options.push(`10A${i}`);
-                for (let i = 1; i <= 15; i++) options.push(`11B${i}`);
-                for (let i = 1; i <= 15; i++) options.push(`12C${i}`);
-            }
-
-            // Đồng thời gom thêm các lớp thực tế từ cache
+            let options = new Set();
             allTestsCache.forEach(t => {
-                if (t.capHoc === level && t.lopApDung) {
-                    t.lopApDung.split(',').forEach(c => {
-                        const trimmed = c.trim();
-                        if (trimmed && !options.includes(trimmed)) options.push(trimmed);
-                    });
+                const testLevel = getTestCapHoc(t);
+                if (!selectedLevelFilter || testLevel === selectedLevelFilter || testLevel === "all") {
+                    if (t.lopApDung) {
+                        t.lopApDung.split(',').forEach(c => {
+                            const trimmed = c.trim();
+                            if (trimmed) options.add(trimmed);
+                        });
+                    }
                 }
             });
 
-            options.forEach(opt => {
+            [...options].sort().forEach(opt => {
                 const o = document.createElement('option');
                 o.value = opt;
                 o.text = opt;
-                select.appendChild(o);
+                selectClass.appendChild(o);
             });
-
-            renderTestList();
-        };
+        }
 
         const loginContainer = document.getElementById('login-container');
         const managementContainer = document.getElementById('management-container');
@@ -864,11 +916,24 @@ HS003,Lê Văn C,10A1</code></pre>
         
         function initializeAdminApp() {
             
-            // Khởi tạo menu chọn lớp
+            // Khởi tạo các menu dropdown chọn lớp
             updateClassSelect('studentLevel', 'studentClassSelect', 'studentClassInput');
             updateClassSelect('createTestLevel', 'createTestTargetClassSelect', 'createTestTargetClassInput');
 
-            // Logic đọc file Docx
+            // Thiết lập sự kiện click cho bộ lọc Cấp học dạng Pills
+            const pillBtns = document.querySelectorAll('.level-pill-btn');
+            pillBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    pillBtns.forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    selectedLevelFilter = e.target.dataset.level;
+                    
+                    updateTestClassFilterOptions();
+                    renderTestList();
+                });
+            });
+
+            // Logic đọc file Word (.docx)
             const docxFileInput = document.getElementById('docxFileInput');
             if (docxFileInput) {
                 docxFileInput.addEventListener('change', function(e) {
@@ -880,11 +945,11 @@ HS003,Lê Văn C,10A1</code></pre>
                         mammoth.extractRawText({arrayBuffer: arrayBuffer})
                             .then(function(result){
                                 document.getElementById('bulkQuestionsText').value = result.value;
-                                alert("Đã bóc tách chữ từ file Word thành công!\nXin hãy kiểm tra lại định dạng trước khi lưu!");
+                                alert("Đã bóc tách chữ từ file Word thành công! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧\nXin hãy kiểm tra lại định dạng trước khi lưu!");
                             })
                             .catch(function(err){
                                 console.error(err);
-                                alert("Lỗi khi đọc file Word.");
+                                alert("Lỗi khi đọc file Word (╥﹏╥)");
                             });
                     };
                     reader.readAsArrayBuffer(file);
@@ -920,7 +985,6 @@ HS003,Lê Văn C,10A1</code></pre>
             const deleteSelectedTestsBtn = document.getElementById('delete-selected-tests-btn');
             const selectedTestsCountSpan = document.getElementById('selected-tests-count');
             
-            const filterTestLevel = document.getElementById('filter-test-level');
             const filterTestClass = document.getElementById('filter-test-class');
             const filterTestSubject = document.getElementById('filter-test-subject');
             const filterStudentClass = document.getElementById('filter-student-class');
@@ -990,11 +1054,10 @@ HS003,Lê Văn C,10A1</code></pre>
                 deleteSelectedTestsBtn.style.display = selectedTestIds.size > 0 ? 'inline-block' : 'none';
             }
 
-            // RENDER DANH SÁCH ĐỀ THI (Chỉ hiển thị khi có bộ lọc Cấp/Lớp)
+            // BÉ LÔI FIX: RENDER DANH SÁCH ĐỀ THI LINHG HOẠT - TƯƠNG THÍCH 100% VỚI ĐỀ THI CŨ
             window.renderTestList = function() {
                 updateFilterDropdowns(); 
                 
-                const levelFilter = filterTestLevel.value;
                 const classFilter = filterTestClass.value.toLowerCase();
                 const subjectFilter = filterTestSubject.value.toLowerCase();
                 const query = document.getElementById('test-search-input').value.toLowerCase();
@@ -1003,23 +1066,28 @@ HS003,Lê Văn C,10A1</code></pre>
                 selectedTestIds.clear(); 
                 selectAllTestsCheckbox.checked = false;
                 updateTestBatchUI();
-
-                // ĐIỀU KIỆN MẶC ĐỊNH: Không hiển thị danh sách nếu chưa chọn Cấp/Lớp
-                if (!levelFilter && !classFilter) {
-                    testListDiv.innerHTML = '<div class="placeholder-notice">Vui lòng chọn <strong>Cấp học</strong> hoặc <strong>Lớp</strong> ở bộ lọc bên trên để hiển thị danh sách đề thi.</div>';
-                    return;
-                }
                 
                 const filteredTests = allTestsCache.filter(test => {
                     const matchQuery = test.tenDe.toLowerCase().includes(query) || (test.nguoiTao && test.nguoiTao.toLowerCase().includes(query));
-                    const matchLevel = !levelFilter || test.capHoc === levelFilter;
-                    const matchClass = classFilter === "" || (test.lopApDung && test.lopApDung.toLowerCase().includes(classFilter));
-                    const matchSubject = subjectFilter === "" || (test.monHoc && test.monHoc.toLowerCase() === subjectFilter);
+                    
+                    // Lấy cấp học (Tự động suy luận nếu là đề cũ)
+                    const testCapHoc = getTestCapHoc(test);
+                    
+                    // Đề khớp cấp học nếu: không chọn bộ lọc cấp, HOẶC cấp học trùng khớp, HOẶC đề dùng chung ("all")
+                    const matchLevel = (selectedLevelFilter === "") || (testCapHoc === selectedLevelFilter) || (testCapHoc === "all");
+                    
+                    // Đề khớp lớp nếu: không chọn lớp, HOẶC tên lớp nằm trong lớp áp dụng, HOẶC đề mở cho tất cả lớp (để trống)
+                    const matchClass = (classFilter === "") || 
+                                       (!test.lopApDung || test.lopApDung.trim() === "") || 
+                                       (test.lopApDung && test.lopApDung.toLowerCase().includes(classFilter));
+                    
+                    const matchSubject = (subjectFilter === "") || (test.monHoc && test.monHoc.toLowerCase() === subjectFilter);
+                    
                     return matchQuery && matchLevel && matchClass && matchSubject;
                 });
 
                 if (filteredTests.length === 0) { 
-                    testListDiv.innerHTML = '<div class="placeholder-notice">Không tìm thấy đề thi nào khớp với lựa chọn.</div>'; 
+                    testListDiv.innerHTML = '<p style="text-align:center; padding:20px; color:#6c757d;">Không tìm thấy đề thi nào khớp với lựa chọn.</p>'; 
                     return; 
                 }
                 
@@ -1028,11 +1096,13 @@ HS003,Lê Văn C,10A1</code></pre>
                     const item = document.createElement('div');
                     item.className = 'test-list-item';
                     
-                    let timeInfo = `<span class="time">${test.thoiGianLamBai || 'N/A'} phút</span>`;
+                    let timeInfo = `<span class="time">⏱️ ${test.thoiGianLamBai || 'N/A'} phút</span>`;
                     
                     let extraInfo = [];
                     if (test.monHoc) extraInfo.push(`Môn: ${test.monHoc}`);
                     if (test.lopApDung) extraInfo.push(`Lớp: ${test.lopApDung}`);
+                    else extraInfo.push(`Lớp: Tất cả`);
+                    
                     if (extraInfo.length > 0) {
                         timeInfo += `<span style="font-size: 0.85em; color: #28a745; margin-top: 4px;"><b>${extraInfo.join(' | ')}</b></span>`;
                     }
@@ -1043,16 +1113,25 @@ HS003,Lê Văn C,10A1</code></pre>
                         timeInfo += `<span style="font-size: 0.7em; color: #ffc107; margin-top: 5px;">Mở: ${mo} | Đóng: ${dong}</span>`;
                     }
 
+                    // Nhãn phân loại đề cũ / mới
+                    const isOldTest = !test.capHoc;
+                    const badgeHtml = isOldTest 
+                        ? `<span class="tag-badge tag-badge-old">Đề cũ</span>` 
+                        : `<span class="tag-badge tag-badge-level">Cấp ${test.capHoc}</span>`;
+
                     item.innerHTML = `
-                        <div style="flex-shrink: 0; margin-right: 15px;">
+                        <div style="flex-shrink: 0; margin-right: 12px;">
                             <input type="checkbox" class="test-row-checkbox" data-id="${testId}" style="cursor: pointer; transform: scale(1.2);">
                         </div>
                         <div class="test-item-info" style="flex-grow: 1;">
-                            <span style="font-size: 1.1em; color: #007bff; font-weight: bold;">${test.tenDe}</span>
+                            <div>
+                                ${badgeHtml}
+                                <span style="font-size: 1.05em; color: #007bff; font-weight: bold; display: inline;">${test.tenDe}</span>
+                            </div>
                             ${timeInfo}
                             <span class="creator">Tạo bởi: ${test.nguoiTao || 'Không rõ'}</span>
                         </div>
-                        <div style="display: flex; flex-direction: column; gap: 5px;"> 
+                        <div style="display: flex; flex-direction: column; gap: 5px; flex-shrink:0;"> 
                             <button class="detail-btn edit-test-btn" data-id="${testId}" data-name="${test.tenDe}">Sửa</button>
                             <button class="delete-btn single-del-test-btn" data-id="${testId}">Xóa</button>
                         </div>
@@ -1499,8 +1578,6 @@ HS003,Lê Văn C,10A1</code></pre>
             navAccount.addEventListener('click', () => setActiveTab(navAccount, accountManagerView));
             
             document.getElementById('test-search-input').addEventListener('input', renderTestList);
-            filterTestClass.addEventListener('change', renderTestList);
-            filterTestSubject.addEventListener('change', renderTestList);
             
             document.getElementById('student-search-input').addEventListener('input', renderStudentList);
             filterStudentClass.addEventListener('change', renderStudentList);
@@ -1532,7 +1609,7 @@ HS003,Lê Văn C,10A1</code></pre>
                 }
             });
 
-            // XỬ LÝ TẠO ĐỀ THI MỚI (Trích xuất lớp & Cấp học)
+            // XỬ LÝ TẠO ĐỀ THI MỚI
             createTestForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const testName = document.getElementById('testName').value;
@@ -1568,8 +1645,8 @@ HS003,Lê Văn C,10A1</code></pre>
                         chongGianLan: isAntiCheat
                     });
                     createTestForm.reset();
-                    alert("Tạo đề thi thành công!");
-                    navTests.click(); // Tự động chuyển qua tab quản lý đề
+                    alert("Tạo đề thi thành công! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧");
+                    navTests.click(); 
                 } catch (error) { console.error("Lỗi tạo đề thi: ", error); }
             });
 
@@ -1580,6 +1657,8 @@ HS003,Lê Văn C,10A1</code></pre>
                     snapshot.forEach(doc => {
                         allTestsCache.push({ id: doc.id, ...doc.data() });
                     });
+                    
+                    updateTestClassFilterOptions();
                     renderTestList(); 
                 }, error => { 
                     console.error("Lỗi tải danh sách đề: ", error); 
