@@ -38,7 +38,6 @@
             transition: all 0.3s ease-in-out;
         }
         
-        /* CỘT 1: GIỚI THIỆU */
         .intro-panel {
             background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
             color: white;
@@ -71,7 +70,6 @@
             100% { transform: scale(1); }
         }
 
-        /* CỘT 2: FORM ĐĂNG NHẬP */
         .login-container { 
             padding: 40px; 
             flex: 1;
@@ -96,7 +94,7 @@
             font-weight: 600; 
             color: var(--text-color);
         }
-        input[type="text"], input[type="password"] { /* Cập nhật loại input */
+        input[type="text"], input[type="password"] { 
             width: 100%; 
             padding: 12px; 
             border: 1px solid #ddd; 
@@ -119,15 +117,12 @@
             cursor: pointer; 
             font-size: 1.1em; 
             width: 100%;
-            /* THAY ĐỔI: Chuyển transition sang opacity */
             transition: opacity 0.2s, transform 0.1s;
             font-weight: 600;
         }
         
-        /* THAY ĐỔI: Bỏ background-color và dùng opacity */
         button:hover { 
-            /* background-color: var(--primary-hover); */ /* Xóa dòng này */
-            opacity: 0.75; /* SỬA LỖI: Mờ 25% (opacity 75%) */
+            opacity: 0.75; 
             transform: translateY(-1px);
         }
         
@@ -140,14 +135,13 @@
             display: none;
         }
         
-        /* Responsive (Mobile view) */
         @media (max-width: 650px) {
             .main-container {
                 flex-direction: column;
                 max-width: 450px;
             }
             .intro-panel {
-                order: -1; /* Đưa giới thiệu lên trên */
+                order: -1; 
                 padding: 30px 20px;
             }
             .login-container {
@@ -157,14 +151,12 @@
             .intro-icon { font-size: 3em; }
         }
     </style>
-    <!-- SDK Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
     <div class="main-container">
-        <!-- CỘT 1: GIỚI THIỆU HỆ THỐNG (đỡ trống) -->
         <div class="intro-panel">
             <span class="intro-icon">💡</span>
             <h2>Chào mừng đến với Hệ thống Kiểm tra Thầy Hải</h2>
@@ -174,7 +166,6 @@
             </div>
         </div>
 
-        <!-- CỘT 2: FORM ĐĂNG NHẬP -->
         <div class="login-container">
             <h1>ĐĂNG NHẬP</h1>
             <h4>Vui lòng nhập Mã HS và Mật khẩu để bắt đầu kiểm tra</h4>
@@ -194,7 +185,6 @@
     </div>
 
     <script>
-        // *** Dán firebaseConfig của bạn vào đây ***
         const firebaseConfig = {
           apiKey: "AIzaSyDmRq3djRZHElhC2T_EYsU7v5vrzwRyybY",
           authDomain: "webkiemtra-66cdc.firebaseapp.com",
@@ -210,43 +200,32 @@
             db = firebase.firestore();
         } catch (e) { console.error("Lỗi cấu hình Firebase:", e); }
 
-        // --- BỔ SUNG LOGIC XÓA DỮ LIỆU CŨ TRONG LOCALSTORAGE ---
         function cleanOldLoginData() {
-            // Đây là các khóa được dùng trong phương thức đăng nhập cũ (Họ Tên, Lớp)
-            // Cần xóa chúng để buộc học sinh đăng nhập lại bằng Mã HS
             localStorage.removeItem('studentName');
             localStorage.removeItem('studentClass');
-            // Giữ lại khóa 'studentCode' (hoặc xóa nếu bạn muốn reset hoàn toàn)
-            // localStorage.removeItem('studentCode'); 
-            
-            // Xóa luôn các dữ liệu liên quan đến bài thi cũ để tránh lỗi
             localStorage.removeItem('selectedTestId');
             localStorage.removeItem('selectedTestName');
             localStorage.removeItem('selectedTestTime');
             localStorage.removeItem('score');
             localStorage.removeItem('lastSubmissionId');
-            localStorage.removeItem('studentAvatar'); // Xóa cả avatar cũ
+            localStorage.removeItem('studentAvatar'); 
         }
         
-        // --- Cập nhật lại logic Tự động kiểm tra đăng nhập ---
+        // Đã sửa logic: Kiểm tra xong mới xóa dữ liệu rác
         window.onload = function() {
-            // KHỞI TẠO: Xóa tất cả dữ liệu cũ ngay khi trang tải
-            cleanOldLoginData();
-
-            // Chỉ kiểm tra đăng nhập bằng khóa mới 'studentCode' (nếu bạn quyết định lưu nó)
             const studentCode = localStorage.getItem('studentCode');
+            const studentName = localStorage.getItem('studentName');
 
-            if (studentCode && localStorage.getItem('studentName')) {
-                // Nếu Mã HS và Tên đã được lưu sau lần đăng nhập thành công gần nhất
-                // (Sau khi chạy cleanOldLoginData() thì lần đầu tiên sẽ không vào đây)
+            if (studentCode && studentName) {
                 document.body.innerHTML = '<div style="text-align: center; padding: 50px;"><h1>Đã nhận diện! Đang chuyển vào hệ thống...</h1></div>';
                 setTimeout(() => {
                     window.location.href = 'home.html';
                 }, 1000); 
+            } else {
+                cleanOldLoginData();
             }
         }
 
-        // Logic submit form
         document.getElementById('loginForm').addEventListener('submit', async function(event) {
             event.preventDefault(); 
             
@@ -269,25 +248,20 @@
             }
 
             try {
-                // Lấy thông tin học sinh từ collection 'hocsinh' bằng Mã HS (dùng ID document)
                 const docRef = db.collection("hocsinh").doc(code);
                 const doc = await docRef.get();
                 
                 if (doc.exists) {
                     const studentData = doc.data();
                     
-                    // Xóa dữ liệu cũ (làm lại một lần nữa cho chắc chắn)
                     cleanOldLoginData();
                     
-                    // Lưu thông tin học sinh vào localStorage
                     localStorage.setItem('studentName', studentData.hoTen);
                     localStorage.setItem('studentClass', studentData.lop);
-                    // *** SỬA LỖI: Lưu mã HS từ ID document (code) thay vì studentData.maHS ***
                     localStorage.setItem('studentCode', code); 
 
                     window.location.href = 'home.html';
                 } else {
-                    // Mã HS không tồn tại
                     errorElement.innerText = "Mã HS không tồn tại trong hệ thống. Vui lòng kiểm tra lại.";
                     errorElement.style.display = 'block';
                 }

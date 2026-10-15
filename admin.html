@@ -11,7 +11,6 @@
             margin: 20px; 
         }
 
-        /* *** 1. LỚP ĐĂNG NHẬP *** */
         #login-container { display: grid; place-items: center; min-height: 80vh; }
         .login-box { background: #fff; border: 1px solid #ccc; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center; width: 90%; max-width: 350px; }
         .login-box input[type="email"], .login-box input[type="password"] { 
@@ -21,7 +20,6 @@
         .login-box button { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; width: 100%; }
         #error-msg { color: red; margin-top: 10px; display: none; }
 
-        /* *** 2. LỚP QUẢN LÝ *** */
         #management-container { display: none; max-width: 1600px; margin: auto; } 
         .card { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         h2 { margin-top: 0; }
@@ -33,7 +31,6 @@
         button { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.2s; }
         button:hover { background-color: #0056b3; }
         
-        /* HEADER ADMIN */
         #admin-header { 
             display: flex; justify-content: space-between; align-items: center; 
             padding: 10px 20px; background-color: #fff; border-radius: 12px; 
@@ -54,19 +51,16 @@
         #admin-info { font-weight: 600; font-size: 1.1em; }
         #logout-btn { background-color: #dc3545; }
         
-        /* TABS */
         #admin-nav { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #ccc; flex-wrap: wrap; }
         #admin-nav button { background-color: transparent; color: #555; padding: 10px 20px; border: none; border-bottom: 4px solid transparent; font-size: 1.1em; font-weight: 600; }
         #admin-nav button.active { color: #007bff; border-bottom-color: #007bff; }
         
-        /* MỚI: SELECT BỘ LỌC */
         select.filter-select {
             padding: 10px; border: 1px solid #ccc; border-radius: 8px;
             font-family: inherit; font-size: 0.95em; flex-grow: 1;
         }
         .filter-row { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;}
 
-        /* Tab 1: Đề Thi */
         #test-manager-view { display: none; grid-template-columns: 350px 1fr; gap: 20px; }
         button.add-btn { background-color: #28a745; }
         button.delete-btn { background-color: #dc3545; font-size: 0.8em; padding: 5px 10px; }
@@ -88,7 +82,6 @@
         .question-prompt { font-weight: 600; }
         .question-answer { font-style: italic; color: #28a745; }
 
-        /* Tab 2: Kết Quả */
         #results-view { display: none; }
         #results-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         #results-table th, #results-table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
@@ -120,7 +113,6 @@
         
         pre { background-color: #f8f9fa; border: 1px solid #eee; padding: 10px; border-radius: 8px; white-space: pre-wrap; word-wrap: break-word; font-family: monospace; }
 
-        /* Tab 3: Học Sinh */
         #student-manager-view { display: none; grid-template-columns: 350px 1fr; gap: 20px; }
         
         #student-list {
@@ -172,10 +164,8 @@
             gap: 5px;
         }
         
-        /* Tab 4: Tài Khoản Admin */
         #account-manager-view { display: none; grid-template-columns: 1fr 1fr; gap: 20px; }
 
-        /* CSS cho MODAL */
         #modal-backdrop {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.5); z-index: 2000;
@@ -195,7 +185,6 @@
             cursor: pointer; border: none; background: none;
         }
         
-        /* CSS cho review */
         .review-question { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
         .review-question p { font-weight: bold; }
         .review-option { display: block; padding: 8px; border-radius: 5px; margin: 5px 0; }
@@ -217,7 +206,6 @@
             margin-bottom: 15px;
         }
 
-        /* CSS cho khu vực đổi ảnh đại diện */
         .avatar-upload-section {
             margin-bottom: 20px;
             padding: 15px;
@@ -247,7 +235,6 @@
         #admin-avatar-input { display: none; }
         #avatar-upload-status { font-size: 0.8em; color: #28a745; margin-top: 5px; }
 
-        /* Tương thích điện thoại */
         @media (max-width: 900px) {
             #test-manager-view { grid-template-columns: 1fr; }
             .options-grid { grid-template-columns: 1fr; }
@@ -263,6 +250,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <!-- BÉ LÔI FIX: Thêm thư viện Mammoth JS hỗ trợ đọc file Word -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
 </head>
 <body>
 
@@ -378,6 +367,14 @@
                 
                 <form id="addBulkQuestionForm" style="display: none;">
                     <h3>Thêm hàng loạt câu hỏi</h3>
+                    
+                    <!-- BÉ LÔI FIX: Thêm giao diện tải file DOCX -->
+                    <div style="background: #e0eaff; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed #007bff;">
+                        <label style="font-weight: bold; color: #007bff; display: block; margin-bottom: 5px;">📄 Trích xuất từ file Word (.docx):</label>
+                        <input type="file" id="docxFileInput" accept=".docx" style="display: block; width: 100%; margin-bottom: 5px;">
+                        <small style="color: #555;">Tải file lên, hệ thống sẽ tự động bóc tách chữ vào ô bên dưới.</small>
+                    </div>
+
                     <p>Dán nội dung vào đây. Mỗi câu hỏi phải theo định dạng (tối thiểu 6 dòng):</p>
                     <pre><code>Nội dung câu hỏi...
 A. Lựa chọn A
@@ -451,8 +448,20 @@ D. Lựa chọn C
                         <label>Họ và Tên Học Sinh:</label>
                         <input type="text" id="studentFullName" placeholder="Ví dụ: Nguyễn Văn A" required>
                         
+                        <!-- BÉ LÔI FIX: Thêm dropdown Cấp/Lớp tự động -->
+                        <label>Cấp học:</label>
+                        <select id="studentLevel" onchange="updateClassSelect('studentLevel', 'studentClassSelect', 'studentClassInput')" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 8px;">
+                            <option value="1">Cấp 1 (Lớp 1-5)</option>
+                            <option value="2">Cấp 2 (Lớp 6-9)</option>
+                            <option value="3" selected>Cấp 3 (Lớp 10-12)</option>
+                            <option value="uni">Đại học</option>
+                            <option value="other">Khác (Tự nhập)</option>
+                        </select>
+
                         <label>Lớp:</label>
-                        <input type="text" id="studentClass" placeholder="Ví dụ: 10A3" required>
+                        <select id="studentClassSelect" onchange="handleClassSelectChange('studentClassSelect', 'studentClassInput')" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 8px;">
+                        </select>
+                        <input type="text" id="studentClassInput" placeholder="Vui lòng nhập tên lớp..." style="display:none; margin-bottom: 10px;">
                         
                         <button type="submit" class="add-btn" style="width: 100%;">Tạo Mã Mới</button>
                     </form>
@@ -529,7 +538,7 @@ HS003,Lê Văn C,10A1</code></pre>
                 <img id="current-admin-avatar" src="" alt="Avatar hiện tại">
                 <p style="font-size: 0.9em; color: #555;">Ảnh này sẽ chỉ hiển thị cho riêng bạn.</p>
                 <label for="admin-avatar-input" class="upload-label-admin">
-                    Tải Ảnh Mới (Max 1MB)
+                    Tải Ảnh Mới (Max 200KB)
                 </label>
                 <input type="file" id="admin-avatar-input" accept="image/*">
                 <div id="avatar-upload-status"></div>
@@ -569,7 +578,6 @@ HS003,Lê Văn C,10A1</code></pre>
         </div>
     </div>
 
-
     <script>
         const firebaseConfig = {
           apiKey: "AIzaSyDmRq3djRZHElhC2T_EYsU7v5vrzwRyybY",
@@ -582,7 +590,6 @@ HS003,Lê Văn C,10A1</code></pre>
         
         const MAX_IMAGE_SIZE_KB = 500; 
 
-        // --- 1. KHỞI TẠO VÀ XỬ LÝ ĐĂNG NHẬP ---
         let db; 
         let auth; 
         let selectedTestId = null; 
@@ -590,7 +597,6 @@ HS003,Lê Văn C,10A1</code></pre>
         let currentUser = null; 
         let isEditingQuestionId = null;
         
-        // --- Cache dữ liệu ---
         let allTestsCache = [];
         let allStudentsCache = [];
         let allResultsCache = [];
@@ -604,6 +610,55 @@ HS003,Lê Văn C,10A1</code></pre>
             db = firebase.firestore();
             auth = firebase.auth(); 
         } catch (e) { alert("Lỗi cấu hình Firebase!"); }
+
+        // BÉ LÔI FIX: Logic sinh lớp tự động
+        window.updateClassSelect = function(levelId, selectId, inputId) {
+            const level = document.getElementById(levelId).value;
+            const select = document.getElementById(selectId);
+            const input = document.getElementById(inputId);
+            
+            select.innerHTML = '';
+            input.style.display = 'none';
+            select.style.display = 'block';
+
+            if (level === 'uni' || level === 'other') {
+                select.style.display = 'none';
+                input.style.display = 'block';
+                input.value = '';
+                return;
+            }
+
+            let options = [];
+            if (level === '1') {
+                for (let i = 1; i <= 5; i++) ['A', 'B', 'C', 'D', 'E', 'G'].forEach(c => options.push(`${i}${c}`));
+            } else if (level === '2') {
+                for (let i = 6; i <= 9; i++) ['A', 'B', 'C', 'D', 'E', 'G'].forEach(c => options.push(`${i}${c}`));
+            } else if (level === '3') {
+                for (let i = 1; i <= 11; i++) options.push(`10A${i}`);
+                for (let i = 1; i <= 15; i++) options.push(`11B${i}`);
+                for (let i = 1; i <= 15; i++) options.push(`12C${i}`);
+            }
+            options.push("Tự nhập..."); 
+
+            options.forEach(opt => {
+                const o = document.createElement('option');
+                o.value = opt === "Tự nhập..." ? "manual" : opt;
+                o.text = opt;
+                select.appendChild(o);
+            });
+        };
+
+        window.handleClassSelectChange = function(selectId, inputId) {
+            const select = document.getElementById(selectId);
+            const input = document.getElementById(inputId);
+            if (select.value === 'manual') {
+                input.style.display = 'block';
+                input.value = '';
+            } else {
+                input.style.display = 'none';
+            }
+        };
+
 
         const loginContainer = document.getElementById('login-container');
         const managementContainer = document.getElementById('management-container');
@@ -663,8 +718,9 @@ HS003,Lê Văn C,10A1</code></pre>
             avatarInput.addEventListener('change', async function() {
                 const file = this.files[0];
                 if (file) {
-                    if (file.size > 1024 * 1024 * 1) { 
-                        statusDiv.innerText = 'Lỗi: Kích thước ảnh quá lớn (tối đa 1MB).';
+                    // BÉ LÔI FIX: Giảm giới hạn xuống 200KB tránh sập Firebase
+                    if (file.size > 200 * 1024) { 
+                        statusDiv.innerText = 'Lỗi: Kích thước ảnh quá lớn (tối đa 200KB).';
                         statusDiv.style.color = '#dc3545';
                         this.value = ''; 
                         setTimeout(() => statusDiv.innerText = '', 5000);
@@ -726,11 +782,36 @@ HS003,Lê Văn C,10A1</code></pre>
         
         let selectedSubmissionIds = new Set();
         let selectedQuestionIds = new Set();
-        let selectedTestIds = new Set(); // MỚI: Xóa hàng loạt Đề thi
+        let selectedTestIds = new Set(); 
         
         function initializeAdminApp() {
             
-            // --- KHAI BÁO BIẾN DOM ---
+            // Khởi tạo menu cấp lớp
+            updateClassSelect('studentLevel', 'studentClassSelect', 'studentClassInput');
+
+            // BÉ LÔI FIX: Logic load file Docx
+            const docxFileInput = document.getElementById('docxFileInput');
+            if (docxFileInput) {
+                docxFileInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = function(loadEvent) {
+                        const arrayBuffer = loadEvent.target.result;
+                        mammoth.extractRawText({arrayBuffer: arrayBuffer})
+                            .then(function(result){
+                                document.getElementById('bulkQuestionsText').value = result.value;
+                                alert("Đã bóc tách thành công chữ từ file Word! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧\nXin kiểm tra lại định dạng trước khi lưu!");
+                            })
+                            .catch(function(err){
+                                console.error(err);
+                                alert("Lỗi đọc file Word mất rồi ạ (╥﹏╥)");
+                            });
+                    };
+                    reader.readAsArrayBuffer(file);
+                });
+            }
+
             const navTests = document.getElementById('nav-tests');
             const navStudents = document.getElementById('nav-students');
             const navResults = document.getElementById('nav-results');
@@ -754,12 +835,10 @@ HS003,Lê Văn C,10A1</code></pre>
             const deleteSelectedQuestionsBtn = document.getElementById('delete-selected-questions-btn');
             const selectedQuestionsCountSpan = document.getElementById('selected-questions-count');
             
-            // MỚI: Tác vụ Đề thi
             const selectAllTestsCheckbox = document.getElementById('select-all-tests-checkbox');
             const deleteSelectedTestsBtn = document.getElementById('delete-selected-tests-btn');
             const selectedTestsCountSpan = document.getElementById('selected-tests-count');
             
-            // MỚI: Bộ lọc Dropdown
             const filterTestClass = document.getElementById('filter-test-class');
             const filterTestSubject = document.getElementById('filter-test-subject');
             const filterStudentClass = document.getElementById('filter-student-class');
@@ -790,8 +869,6 @@ HS003,Lê Văn C,10A1</code></pre>
             const changePasswordForm = document.getElementById('changePasswordForm');
             const changePassMsg = document.getElementById('change-pass-msg');
             
-            
-            // --- ĐỊNH NGHĨA HÀM CƠ BẢN ---
             function setActiveTab(activeNav, activeView) {
                 [navTests, navStudents, navResults, navAccount].forEach(nav => nav.classList.remove('active'));
                 [testManagerView, studentManagerView, resultsView, accountManagerView].forEach(view => view.style.display = 'none');
@@ -804,9 +881,7 @@ HS003,Lê Văn C,10A1</code></pre>
                 }
             }
             
-            // --- MỚI: HÀM CẬP NHẬT SELECT BOX TỰ ĐỘNG ---
             function updateFilterDropdowns() {
-                // 1. Lọc theo Đề thi
                 const testClasses = new Set();
                 const testSubjects = new Set();
                 allTestsCache.forEach(t => {
@@ -828,7 +903,6 @@ HS003,Lê Văn C,10A1</code></pre>
                     [...testSubjects].sort().map(s => `<option value="${s}">${s}</option>`).join('');
                 filterTestSubject.value = currentTestSub;
                 
-                // 2. Lọc theo Học sinh
                 const studentClasses = new Set();
                 allStudentsCache.forEach(hs => {
                     if (hs.lop && hs.lop.trim()) studentClasses.add(hs.lop.trim());
@@ -840,16 +914,13 @@ HS003,Lê Văn C,10A1</code></pre>
                 filterStudentClass.value = currentStudentClass;
             }
 
-
-            // --- (A) Logic cho Tab "Quản lý Đề Thi" ---
-            
             function updateTestBatchUI() {
                 selectedTestsCountSpan.innerText = selectedTestIds.size;
                 deleteSelectedTestsBtn.style.display = selectedTestIds.size > 0 ? 'inline-block' : 'none';
             }
 
             window.renderTestList = function() {
-                updateFilterDropdowns(); // Update select options first
+                updateFilterDropdowns(); 
                 
                 const query = document.getElementById('test-search-input').value.toLowerCase();
                 const classFilter = filterTestClass.value.toLowerCase();
@@ -863,7 +934,7 @@ HS003,Lê Văn C,10A1</code></pre>
                 });
 
                 testListDiv.innerHTML = ''; 
-                selectedTestIds.clear(); // Reset UI chọn khi render lại
+                selectedTestIds.clear(); 
                 selectAllTestsCheckbox.checked = false;
                 updateTestBatchUI();
 
@@ -879,7 +950,6 @@ HS003,Lê Văn C,10A1</code></pre>
                     
                     let timeInfo = `<span class="time">${test.thoiGianLamBai || 'N/A'} phút</span>`;
                     
-                    // Hiển thị Lớp và Môn
                     let extraInfo = [];
                     if (test.monHoc) extraInfo.push(`Môn: ${test.monHoc}`);
                     if (test.lopApDung) extraInfo.push(`Lớp: ${test.lopApDung}`);
@@ -893,7 +963,6 @@ HS003,Lê Văn C,10A1</code></pre>
                         timeInfo += `<span style="font-size: 0.7em; color: #ffc107; margin-top: 5px;">Mở: ${mo} | Đóng: ${dong}</span>`;
                     }
 
-                    // MỚI: Thêm checkbox cho từng đề
                     item.innerHTML = `
                         <div style="flex-shrink: 0; margin-right: 15px;">
                             <input type="checkbox" class="test-row-checkbox" data-id="${testId}" style="cursor: pointer; transform: scale(1.2);">
@@ -919,7 +988,6 @@ HS003,Lê Văn C,10A1</code></pre>
                     });
 
                     item.addEventListener('click', (e) => {
-                        // Tránh trigger chọn đề khi click vào checkbox
                         if(e.target.classList.contains('test-row-checkbox')) return;
                         
                         selectTest(testId, test.tenDe);
@@ -930,7 +998,6 @@ HS003,Lê Văn C,10A1</code></pre>
                 });
             }
             
-            // Xóa MỘT đề
             async function deleteTest(testId, testName) {
                 if (!confirm(`CẢNH BÁO:\nBạn có chắc chắn muốn XÓA TOÀN BỘ đề thi "${testName}"?`)) return;
                 try {
@@ -940,7 +1007,6 @@ HS003,Lê Văn C,10A1</code></pre>
                 } catch (error) { console.error("Lỗi xóa đề thi: ", error); }
             }
 
-            // MỚI: XÓA HÀNG LOẠT ĐỀ THI
             async function deleteSelectedTests() {
                 if (selectedTestIds.size === 0) return;
                 if (!confirm(`BẠN CÓ CHẮC CHẮN muốn XÓA TOÀN BỘ ${selectedTestIds.size} đề thi đã chọn?`)) return;
@@ -1124,9 +1190,6 @@ HS003,Lê Văn C,10A1</code></pre>
                 document.getElementById('questionImageFile').value = '';
                 addQuestionForm.reset(); 
             }
-            
-            
-            // --- (B) Logic cho Tab "Quản lý Học Sinh" ---
 
             window.loadStudentList = async function() {
                 studentListLoading.style.display = 'block';
@@ -1153,7 +1216,7 @@ HS003,Lê Văn C,10A1</code></pre>
             }
             
             window.renderStudentList = function() {
-                updateFilterDropdowns(); // Đảm bảo Dropdown luôn update
+                updateFilterDropdowns(); 
                 
                 const query = document.getElementById('student-search-input').value.toLowerCase();
                 const classFilter = filterStudentClass.value.toLowerCase();
@@ -1212,9 +1275,6 @@ HS003,Lê Văn C,10A1</code></pre>
                     alert("Lỗi khi xóa Mã HS.");
                 }
             }
-            
-            
-            // --- (C) Logic cho Tab "Xem Kết Quả" ---
 
             function updateBatchActionsUI() {
                 selectedCountSpan.innerText = selectedSubmissionIds.size;
@@ -1347,9 +1407,6 @@ HS003,Lê Văn C,10A1</code></pre>
                 }
             }
             
-
-            // --- GÁN EVENT LISTENERS ---
-            
             navTests.addEventListener('click', () => setActiveTab(navTests, testManagerView));
             navStudents.addEventListener('click', () => {
                 setActiveTab(navStudents, studentManagerView);
@@ -1360,7 +1417,6 @@ HS003,Lê Văn C,10A1</code></pre>
             });
             navAccount.addEventListener('click', () => setActiveTab(navAccount, accountManagerView));
             
-            // Listeners Filter Inputs
             document.getElementById('test-search-input').addEventListener('input', renderTestList);
             filterTestClass.addEventListener('change', renderTestList);
             filterTestSubject.addEventListener('change', renderTestList);
@@ -1370,7 +1426,6 @@ HS003,Lê Văn C,10A1</code></pre>
             
             document.getElementById('results-search-input').addEventListener('input', renderResultsList);
 
-            // Listeners cho Xóa Hàng Loạt Đề Thi
             selectAllTestsCheckbox.addEventListener('change', (e) => {
                 const isChecked = e.target.checked;
                 const checkboxes = testListDiv.querySelectorAll('.test-row-checkbox');
@@ -1396,8 +1451,6 @@ HS003,Lê Văn C,10A1</code></pre>
                 }
             });
 
-
-            // Listeners cho Tab 1: Form tạo Đề thi
             createTestForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const testName = document.getElementById('testName').value;
@@ -1406,7 +1459,6 @@ HS003,Lê Văn C,10A1</code></pre>
                 const endTime = document.getElementById('testEndTime').value;
                 const isAntiCheat = document.getElementById('testAntiCheat').checked;
                 
-                // MỚI: Lấy Môn Học và Lớp Áp Dụng
                 const testSubject = document.getElementById('testSubject').value.trim();
                 const targetClass = document.getElementById('testTargetClass').value.trim(); 
                 
@@ -1425,7 +1477,7 @@ HS003,Lê Văn C,10A1</code></pre>
                         nguoiTao: adminEmail,
                         thoiGianMo: startTime || null, 
                         thoiGianDong: endTime || null,
-                        monHoc: testSubject, // Ghi dữ liệu môn
+                        monHoc: testSubject, 
                         lopApDung: targetClass,
                         chongGianLan: isAntiCheat
                     });
@@ -1448,7 +1500,6 @@ HS003,Lê Văn C,10A1</code></pre>
                 });
             }
 
-            // Listeners menu Câu hỏi
             toggleAddSingle.addEventListener('click', () => {
                 addQuestionForm.style.display = 'block';
                 addBulkQuestionForm.style.display = 'none';
@@ -1475,7 +1526,6 @@ HS003,Lê Văn C,10A1</code></pre>
                 toggleAddComprehension.classList.add('active'); 
             });
             
-            // Form Câu hỏi
             addQuestionForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 if (!selectedTestId) return;
@@ -1727,7 +1777,6 @@ HS003,Lê Văn C,10A1</code></pre>
             });
 
 
-            // Listeners cho Tab 2: Học sinh
             toggleAddStudentSingle.addEventListener('click', () => {
                 addStudentFormContainer.style.display = 'block';
                 addBulkStudentForm.style.display = 'none';
@@ -1741,11 +1790,18 @@ HS003,Lê Văn C,10A1</code></pre>
                 toggleAddStudentBulk.classList.add('active');
             });
             
+            // BÉ LÔI FIX: Lấy lớp từ danh sách đổ xuống
             createStudentForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const maHS = document.getElementById('studentCode').value.trim();
                 const hoTen = document.getElementById('studentFullName').value.trim();
-                const lop = document.getElementById('studentClass').value.trim();
+                
+                const levelVal = document.getElementById('studentLevel').value;
+                const selectVal = document.getElementById('studentClassSelect').value;
+                const inputVal = document.getElementById('studentClassInput').value.trim();
+                
+                let lop = (levelVal === 'uni' || levelVal === 'other' || selectVal === 'manual') ? inputVal : selectVal;
+
                 if (!maHS || !hoTen || !lop) {
                     alert("Vui lòng nhập đủ Mã HS, Họ Tên và Lớp.");
                     return;
@@ -1823,7 +1879,6 @@ HS003,Lê Văn C,10A1</code></pre>
             });
 
 
-            // Listeners cho Tab 3: Kết quả
             if (!window.resultsListener) {
                 window.resultsListener = db.collection("ketqua").onSnapshot(snapshot => {
                     allResultsCache = []; 
@@ -1883,8 +1938,6 @@ HS003,Lê Văn C,10A1</code></pre>
                 }
             });
             
-            
-            // Lắng nghe thao tác Câu hỏi hàng loạt
             selectAllQuestionsCheckbox.addEventListener('change', (e) => {
                 const isChecked = e.target.checked;
                 const checkboxes = qListDiv.querySelectorAll('.question-row-checkbox');
@@ -1914,7 +1967,6 @@ HS003,Lê Văn C,10A1</code></pre>
             });
 
 
-            // --- (D) Logic cho Tab "Quản lý Tài Khoản" ---
             createAdminForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const email = document.getElementById('newAdminEmail').value;
@@ -1970,10 +2022,8 @@ HS003,Lê Văn C,10A1</code></pre>
             
             navTests.click(); 
 
-        } // --- Kết thúc hàm initializeAdminApp ---
+        } 
         
-        
-        // --- *** 3. LOGIC CHO MODAL *** ---
         const modalBackdrop = document.getElementById('modal-backdrop');
         const modalClose = document.getElementById('modal-close');
         const modalTitle = document.getElementById('modal-title');
@@ -1984,7 +2034,6 @@ HS003,Lê Văn C,10A1</code></pre>
             modalTitle.innerText = `Chỉnh sửa Đề: ${testName}`;
             modalBody.innerHTML = 'Đang tải thông tin đề...';
            
-
             try {
                 const docRef = await db.collection("dethi").doc(testId).get();
                 if (!docRef.exists) {
@@ -2060,7 +2109,7 @@ HS003,Lê Văn C,10A1</code></pre>
                             thoiGianLamBai: newTime,
                             thoiGianMo: newStartTime, 
                             thoiGianDong: newEndTime,
-                            monHoc: newTestSubject, // CẬP NHẬT MÔN
+                            monHoc: newTestSubject, 
                             lopApDung: newTargetClass,
                             chongGianLan: newAntiCheat
                         });
@@ -2094,7 +2143,7 @@ HS003,Lê Văn C,10A1</code></pre>
                     <label>Họ và Tên:</label>
                     <input type="text" id="editHoTen" value="${hoTen}" required>
                     
-                    <label>Lớp:</label>
+                    <label>Lớp (Nhập chữ):</label>
                     <input type="text" id="editLop" value="${lop}" required>
                     
                     <button type="submit" class="add-btn" style="width: 100%; margin-top: 20px;">Lưu Thay Đổi</button>
