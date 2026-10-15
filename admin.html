@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trang Quản Trị</title>
+    <title>Trang Quản Trị </title>
     <style>
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
@@ -36,18 +36,8 @@
             padding: 10px 20px; background-color: #fff; border-radius: 12px; 
             box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; 
         }
-        #admin-profile {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        #admin-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #007bff;
-        }
+        #admin-profile { display: flex; align-items: center; gap: 15px; }
+        #admin-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #007bff; }
         #admin-info { font-weight: 600; font-size: 1.1em; }
         #logout-btn { background-color: #dc3545; }
         
@@ -63,45 +53,31 @@
             padding: 15px;
             margin-bottom: 15px;
         }
-        .level-pills-group {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-bottom: 12px;
-        }
+        .level-pills-group { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
         .level-pill-btn {
-            background: #e9ecef;
-            color: #495057;
-            border: 1px solid #ced4da;
-            padding: 7px 14px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            background: #e9ecef; color: #495057; border: 1px solid #ced4da;
+            padding: 7px 14px; border-radius: 20px; font-size: 0.9em; font-weight: 600;
+            cursor: pointer; transition: all 0.2s ease;
         }
-        .level-pill-btn:hover {
-            background: #dee2e6;
-        }
+        .level-pill-btn:hover { background: #dee2e6; }
         .level-pill-btn.active {
-            background: #007bff;
-            color: #fff;
-            border-color: #007bff;
+            background: #007bff; color: #fff; border-color: #007bff;
             box-shadow: 0 2px 6px rgba(0,123,255,0.3);
         }
         
         select.filter-select {
-            padding: 9px 12px; 
-            border: 1px solid #ccc; 
-            border-radius: 8px;
-            font-family: inherit; 
-            font-size: 0.95em; 
-            flex-grow: 1;
-            background-color: #fff;
+            padding: 9px 12px; border: 1px solid #ccc; border-radius: 8px;
+            font-family: inherit; font-size: 0.95em; flex-grow: 1; background-color: #fff;
         }
         .filter-row { display: flex; gap: 10px; flex-wrap: wrap; }
 
-        #test-manager-view { display: none; grid-template-columns: 380px 1fr; gap: 20px; }
+        /* BÉ LÔI FIX: CẤU TRÚC 2 CỘT SONG SONG BÊN CẠNH NHAU */
+        #test-manager-view { 
+            display: none; 
+            grid-template-columns: 420px 1fr; 
+            gap: 20px; 
+            align-items: start;
+        }
         #create-test-view { display: none; }
         
         button.add-btn { background-color: #28a745; }
@@ -110,6 +86,13 @@
         .action-btn-delete { background-color: #dc3545; color: white; padding: 5px 10px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8em; margin-left: 5px;}
         .action-btn-delete:hover { background-color: #c82333; }
         
+        #test-list {
+            max-height: 600px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 5px;
+        }
         .test-list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; border-radius: 8px; margin-bottom: 4px; transition: background 0.15s; }
         .test-list-item:hover { background-color: #f1f3f5; }
         .test-list-item.active { background-color: #e0eaff; border-left: 4px solid #007bff; font-weight: bold; }
@@ -138,166 +121,65 @@
 
         .toggle-buttons { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
         .toggle-buttons button { 
-            flex: 1; 
-            background-color: #eee; 
-            color: #333; 
-            border: 1px solid #ccc;
-            border-bottom: 4px solid transparent;
-            font-size: 1em;
-            padding: 10px 5px;
-            min-width: 100px;
+            flex: 1; background-color: #eee; color: #333; border: 1px solid #ccc;
+            border-bottom: 4px solid transparent; font-size: 1em; padding: 10px 5px; min-width: 100px;
         }
         #admin-nav button.active, .toggle-buttons button.active { 
-            color: #007bff; 
-            border-bottom-color: #007bff; 
-            background-color: #fff;
+            color: #007bff; border-bottom-color: #007bff; background-color: #fff;
         }
         
         pre { background-color: #f8f9fa; border: 1px solid #eee; padding: 10px; border-radius: 8px; white-space: pre-wrap; word-wrap: break-word; font-family: monospace; }
 
-        #student-manager-view { display: none; grid-template-columns: 350px 1fr; gap: 20px; }
-        
-        #student-list {
-            max-height: 600px; 
-            overflow-y: auto;  
-            border: 1px solid #eee;
-            padding: 5px;
-            border-radius: 8px;
-        }
-        
-        .student-list-item { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 10px; 
-            border-bottom: 1px solid #eee; 
-        }
+        #student-manager-view { display: none; grid-template-columns: 380px 1fr; gap: 20px; }
+        #student-list { max-height: 600px; overflow-y: auto; border: 1px solid #eee; padding: 5px; border-radius: 8px; }
+        .student-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
         .student-list-item:hover { background-color: #f8f9fa; }
         
-        .student-item-info {
-            display: flex;
-            flex-direction: column; 
-            gap: 5px;
-        }
-        .student-name-class {
-            display: flex;
-            align-items: baseline; 
-            gap: 8px;
-            flex-wrap: wrap; 
-        }
-        .student-name-class .student-name {
-            font-size: 1.1em;
-            font-weight: 600;
-            color: #000;
-        }
-        .student-item-info .lopHS {
-            font-size: 1em; 
-            font-weight: 600; 
-            color: #007bff; 
-            font-style: normal; 
-        }
-        .student-item-info .maHS {
-            font-size: 1.2em; 
-            font-weight: 700; 
-            color: #dc3545; 
-        }
-        .student-item-actions {
-            display: flex;
-            gap: 5px;
-        }
+        .student-item-info { display: flex; flex-direction: column; gap: 5px; }
+        .student-name-class { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+        .student-name-class .student-name { font-size: 1.1em; font-weight: 600; color: #000; }
+        .student-item-info .lopHS { font-size: 1em; font-weight: 600; color: #007bff; font-style: normal; }
+        .student-item-info .maHS { font-size: 1.2em; font-weight: 700; color: #dc3545; }
+        .student-item-actions { display: flex; gap: 5px; }
         
         #account-manager-view { display: none; grid-template-columns: 1fr 1fr; gap: 20px; }
 
         #modal-backdrop {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); z-index: 2000;
-            display: none; 
+            background: rgba(0,0,0,0.5); z-index: 2000; display: none; 
         }
         #modal-content {
-            position: fixed; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90%; max-width: 800px;
-            max-height: 90vh; overflow-y: auto; 
-            background: #fff; padding: 25px; border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto; 
+            background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
-        #modal-close {
-            position: absolute; top: 15px; right: 20px;
-            font-size: 2em; font-weight: bold;
-            cursor: pointer; border: none; background: none;
-        }
+        #modal-close { position: absolute; top: 15px; right: 20px; font-size: 2em; font-weight: bold; cursor: pointer; border: none; background: none; }
         
         .review-question { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
         .review-question p { font-weight: bold; }
         .review-option { display: block; padding: 8px; border-radius: 5px; margin: 5px 0; }
         .review-option.correct { background-color: #d4edda; border: 1px solid #c3e6cb; font-weight: bold; }
         .review-option.wrong { background-color: #f8d7da; border: 1px solid #f5c6cb; text-decoration: line-through; }
-        .review-option.unanswered {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            color: #6c757d;
-            font-style: italic;
-            font-weight: bold;
-        }
-        .auto-submit-info-admin {
-            background-color: #fff3cd;
-            border: 1px solid #ffeeba;
-            color: #856404;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
+        .review-option.unanswered { background-color: #f8f9fa; border: 1px solid #dee2e6; color: #6c757d; font-style: italic; font-weight: bold; }
+        .auto-submit-info-admin { background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
 
-        .avatar-upload-section {
-            margin-bottom: 20px;
-            padding: 15px;
-            border-bottom: 1px solid #eee;
-            text-align: center;
-        }
-        #current-admin-avatar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #007bff;
-            margin-bottom: 10px;
-        }
-        .upload-label-admin {
-            background-color: #28a745;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9em;
-            display: inline-block;
-            margin-top: 10px;
-            transition: background-color 0.2s;
-        }
+        .avatar-upload-section { margin-bottom: 20px; padding: 15px; border-bottom: 1px solid #eee; text-align: center; }
+        #current-admin-avatar { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #007bff; margin-bottom: 10px; }
+        .upload-label-admin { background-color: #28a745; color: white; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 0.9em; display: inline-block; margin-top: 10px; transition: background-color 0.2s; }
         .upload-label-admin:hover { background-color: #218838; }
         #admin-avatar-input { display: none; }
         #avatar-upload-status { font-size: 0.8em; color: #28a745; margin-top: 5px; }
 
-        .tag-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.75em;
-            font-weight: bold;
-            margin-right: 4px;
-        }
+        .tag-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75em; font-weight: bold; margin-right: 4px; }
         .tag-badge-old { background-color: #e2e3e5; color: #383d41; }
         .tag-badge-level { background-color: #cce5ff; color: #004085; }
 
-        @media (max-width: 900px) {
+        @media (max-width: 1024px) {
             #test-manager-view { grid-template-columns: 1fr; }
             .options-grid { grid-template-columns: 1fr; }
             #student-manager-view { grid-template-columns: 1fr; }
             #account-manager-view { grid-template-columns: 1fr; }
-            #admin-profile {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 5px;
-            }
+            #admin-profile { flex-direction: column; align-items: flex-start; gap: 5px; }
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -336,19 +218,20 @@
             <button id="nav-account">Quản lý Tài Khoản</button>
         </div>
 
-        <!-- TAB QUẢN LÝ ĐỀ THI -->
+        <!-- TAB QUẢN LÝ ĐỀ THI (HỖ TRỢ HIỆN BÊN CẠNH) -->
         <div id="test-manager-view">
+            <!-- CỘT TRÁI: DANH SÁCH ĐỀ THI -->
             <div class="card">
                 <h2>Danh Sách Đề Thi</h2>
                 
                 <input type="search" id="test-search-input" placeholder="🔍 Tìm nhanh tên đề thi, người tạo..." style="margin-bottom: 12px;">
                 
-                <!-- KHU VỰC BỘ LỌC CẤP HỌC & LỚP -->
+                <!-- BỘ LỌC CẤP HỌC & LỚP & MÔN HỌC -->
                 <div class="filter-container-custom">
                     <label style="font-weight: 600; font-size: 0.9em; color: #495057; display: block; margin-bottom: 8px;">
                         📌 Chọn Cấp học:
                     </label>
-                    <div class="level-pills-group" id="level-pills-container">
+                    <div class="level-pills-group" id="test-level-pills">
                         <button type="button" class="level-pill-btn active" data-level="">Tất cả đề</button>
                         <button type="button" class="level-pill-btn" data-level="1">Cấp 1 (1-5)</button>
                         <button type="button" class="level-pill-btn" data-level="2">Cấp 2 (6-9)</button>
@@ -358,7 +241,7 @@
                     </div>
 
                     <div class="filter-row">
-                        <select id="filter-test-class" class="filter-select" onchange="renderTestList()">
+                        <select id="filter-test-class" class="filter-select" onchange="onTestClassFilterChange()">
                             <option value="">-- Tất cả các Lớp --</option>
                         </select>
                         <select id="filter-test-subject" class="filter-select" onchange="renderTestList()">
@@ -380,8 +263,9 @@
                 </div>
             </div>
 
+            <!-- CỘT PHẢI: CHI TIẾT & CÂU HỎI BÊN CẠNH -->
             <div class="card" id="question-manager">
-                 <h2 id="question-manager-title">Chọn một đề thi để thêm câu hỏi</h2>
+                 <h2 id="question-manager-title">Chọn một đề thi để xem/thêm câu hỏi</h2>
                  
                  <div class="toggle-buttons">
                     <button id="toggle-add-single" class="active">Thêm từng câu</button>
@@ -430,7 +314,7 @@ D. Lựa chọn D
 Đáp án: Lựa chọn A (hoặc A, B, C, D)
 Image: URL_Anh (Tùy chọn)</code></pre>
                     <p><strong>LƯU Ý:</strong> Các câu hỏi phải cách nhau bằng <strong>một dòng trống</strong>.</p>
-                    <textarea id="bulkQuestionsText" rows="20" style="width: 100%; font-family: monospace;"></textarea>
+                    <textarea id="bulkQuestionsText" rows="15" style="width: 100%; font-family: monospace;"></textarea>
                     <button type="submit" class="add-btn" style="width: 100%;">Lưu hàng loạt câu hỏi</button>
                  </form>
                 
@@ -457,7 +341,7 @@ B. Lựa chọn B
 C. Lựa chọn C
 D. Lựa chọn D
 Đáp án: Lựa chọn A (hoặc A, B, C, D)</code></pre>
-                    <textarea id="comprehensionBulkText" rows="15" style="width: 100%; font-family: monospace;"></textarea>
+                    <textarea id="comprehensionBulkText" rows="12" style="width: 100%; font-family: monospace;"></textarea>
                     <button type="submit" class="add-btn" style="width: 100%;">Lưu Đề Đọc-Hiểu</button>
                  </form>
 
@@ -477,7 +361,7 @@ D. Lựa chọn D
             </div>
         </div>
 
-        <!-- TAB TẠO ĐỀ THI MỚI (HỖ TRỢ CHỌN NHIỀU LỚP) -->
+        <!-- TAB TẠO ĐỀ THI MỚI -->
         <div id="create-test-view" class="card" style="max-width: 800px; margin: 0 auto;">
             <h2>Tạo Đề Thi Mới</h2>
             <form id="createTestForm">
@@ -511,9 +395,9 @@ D. Lựa chọn D
                     <option value="other">Khác</option>
                 </select>
 
-                <label style="color: #28a745; font-weight: bold; display: block;">Lớp áp dụng (Bấm menu để thêm nhiều lớp):</label>
+                <label style="color: #28a745; font-weight: bold; display: block;">Lớp áp dụng (Bấm chọn menu để thêm nhiều lớp):</label>
                 <select id="createTestTargetClassSelect" onchange="handleClassSelectChange('createTestTargetClassSelect', 'createTestTargetClassInput')" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 8px;"></select>
-                <input type="text" id="createTestTargetClassInput" placeholder="Ví dụ: D23_TH01, D23_TH02 (Để trống = Cho phép tất cả các lớp)" style="margin-bottom: 10px;">
+                <input type="text" id="createTestTargetClassInput" placeholder="Ví dụ: D23_TH01, D23_TH02 (Để trống = Cho phép tất cả)" style="margin-bottom: 10px;">
                 
                 <button type="submit" class="add-btn" style="width: 100%; margin-top: 10px;">Tạo Đề Thi Mới</button>
             </form>
@@ -581,16 +465,34 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
             </div>
         </div>
 
-        <!-- TAB KẾT QUẢ -->
+        <!-- TAB KẾT QUẢ (YÊU CẦU LỌC CẤP & LỚP MỚI HIỂN THỊ) -->
         <div id="results-view" class="card">
-            <h2>Danh sách Kết Quả</h2>
+            <h2>Danh sách Kết Quả Kiểm Tra</h2>
             
-            <label for="results-search-input" style="font-weight: 600;">Lọc Kết Quả:</label>
-            <input type="search" id="results-search-input" placeholder="Lọc theo Tên HS/SV, Lớp, Tên đề thi..." style="margin-bottom: 15px;">
+            <div class="filter-container-custom">
+                <label style="font-weight: 600; font-size: 0.9em; color: #495057; display: block; margin-bottom: 8px;">
+                    📌 Bước 1: Chọn Cấp học:
+                </label>
+                <div class="level-pills-group" id="results-level-pills">
+                    <button type="button" class="level-pill-btn active" data-level="">-- Chưa chọn --</button>
+                    <button type="button" class="level-pill-btn" data-level="1">Cấp 1 (1-5)</button>
+                    <button type="button" class="level-pill-btn" data-level="2">Cấp 2 (6-9)</button>
+                    <button type="button" class="level-pill-btn" data-level="3">Cấp 3 (10-12)</button>
+                    <button type="button" class="level-pill-btn" data-level="uni">Đại học</button>
+                    <button type="button" class="level-pill-btn" data-level="other">Khác</button>
+                </div>
+
+                <div class="filter-row">
+                    <select id="filter-results-class" class="filter-select" onchange="renderResultsList()">
+                        <option value="">-- Bước 2: Chọn Lớp --</option>
+                    </select>
+                    <input type="search" id="results-search-input" placeholder="🔍 Tìm theo Tên HS/SV, Tên đề thi..." style="flex-grow: 2; margin-bottom: 0;">
+                </div>
+            </div>
             
             <div id="batch-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-top: 1px solid #eee; padding-top: 15px;">
-                <p style="display: flex; align-items: center; gap: 15px;">
-                    <span>Tổng số bài nộp: <strong id="results-count">0</strong></span>
+                <p style="display: flex; align-items: center; gap: 15px; margin: 0;">
+                    <span>Số bài nộp tìm thấy: <strong id="results-count">0</strong></span>
                     <span>
                         <input type="checkbox" id="select-all-checkbox" style="margin-right: 5px;">
                         <label for="select-all-checkbox" style="cursor: pointer;">Chọn tất cả</label>
@@ -614,7 +516,13 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                             <th>Hành động</th> 
                         </tr>
                     </thead>
-                    <tbody id="results-table-body"></tbody>
+                    <tbody id="results-table-body">
+                        <tr>
+                            <td colspan="9" style="text-align: center; padding: 30px; color: #6c757d; font-weight: 500;">
+                                📌 Vui lòng chọn <b>Cấp học</b> và <b>Lớp</b> ở trên để xem danh sách kết quả kiểm tra ạ!
+                            </td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -689,7 +597,8 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
         let allStudentsCache = [];
         let allResultsCache = [];
 
-        let selectedLevelFilter = ""; 
+        let selectedTestLevelFilter = ""; 
+        let selectedResultsLevelFilter = "";
         let currentQuestionCount = 0; 
         
         try {
@@ -700,13 +609,11 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
             auth = firebase.auth(); 
         } catch (e) { alert("Lỗi cấu hình Firebase!"); }
 
-        // BÉ LÔI FIX: Thuật toán nhận diện Cấp học chuẩn xác
         function getStudentCapHoc(student) {
             if (student.capHoc) return student.capHoc;
             if (!student.lop) return "other";
             
             const lopStr = student.lop.trim();
-            // Match các lớp Cấp 1, 2, 3 phổ thông (VD: 10A1, 12C3, 6B, 1A)
             const k12Match = lopStr.match(/^([1-9]|1[0-2])([A-Za-z])/);
             if (k12Match) {
                 const num = parseInt(k12Match[1], 10);
@@ -714,7 +621,7 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                 if (num >= 6 && num <= 9) return "2";
                 if (num >= 10 && num <= 12) return "3";
             }
-            return "uni"; // Các lớp mã Đại học/Cao đẳng (D23_TH01, K47_CNTT...)
+            return "uni"; 
         }
 
         function getTestCapHoc(test) {
@@ -732,14 +639,13 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
             return "uni";
         }
 
-        // BÉ LÔI FIX: Cập nhật danh sách Lớp thực tế vào Tab "Tạo Đề Thi Mới"
         window.updateCreateTestClassSelect = function() {
             const level = document.getElementById('createTestLevel').value;
             const select = document.getElementById('createTestTargetClassSelect');
             const input = document.getElementById('createTestTargetClassInput');
 
             select.innerHTML = '';
-            input.style.display = 'block'; // Luôn giữ ô input hiển thị để quản lý chuỗi lớp
+            input.style.display = 'block';
 
             let realClasses = new Set();
             allStudentsCache.forEach(student => {
@@ -758,7 +664,7 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
             const defaultOpt = document.createElement('option');
             defaultOpt.value = "";
             defaultOpt.text = sortedClasses.length > 0 
-                ? `-- Bấm để chọn & thêm Lớp vào danh sách (${sortedClasses.length} lớp) --` 
+                ? `-- Bấm chọn để thêm Lớp vào danh sách (${sortedClasses.length} lớp) --` 
                 : "-- Chưa có học sinh/sinh viên thuộc cấp này trong CSDL --";
             select.appendChild(defaultOpt);
 
@@ -775,7 +681,6 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
             select.appendChild(manualOpt);
         };
 
-        // Sinh danh sách Lớp mẫu tự động khi THÊM HỌC SINH/SINH VIÊN MỚI
         window.updateClassSelect = function(levelId, selectId, inputId) {
             const level = document.getElementById(levelId).value;
             const select = document.getElementById(selectId);
@@ -812,14 +717,12 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
             });
         };
 
-        // BÉ LÔI FIX: Hỗ trợ chọn nhiều lớp tự động nối thêm dấu phẩy
         window.handleClassSelectChange = function(selectId, inputId) {
             const select = document.getElementById(selectId);
             const input = document.getElementById(inputId);
             const val = select.value;
 
             if (!val) return;
-
             input.style.display = 'block';
 
             if (val === 'manual') {
@@ -828,38 +731,101 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                 let currentVal = input.value.trim();
                 let classes = currentVal ? currentVal.split(',').map(c => c.trim()).filter(Boolean) : [];
 
-                // Nếu chưa có trong danh sách thì tự động nối thêm vào
                 if (!classes.includes(val)) {
                     classes.push(val);
                 }
 
-                input.value = classes.join(', '); // Nối danh sách lớp bằng dấu phẩy
-                select.value = ""; // Reset dropdown về trạng thái ban đầu
+                input.value = classes.join(', ');
+                select.value = ""; 
             }
         };
 
-        // Cập nhật các Lớp thực tế vào Bộ lọc danh sách Đề thi
-        function updateTestClassFilterOptions() {
+        // BÉ LÔI FIX: PHÂN LOẠI MÔN HỌC CHÍNH XÁC THEO LỚP ĐƯỢC CHỌN
+        function updateTestClassAndSubjectOptions() {
             const selectClass = document.getElementById('filter-test-class');
-            selectClass.innerHTML = '<option value="">-- Tất cả các Lớp --</option>';
+            const selectSubject = document.getElementById('filter-test-subject');
+            
+            const currentSelectedClass = selectClass.value;
+            const currentSelectedSubject = selectSubject.value;
 
-            let options = new Set();
+            // 1. Cập nhật danh sách Lớp theo Cấp học
+            selectClass.innerHTML = '<option value="">-- Tất cả các Lớp --</option>';
+            let availableClasses = new Set();
+            
             allTestsCache.forEach(t => {
                 const testLevel = getTestCapHoc(t);
-                if (!selectedLevelFilter || testLevel === selectedLevelFilter || testLevel === "all") {
+                if (!selectedTestLevelFilter || testLevel === selectedTestLevelFilter || testLevel === "all") {
                     if (t.lopApDung) {
                         t.lopApDung.split(',').forEach(c => {
                             const trimmed = c.trim();
-                            if (trimmed) options.add(trimmed);
+                            if (trimmed) availableClasses.add(trimmed);
                         });
                     }
                 }
             });
 
-            [...options].sort().forEach(opt => {
+            [...availableClasses].sort().forEach(cls => {
                 const o = document.createElement('option');
-                o.value = opt;
-                o.text = opt;
+                o.value = cls;
+                o.text = cls;
+                selectClass.appendChild(o);
+            });
+            selectClass.value = currentSelectedClass;
+
+            // 2. Cập nhật danh sách Môn học - RÀNG BUỘC THEO LỚP HOẶC CẤP HỌC ĐƯỢC CHỌN
+            selectSubject.innerHTML = '<option value="">-- Tất cả Môn học --</option>';
+            let availableSubjects = new Set();
+
+            const selectedClassVal = selectClass.value.toLowerCase();
+
+            allTestsCache.forEach(t => {
+                const testLevel = getTestCapHoc(t);
+                const matchLevel = !selectedTestLevelFilter || testLevel === selectedTestLevelFilter || testLevel === "all";
+                
+                let matchClass = !selectedClassVal;
+                if (selectedClassVal && t.lopApDung) {
+                    const targetClasses = t.lopApDung.split(',').map(c => c.trim().toLowerCase());
+                    matchClass = targetClasses.includes(selectedClassVal);
+                }
+
+                if (matchLevel && matchClass && t.monHoc && t.monHoc.trim()) {
+                    availableSubjects.add(t.monHoc.trim());
+                }
+            });
+
+            [...availableSubjects].sort().forEach(sub => {
+                const o = document.createElement('option');
+                o.value = sub;
+                o.text = sub;
+                selectSubject.appendChild(o);
+            });
+            selectSubject.value = availableSubjects.has(currentSelectedSubject) ? currentSelectedSubject : "";
+        }
+
+        window.onTestClassFilterChange = function() {
+            updateTestClassAndSubjectOptions();
+            renderTestList();
+        };
+
+        // BÉ LÔI FIX: CẬP NHẬT LỚP CHO TAB KẾT QUẢ THEO CẤP HỌC
+        function updateResultsClassOptions() {
+            const selectClass = document.getElementById('filter-results-class');
+            selectClass.innerHTML = '<option value="">-- Bước 2: Chọn Lớp --</option>';
+
+            if (!selectedResultsLevelFilter) return;
+
+            let availableClasses = new Set();
+            allStudentsCache.forEach(hs => {
+                const hsLevel = getStudentCapHoc(hs);
+                if (hsLevel === selectedResultsLevelFilter && hs.lop && hs.lop.trim()) {
+                    availableClasses.add(hs.lop.trim());
+                }
+            });
+
+            [...availableClasses].sort().forEach(cls => {
+                const o = document.createElement('option');
+                o.value = cls;
+                o.text = `Lớp ${cls}`;
                 selectClass.appendChild(o);
             });
         }
@@ -990,7 +956,6 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
             
             updateClassSelect('studentLevel', 'studentClassSelect', 'studentClassInput');
             
-            // LẮNG NGHE DỮ LIỆU HỌC SINH/SINH VIÊN THỜI GIAN THỰC
             if (!window.studentsListener) {
                 window.studentsListener = db.collection('hocsinh').onSnapshot(snapshot => {
                     allStudentsCache = [];
@@ -1006,21 +971,36 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
 
                     updateCreateTestClassSelect();
                     updateFilterDropdowns();
+                    updateResultsClassOptions();
                     renderStudentList();
                 }, error => {
                     console.error("Lỗi đồng bộ dữ liệu Học sinh/Sinh viên: ", error);
                 });
             }
 
-            const pillBtns = document.querySelectorAll('.level-pill-btn');
-            pillBtns.forEach(btn => {
+            // Thiết lập sự kiện Pill Bộ Lọc cho Tab Đề Thi
+            const testPillBtns = document.querySelectorAll('#test-level-pills .level-pill-btn');
+            testPillBtns.forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    pillBtns.forEach(b => b.classList.remove('active'));
+                    testPillBtns.forEach(b => b.classList.remove('active'));
                     e.target.classList.add('active');
-                    selectedLevelFilter = e.target.dataset.level;
+                    selectedTestLevelFilter = e.target.dataset.level;
                     
-                    updateTestClassFilterOptions();
+                    updateTestClassAndSubjectOptions();
                     renderTestList();
+                });
+            });
+
+            // BÉ LÔI FIX: Thiết lập sự kiện Pill Bộ Lọc cho Tab Xem Kết Quả
+            const resultsPillBtns = document.querySelectorAll('#results-level-pills .level-pill-btn');
+            resultsPillBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    resultsPillBtns.forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    selectedResultsLevelFilter = e.target.dataset.level;
+                    
+                    updateResultsClassOptions();
+                    renderResultsList();
                 });
             });
 
@@ -1118,16 +1098,6 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
             }
             
             function updateFilterDropdowns() {
-                const testSubjects = new Set();
-                allTestsCache.forEach(t => {
-                    if (t.monHoc && t.monHoc.trim()) testSubjects.add(t.monHoc.trim());
-                });
-                
-                const currentTestSub = filterTestSubject.value;
-                filterTestSubject.innerHTML = '<option value="">-- Tất cả Môn học --</option>' + 
-                    [...testSubjects].sort().map(s => `<option value="${s}">${s}</option>`).join('');
-                filterTestSubject.value = currentTestSub;
-                
                 const studentClasses = new Set();
                 allStudentsCache.forEach(hs => {
                     if (hs.lop && hs.lop.trim()) studentClasses.add(hs.lop.trim());
@@ -1137,6 +1107,8 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                 filterStudentClass.innerHTML = '<option value="">-- Tất cả các Lớp --</option>' + 
                     [...studentClasses].sort().map(c => `<option value="${c}">${c}</option>`).join('');
                 filterStudentClass.value = currentStudentClass;
+
+                updateTestClassAndSubjectOptions();
             }
 
             function updateTestBatchUI() {
@@ -1144,10 +1116,8 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                 deleteSelectedTestsBtn.style.display = selectedTestIds.size > 0 ? 'inline-block' : 'none';
             }
 
-            // RENDER DANH SÁCH ĐỀ THI LINH HOẠT (HỖ TRỢ ĐỀ NHIỀU LỚP)
+            // RENDER DANH SÁCH ĐỀ THI (LỌC THEO CẤP - LỚP - MÔN)
             window.renderTestList = function() {
-                updateFilterDropdowns(); 
-                
                 const classFilter = filterTestClass.value.toLowerCase();
                 const subjectFilter = filterTestSubject.value.toLowerCase();
                 const query = document.getElementById('test-search-input').value.toLowerCase();
@@ -1161,9 +1131,8 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                     const matchQuery = test.tenDe.toLowerCase().includes(query) || (test.nguoiTao && test.nguoiTao.toLowerCase().includes(query));
                     const testCapHoc = getTestCapHoc(test);
                     
-                    const matchLevel = (selectedLevelFilter === "") || (testCapHoc === selectedLevelFilter) || (testCapHoc === "all");
+                    const matchLevel = (selectedTestLevelFilter === "") || (testCapHoc === selectedTestLevelFilter) || (testCapHoc === "all");
                     
-                    // BÉ LÔI FIX: Lọc theo lớp hỗ trợ đề áp dụng nhiều lớp (tách dấu phẩy)
                     let matchClass = (classFilter === "") || (!test.lopApDung || test.lopApDung.trim() === "");
                     if (!matchClass && test.lopApDung) {
                         const targetClasses = test.lopApDung.split(',').map(c => c.trim().toLowerCase());
@@ -1184,9 +1153,9 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                     const testId = test.id;
                     const item = document.createElement('div');
                     item.className = 'test-list-item';
+                    if (selectedTestId === testId) item.classList.add('active');
                     
                     let timeInfo = `<span class="time">⏱️ ${test.thoiGianLamBai || 'N/A'} phút</span>`;
-                    
                     let extraInfo = [];
                     if (test.monHoc) extraInfo.push(`Môn: ${test.monHoc}`);
                     if (test.lopApDung) extraInfo.push(`Lớp: ${test.lopApDung}`);
@@ -1194,12 +1163,6 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                     
                     if (extraInfo.length > 0) {
                         timeInfo += `<span style="font-size: 0.85em; color: #28a745; margin-top: 4px;"><b>${extraInfo.join(' | ')}</b></span>`;
-                    }
-                    
-                    if (test.thoiGianMo || test.thoiGianDong) {
-                        const mo = test.thoiGianMo ? new Date(test.thoiGianMo).toLocaleString('vi-VN') : 'Không giới hạn';
-                        const dong = test.thoiGianDong ? new Date(test.thoiGianDong).toLocaleString('vi-VN') : 'Không giới hạn';
-                        timeInfo += `<span style="font-size: 0.7em; color: #ffc107; margin-top: 5px;">Mở: ${mo} | Đóng: ${dong}</span>`;
                     }
 
                     const isOldTest = !test.capHoc;
@@ -1288,7 +1251,7 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
             function selectTest(testId, testName) {
                 selectedTestId = testId; 
                 qManagerDiv.style.display = 'block';
-                qManagerTitle.innerText = `Câu hỏi cho đề: ${testName}`;
+                qManagerTitle.innerText = `Cụm câu hỏi cho đề: ${testName}`;
                 toggleAddSingle.click(); 
                 qListContainer.style.display = 'block';
                 loadQuestionList(testId);
@@ -1305,7 +1268,6 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                 
                 questionListener = db.collection("dethi").doc(testId).collection("cauhoi")
                     .onSnapshot(snapshot => { 
-                        
                         let allQuestions = [];
                         snapshot.forEach(doc => {
                             let qData = doc.data();
@@ -1353,7 +1315,6 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                                     ${passageHtml}
                                     <div class="question-prompt">${count++}. ${q.prompt}</div>
                                     <div class="question-answer">Đáp án: ${q.answer}</div>
-                                    <div style="font-size: 0.7em; color: #999;">Index: ${q.index !== undefined && q.index !== null ? q.index : 'N/A (Cũ)'}</div>
                                 </div>
                                 <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 5px;">
                                     <button class="detail-btn edit-question-btn" data-id="${qId}">Sửa</button>
@@ -1406,26 +1367,10 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                     document.getElementById('opt4').value = q.options[3];
                     document.getElementById('answer').value = q.answer;
                     
-                    if(q.comprehensionText) {
-                        alert("Lưu ý: Đây là câu hỏi Đọc-Hiểu. Bạn chỉ có thể sửa nội dung câu hỏi/đáp án. Để sửa đoạn văn chung, vui lòng xóa và tạo lại cụm câu hỏi.");
-                    }
-                    
                     const isBase64 = q.imageUrl && q.imageUrl.startsWith('data:image');
                     document.getElementById('questionImageUrl').value = isBase64 ? '' : q.imageUrl || '';
-                    const statusDiv = document.getElementById('image-upload-status');
-                    if (isBase64) {
-                        statusDiv.innerText = 'LƯU Ý: Câu hỏi đang có ảnh Base64. Nếu muốn thay đổi, vui lòng tải ảnh mới từ tệp.';
-                        statusDiv.style.color = '#ffc107';
-                    } else if (q.imageUrl) {
-                        statusDiv.innerText = 'Bạn đang chỉnh sửa câu hỏi. Ảnh hiện tại là URL.';
-                        statusDiv.style.color = 'blue';
-                    } else {
-                        statusDiv.innerText = 'Bạn đang chỉnh sửa câu hỏi. Tải ảnh mới sẽ thay thế ảnh cũ.';
-                        statusDiv.style.color = 'blue';
-                    }
                 } catch (error) {
-                    console.error("Lỗi tải câu hỏi để sửa: ", error);
-                    alert("Lỗi tải câu hỏi.");
+                    console.error("Lỗi tải câu hỏi: ", error);
                     resetQuestionFormState();
                 }
             }
@@ -1493,10 +1438,7 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                 if (!confirm(`Bạn có chắc muốn XÓA Mã HSSV "${maHS}" của "${hoTen}"?`)) return;
                 try {
                     await db.collection('hocsinh').doc(maHS).delete();
-                } catch (error) {
-                    console.error("Lỗi xóa Mã HSSV: ", error);
-                    alert("Lỗi khi xóa Mã HSSV.");
-                }
+                } catch (error) { console.error("Lỗi xóa Mã HSSV: ", error); }
             }
 
             function updateBatchActionsUI() {
@@ -1527,59 +1469,45 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                     alert(`Đã xóa thành công ${deleteCount} bài làm!`);
                     selectedSubmissionIds.clear();
                     selectAllCheckbox.checked = false;
-                } catch (error) {
-                    console.error("Lỗi khi xóa hàng loạt: ", error);
-                } finally {
-                    deleteSelectedBtn.disabled = false;
-                }
-            }
-            
-            async function deleteSelectedQuestions() {
-                if (selectedQuestionIds.size === 0) return;
-                if (!selectedTestId) {
-                    alert("Lỗi: Không có đề thi nào được chọn.");
-                    return;
-                }
-                if (!confirm(`BẠN CÓ CHẮC CHẮN muốn XÓA ${selectedQuestionIds.size} câu hỏi đã chọn?`)) return;
-
-                deleteSelectedQuestionsBtn.disabled = true;
-                deleteSelectedQuestionsBtn.innerText = `Đang xóa ${selectedQuestionIds.size} câu...`;
-                const batch = db.batch();
-                let deleteCount = 0;
-                
-                selectedQuestionIds.forEach(id => {
-                    const docRef = db.collection("dethi").doc(selectedTestId).collection("cauhoi").doc(id);
-                    batch.delete(docRef);
-                    deleteCount++;
-                });
-
-                try {
-                    await batch.commit();
-                    alert(`Đã xóa thành công ${selectedQuestionIds.size} câu hỏi!`);
-                } catch (error) {
-                    console.error("Lỗi khi xóa hàng loạt câu hỏi: ", error);
-                    alert("Lỗi khi xóa hàng loạt. Vui lòng thử lại.");
-                } finally {
-                    deleteSelectedQuestionsBtn.disabled = false;
-                }
+                } catch (error) { console.error("Lỗi khi xóa hàng loạt: ", error); } 
+                finally { deleteSelectedBtn.disabled = false; }
             }
 
+            // BÉ LÔI FIX: RENDER XEM KẾT QUẢ KHI VÀ CHỈ KHI ĐÃ CHỌN CẤP VÀ LỚP
             window.renderResultsList = function() {
+                const selectedClass = document.getElementById('filter-results-class').value;
                 const query = document.getElementById('results-search-input').value.toLowerCase();
                 
-                const filteredResults = allResultsCache.filter(res => 
-                    (res.hoTen && res.hoTen.toLowerCase().includes(query)) ||
-                    (res.lop && res.lop.toLowerCase().includes(query)) ||
-                    (res.tenDeThi && res.tenDeThi.toLowerCase().includes(query))
-                );
-
-                resultsCount.innerText = filteredResults.length;
                 resultsTableBody.innerHTML = '';
                 selectedSubmissionIds.clear(); 
                 selectAllCheckbox.checked = false; 
 
+                // MẶC ĐỊNH CHƯA CHỌN CẤP VÀ LỚP -> BÁO THÔNG BÁO VÀ KHÔNG HIỆN DỮ LIỆU
+                if (!selectedResultsLevelFilter || !selectedClass) {
+                    resultsCount.innerText = '0';
+                    resultsTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="9" style="text-align: center; padding: 30px; color: #6c757d; font-weight: 500;">
+                                📌 Vui lòng chọn <b>Cấp học</b> và <b>Lớp</b> ở trên để xem danh sách kết quả kiểm tra ạ!
+                            </td>
+                        </tr>
+                    `;
+                    updateBatchActionsUI(); 
+                    return;
+                }
+
+                // LỌC KẾT QUẢ THEO CẤP HỌC VÀ LỚP CHÍNH XÁC
+                const filteredResults = allResultsCache.filter(res => {
+                    const matchClass = res.lop && res.lop.toLowerCase() === selectedClass.toLowerCase();
+                    const matchQuery = (res.hoTen && res.hoTen.toLowerCase().includes(query)) ||
+                                       (res.tenDeThi && res.tenDeThi.toLowerCase().includes(query));
+                    return matchClass && matchQuery;
+                });
+
+                resultsCount.innerText = filteredResults.length;
+
                 if (filteredResults.length === 0) {
-                    resultsTableBody.innerHTML = '<tr><td colspan="9" style="text-align: center;">Không tìm thấy kết quả nào.</td></tr>';
+                    resultsTableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 20px;">Không tìm thấy bài làm nào của Lớp này.</td></tr>';
                     updateBatchActionsUI(); 
                     return;
                 }
@@ -1624,9 +1552,7 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                 if (window.confirm(`BẠN CÓ CHẮC CHẮN muốn XÓA bài làm của ${studentName}?`)) {
                     try {
                         await db.collection("ketqua").doc(submissionId).delete();
-                    } catch (error) {
-                        console.error("Lỗi khi xóa bài làm: ", error);
-                    }
+                    } catch (error) { console.error("Lỗi khi xóa bài làm: ", error); }
                 }
             }
             
@@ -1640,14 +1566,13 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
             });
             navResults.addEventListener('click', () => {
                 setActiveTab(navResults, resultsView);
+                renderResultsList(); // Mặc định báo chọn cấp/lớp
             });
             navAccount.addEventListener('click', () => setActiveTab(navAccount, accountManagerView));
             
             document.getElementById('test-search-input').addEventListener('input', renderTestList);
-            
             document.getElementById('student-search-input').addEventListener('input', renderStudentList);
             filterStudentClass.addEventListener('change', renderStudentList);
-            
             document.getElementById('results-search-input').addEventListener('input', renderResultsList);
 
             selectAllTestsCheckbox.addEventListener('change', (e) => {
@@ -1675,7 +1600,6 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                 }
             });
 
-            // XỬ LÝ TẠO ĐỀ THI MỚI (LƯU CHUỖI CÁC LỚP ÁP DỤNG)
             createTestForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const testName = document.getElementById('testName').value;
@@ -1705,7 +1629,7 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                         thoiGianDong: endTime || null,
                         monHoc: testSubject, 
                         capHoc: levelVal,
-                        lopApDung: targetClass, // Lưu toàn bộ các lớp phân cách bởi dấu phẩy
+                        lopApDung: targetClass,
                         chongGianLan: isAntiCheat
                     });
                     createTestForm.reset();
@@ -1722,7 +1646,7 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                         allTestsCache.push({ id: doc.id, ...doc.data() });
                     });
                     
-                    updateTestClassFilterOptions();
+                    updateTestClassAndSubjectOptions();
                     renderTestList(); 
                 }, error => { 
                     console.error("Lỗi tải danh sách đề: ", error); 
@@ -1780,7 +1704,6 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                     } catch (error) {
                         statusDiv.innerText = 'Lỗi mã hóa tệp ảnh.';
                         statusDiv.style.color = 'red';
-                        console.error("Lỗi mã hóa Base64: ", error);
                         return;
                     }
                 } else if (finalImageUrl === '') {
@@ -1790,7 +1713,7 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                 const options = [ document.getElementById('opt1').value, document.getElementById('opt2').value, document.getElementById('opt3').value, document.getElementById('opt4').value ];
                 const answer = document.getElementById('answer').value;
                 if (!options.includes(answer)) { 
-                    alert("Lỗi: Đáp án đúng phải là 1 trong 4 lựa chọn A, B, C, D (Gõ y hệt nội dung lựa chọn)."); 
+                    alert("Lỗi: Đáp án đúng phải là 1 trong 4 lựa chọn A, B, C, D."); 
                     return; 
                 }
                 
@@ -1807,7 +1730,7 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                     if (isEditingQuestionId) {
                         const updateData = { prompt: prompt, options: options, answer: answer, imageUrl: finalImageUrl, comprehensionText: null };
                         await db.collection("dethi").doc(selectedTestId).collection("cauhoi").doc(isEditingQuestionId).update(updateData);
-                        statusDiv.innerText = 'CẬP NHẬT câu hỏi thành công!';
+                        statusDiv.innerText = 'CẬP NHẬT thành công!';
                         statusDiv.style.color = 'green';
                     } else {
                         await db.collection("dethi").doc(selectedTestId).collection("cauhoi").add(questionData);
@@ -1816,293 +1739,65 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                     }
                     addQuestionForm.reset();
                     resetQuestionFormState(); 
-                } catch (error) { 
-                    console.error("Lỗi thêm/cập nhật câu hỏi: ", error); 
-                    alert("Lỗi khi thêm/cập nhật câu hỏi!"); 
-                    statusDiv.innerText = 'Lỗi khi lưu vào CSDL.';
-                    statusDiv.style.color = 'red';
-                }
+                } catch (error) { alert("Lỗi khi thêm/cập nhật câu hỏi!"); }
             });
-            
+
             addBulkQuestionForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 if (!selectedTestId) return;
                 const text = document.getElementById('bulkQuestionsText').value;
                 const blocks = text.split(/\n\s*\n/); 
                 let questionsToAdd = [];
-                let errorList = [];
                 for (const block of blocks) {
                     const lines = block.split('\n').map(l => l.trim()).filter(l => l !== "");
-                    if (lines.length === 0) continue; 
-                    if (lines.length < 6) { errorList.push(`Lỗi định dạng khối: "${lines[0]}..." (Không đủ 6 dòng cơ bản).`); continue; }
+                    if (lines.length < 6) continue;
                     const prompt = lines[0];
                     const options = [ lines[1].substring(lines[1].indexOf(".") + 1).trim(), lines[2].substring(lines[2].indexOf(".") + 1).trim(), lines[3].substring(lines[3].indexOf(".") + 1).trim(), lines[4].substring(lines[4].indexOf(".") + 1).trim() ];
                     const answerLine = lines[5];
                     const answerText = answerLine.substring(answerLine.indexOf(":") + 1).trim();
-                    const imageLine = lines.length > 6 && lines[6].startsWith('Image:') ? lines[6] : null;
-                    const imageUrl = imageLine ? imageLine.substring(imageLine.indexOf(":") + 1).trim() : null;
                     let finalAnswer = "";
                     if (options.includes(answerText)) { finalAnswer = answerText; }
                     else {
                         const letter = answerText.toUpperCase();
-                        if (letter === 'A' && options[0]) finalAnswer = options[0];
-                        else if (letter === 'B' && options[1]) finalAnswer = options[1];
-                        else if (letter === 'C' && options[2]) finalAnswer = options[2];
-                        else if (letter === 'D' && options[3]) finalAnswer = options[3];
-                        else { errorList.push(`Lỗi đáp án: "${answerText}" không khớp với câu hỏi "${prompt}"`); continue; }
+                        if (letter === 'A') finalAnswer = options[0];
+                        else if (letter === 'B') finalAnswer = options[1];
+                        else if (letter === 'C') finalAnswer = options[2];
+                        else if (letter === 'D') finalAnswer = options[3];
                     }
-                    questionsToAdd.push({ prompt: prompt, options: options, answer: finalAnswer, imageUrl: imageUrl, comprehensionText: null });
+                    if (finalAnswer) questionsToAdd.push({ prompt: prompt, options: options, answer: finalAnswer, imageUrl: null, comprehensionText: null });
                 }
                 if (questionsToAdd.length > 0) {
-                    try {
-                        const batch = db.batch();
-                        const collectionRef = db.collection("dethi").doc(selectedTestId).collection("cauhoi");
-                        let nextIndex = currentQuestionCount;
-                        questionsToAdd.forEach(q => { 
-                            const docRef = collectionRef.doc(); 
-                            nextIndex++;
-                            batch.set(docRef, { ...q, index: nextIndex }); 
-                        });
-                        await batch.commit();
-                        let message = `Đã thêm thành công ${questionsToAdd.length} câu hỏi!`;
-                        if (errorList.length > 0) { message += `\n\nPhát hiện ${errorList.length} lỗi (đã bỏ qua):\n- ${errorList.join('\n- ')}`; }
-                        alert(message);
-                        addBulkQuestionForm.reset();
-                    } catch (error) { console.error("Lỗi khi commit batch: ", error); alert("Lỗi khi lưu vào cơ sở dữ liệu. Vui lòng thử lại."); }
-                } else {
-                    let message = "Không thêm được câu hỏi nào.";
-                    if (errorList.length > 0) { message += `\n\nPhát hiện ${errorList.length} lỗi:\n- ${errorList.join('\n- ')}`; }
-                    alert(message);
-                }
-            });
-
-            addComprehensionForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                if (!selectedTestId) return;
-
-                const fileInput = document.getElementById('comprehensionImageFile');
-                const textInput = document.getElementById('comprehensionText');
-                const imageUrlInput = document.getElementById('comprehensionImageUrl');
-                const bulkTextInput = document.getElementById('comprehensionBulkText');
-                const statusDiv = document.getElementById('comprehension-upload-status');
-                
-                statusDiv.innerText = '';
-                
-                const text = bulkTextInput.value;
-                if (!text) {
-                    alert('Lỗi: Bạn chưa nhập danh sách câu hỏi.');
-                    return;
-                }
-
-                let finalPassageData = { imageUrl: null, comprehensionText: null };
-                let promptPrefix = "";
-                const file = fileInput.files[0];
-
-                if (file) {
-                    if (file.size > MAX_IMAGE_SIZE_KB * 1024) {
-                        statusDiv.innerText = `Lỗi: Tệp quá lớn. Max: ${MAX_IMAGE_SIZE_KB} KB.`;
-                        statusDiv.style.color = 'red';
-                        return;
-                    }
-                    try {
-                        statusDiv.innerText = 'Đang mã hóa ảnh đoạn văn...';
-                        statusDiv.style.color = 'blue';
-                        finalPassageData.imageUrl = await fileToBase64(file); 
-                        promptPrefix = "(Đọc đoạn văn trong ảnh) ";
-                        statusDiv.innerText = 'Mã hóa ảnh thành công!';
-                        statusDiv.style.color = 'green';
-                    } catch (error) {
-                        statusDiv.innerText = 'Lỗi mã hóa tệp ảnh.';
-                        statusDiv.style.color = 'red';
-                        console.error("Lỗi mã hóa Base64: ", error);
-                        return;
-                    }
-                } else if (textInput.value.trim()) {
-                    finalPassageData.comprehensionText = textInput.value.trim();
-                    promptPrefix = "(Đọc đoạn văn bản) ";
-                } else if (imageUrlInput.value.trim()) {
-                    finalPassageData.imageUrl = imageUrlInput.value.trim();
-                    promptPrefix = "(Đọc đoạn văn trong ảnh) ";
-                }
-
-                const blocks = text.split(/\n\s*\n/); 
-                let questionsToAdd = [];
-                let errorList = [];
-                
-                for (const block of blocks) {
-                    const lines = block.split('\n').map(l => l.trim()).filter(l => l !== "");
-                    if (lines.length === 0) continue; 
-                    if (lines.length < 6) { 
-                        errorList.push(`Lỗi định dạng khối: "${lines[0]}..." (Không đủ 6 dòng cơ bản).`); 
-                        continue; 
-                    }
-                    
-                    const prompt = `${promptPrefix}${lines[0]}`; 
-                    
-                    const options = [ 
-                        lines[1].substring(lines[1].indexOf(".") + 1).trim(), 
-                        lines[2].substring(lines[2].indexOf(".") + 1).trim(), 
-                        lines[3].substring(lines[3].indexOf(".") + 1).trim(), 
-                        lines[4].substring(lines[4].indexOf(".") + 1).trim() 
-                    ];
-                    
-                    const answerLine = lines[5];
-                    const answerText = answerLine.substring(answerLine.indexOf(":") + 1).trim();
-                    
-                    let finalAnswer = "";
-                    if (options.includes(answerText)) { 
-                        finalAnswer = answerText; 
-                    } else {
-                        const letter = answerText.toUpperCase();
-                        if (letter === 'A' && options[0]) finalAnswer = options[0];
-                        else if (letter === 'B' && options[1]) finalAnswer = options[1];
-                        else if (letter === 'C' && options[2]) finalAnswer = options[2];
-                        else if (letter === 'D' && options[3]) finalAnswer = options[3];
-                        else { 
-                            errorList.push(`Lỗi đáp án: "${answerText}" không khớp với câu hỏi "${lines[0]}"`); 
-                            continue; 
-                        }
-                    }
-                    
-                    questionsToAdd.push({ 
-                        prompt: prompt, 
-                        options: options, 
-                        answer: finalAnswer, 
-                        imageUrl: finalPassageData.imageUrl, 
-                        comprehensionText: finalPassageData.comprehensionText 
+                    const batch = db.batch();
+                    const collectionRef = db.collection("dethi").doc(selectedTestId).collection("cauhoi");
+                    let nextIndex = currentQuestionCount;
+                    questionsToAdd.forEach(q => { 
+                        const docRef = collectionRef.doc(); 
+                        nextIndex++;
+                        batch.set(docRef, { ...q, index: nextIndex }); 
                     });
-                }
-                
-                if (questionsToAdd.length > 0) {
-                    try {
-                        const batch = db.batch();
-                        const collectionRef = db.collection("dethi").doc(selectedTestId).collection("cauhoi");
-                        let nextIndex = currentQuestionCount;
-                        questionsToAdd.forEach(q => { 
-                            const docRef = collectionRef.doc(); 
-                            nextIndex++;
-                            batch.set(docRef, { ...q, index: nextIndex }); 
-                        });
-                        
-                        await batch.commit();
-                        
-                        let message = `Đã thêm thành công ${questionsToAdd.length} câu hỏi đọc-hiểu!`;
-                        if (errorList.length > 0) { 
-                            message += `\n\nPhát hiện ${errorList.length} lỗi (đã bỏ qua):\n- ${errorList.join('\n- ')}`; 
-                        }
-                        alert(message);
-                        addComprehensionForm.reset();
-                        statusDiv.innerText = '';
-                    } catch (error) { 
-                        console.error("Lỗi khi commit batch đọc-hiểu: ", error); 
-                        alert("Lỗi khi lưu vào cơ sở dữ liệu. Vui lòng thử lại."); 
-                    }
-                } else {
-                    let message = "Không thêm được câu hỏi nào.";
-                    if (errorList.length > 0) { 
-                        message += `\n\nPhát hiện ${errorList.length} lỗi:\n- ${errorList.join('\n- ')}`; 
-                    }
-                    alert(message);
+                    await batch.commit();
+                    alert(`Đã thêm thành công ${questionsToAdd.length} câu hỏi!`);
+                    addBulkQuestionForm.reset();
                 }
             });
 
-            toggleAddStudentSingle.addEventListener('click', () => {
-                addStudentFormContainer.style.display = 'block';
-                addBulkStudentForm.style.display = 'none';
-                toggleAddStudentSingle.classList.add('active');
-                toggleAddStudentBulk.classList.remove('active');
-            });
-            toggleAddStudentBulk.addEventListener('click', () => {
-                addStudentFormContainer.style.display = 'none';
-                addBulkStudentForm.style.display = 'block';
-                toggleAddStudentSingle.classList.remove('active');
-                toggleAddStudentBulk.classList.add('active');
-            });
-            
             createStudentForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const maHS = document.getElementById('studentCode').value.trim();
                 const hoTen = document.getElementById('studentFullName').value.trim();
-                
                 const levelVal = document.getElementById('studentLevel').value;
                 const selectVal = document.getElementById('studentClassSelect').value;
                 const inputVal = document.getElementById('studentClassInput').value.trim();
                 
                 let lop = (levelVal === 'uni' || levelVal === 'other' || selectVal === 'manual') ? inputVal : selectVal;
 
-                if (!maHS || !hoTen || !lop) {
-                    alert("Vui lòng nhập đủ Mã HSSV, Họ Tên và Lớp.");
-                    return;
-                }
-                createStudentMsg.style.display = 'block';
-                createStudentMsg.style.color = 'blue';
-                createStudentMsg.innerText = 'Đang kiểm tra và tạo...';
+                if (!maHS || !hoTen || !lop) return;
                 try {
                     const docRef = db.collection('hocsinh').doc(maHS);
-                    const doc = await docRef.get();
-                    if (doc.exists) {
-                        createStudentMsg.style.color = 'red';
-                        createStudentMsg.innerText = `Lỗi: Mã HSSV "${maHS}" đã tồn tại. Vui lòng chọn mã khác.`;
-                    } else {
-                        await docRef.set({ hoTen: hoTen, lop: lop, capHoc: levelVal });
-                        createStudentMsg.style.color = 'green';
-                        createStudentMsg.innerText = `Tạo thành công: ${hoTen} (Mã: ${maHS})`;
-                        createStudentForm.reset();
-                    }
-                } catch (error) {
-                    console.error("Lỗi tạo Mã HSSV: ", error);
-                    createStudentMsg.style.color = 'red';
-                    createStudentMsg.innerText = "Lỗi khi kết nối CSDL.";
-                }
-            });
-            
-            addBulkStudentForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const text = document.getElementById('bulkStudentsText').value.trim();
-                const defaultLevel = document.getElementById('studentLevel').value || 'uni';
-                if (!text) {
-                    alert("Vui lòng nhập danh sách.");
-                    return;
-                }
-                const lines = text.split('\n');
-                const batch = db.batch();
-                let addedCount = 0;
-                let errorList = [];
-                lines.forEach((line, index) => {
-                    line = line.trim();
-                    if (!line) return; 
-                    const parts = line.split(',');
-                    if (parts.length === 3) {
-                        const maHS = parts[0].trim();
-                        const hoTen = parts[1].trim();
-                        const lop = parts[2].trim();
-                        if (maHS && hoTen && lop) {
-                            const docRef = db.collection('hocsinh').doc(maHS);
-                            batch.set(docRef, { hoTen: hoTen, lop: lop, capHoc: defaultLevel });
-                            addedCount++;
-                        } else {
-                            errorList.push(index + 1);
-                        }
-                    } else {
-                        errorList.push(index + 1);
-                    }
-                });
-                if (addedCount === 0 && errorList.length > 0) {
-                     alert(`Không thêm được ai. Lỗi định dạng ở các dòng: ${errorList.join(', ')}.\nĐịnh dạng phải là: MaHSSV,Ten,Lop`);
-                     return;
-                }
-                try {
-                    await batch.commit();
-                    let successMsg = `Đã thêm/cập nhật thành công ${addedCount} người!`;
-                    if (errorList.length > 0) {
-                        successMsg += `\nĐã bỏ qua ${errorList.length} dòng bị lỗi định dạng (Dòng: ${errorList.join(', ')}).`;
-                    }
-                    alert(successMsg);
-                    addBulkStudentForm.reset();
-                } catch (error) {
-                    console.error("Lỗi thêm hàng loạt: ", error);
-                    alert("Lỗi khi lưu hàng loạt. Vui lòng thử lại.");
-                }
+                    await docRef.set({ hoTen: hoTen, lop: lop, capHoc: levelVal });
+                    alert(`Tạo thành công: ${hoTen}`);
+                    createStudentForm.reset();
+                } catch (error) { console.error("Lỗi tạo Mã HSSV: ", error); }
             });
 
             if (!window.resultsListener) {
@@ -2119,9 +1814,6 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                         return timeB - timeA;
                     });
                     renderResultsList(); 
-                }, error => {
-                    console.error("Lỗi tải kết quả: ", error);
-                    resultsTableBody.innerHTML = '<tr><td colspan="9">Lỗi tải dữ liệu.</td></tr>';
                 });
             }
             
@@ -2133,24 +1825,9 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                 selectedSubmissionIds.clear();
                 checkboxes.forEach(checkbox => {
                     checkbox.checked = isChecked;
-                    if (isChecked) {
-                        selectedSubmissionIds.add(checkbox.dataset.id);
-                    }
+                    if (isChecked) selectedSubmissionIds.add(checkbox.dataset.id);
                 });
                 updateBatchActionsUI();
-            });
-
-            resultsTableBody.addEventListener('change', (e) => {
-                if (e.target.classList.contains('row-checkbox')) {
-                    const id = e.target.dataset.id;
-                    if (e.target.checked) {
-                        selectedSubmissionIds.add(id);
-                    } else {
-                        selectedSubmissionIds.delete(id);
-                        selectAllCheckbox.checked = false;
-                    }
-                    updateBatchActionsUI();
-                }
             });
 
             resultsTableBody.addEventListener('click', (e) => {
@@ -2159,96 +1836,13 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                 if (e.target.classList.contains('detail-btn')) {
                     showSubmissionDetail(submissionId);
                 } else if (e.target.classList.contains('single-delete-btn')) { 
-                    const studentName = e.target.dataset.name || 'Học sinh/Sinh viên này';
-                    deleteSubmission(submissionId, studentName);
-                }
-            });
-            
-            selectAllQuestionsCheckbox.addEventListener('change', (e) => {
-                const isChecked = e.target.checked;
-                const checkboxes = qListDiv.querySelectorAll('.question-row-checkbox');
-                selectedQuestionIds.clear(); 
-                checkboxes.forEach(checkbox => {
-                    checkbox.checked = isChecked;
-                    if (isChecked) {
-                        selectedQuestionIds.add(checkbox.dataset.id);
-                    }
-                });
-                updateQuestionBatchActionsUI();
-            });
-
-            deleteSelectedQuestionsBtn.addEventListener('click', deleteSelectedQuestions);
-
-            qListDiv.addEventListener('change', (e) => {
-                if (e.target.classList.contains('question-row-checkbox')) {
-                    const id = e.target.dataset.id;
-                    if (e.target.checked) {
-                        selectedQuestionIds.add(id);
-                    } else {
-                        selectedQuestionIds.delete(id);
-                        selectAllQuestionsCheckbox.checked = false; 
-                    }
-                    updateQuestionBatchActionsUI();
+                    deleteSubmission(submissionId, e.target.dataset.name || 'Học sinh');
                 }
             });
 
-            createAdminForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const email = document.getElementById('newAdminEmail').value;
-                const password = document.getElementById('newAdminPass').value;
-                const secondaryApp = firebase.initializeApp(firebaseConfig, "secondary");
-                secondaryApp.auth().createUserWithEmailAndPassword(email, password)
-                    .then((userCredential) => {
-                        createAdminMsg.innerText = `Tạo thành công admin: ${userCredential.user.email}`;
-                        createAdminMsg.style.color = 'green';
-                        createAdminMsg.style.display = 'block';
-                        secondaryApp.delete(); 
-                    })
-                    .catch((error) => {
-                        createAdminMsg.innerText = `Lỗi: ${error.message}`;
-                        createAdminMsg.style.color = 'red';
-                        createAdminMsg.style.display = 'block';
-                        secondaryApp.delete();
-                    });
-            });
-            
-            changePasswordForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const newPass = document.getElementById('newPass').value;
-                const confirmNewPass = document.getElementById('confirmNewPass').value;
-                if (newPass !== confirmNewPass) {
-                    changePassMsg.innerText = "Mật khẩu xác nhận không khớp!";
-                    changePassMsg.style.color = 'red';
-                    changePassMsg.style.display = 'block';
-                    return;
-                }
-                if (newPass.length < 6) {
-                    changePassMsg.innerText = "Mật khẩu phải có ít nhất 6 ký tự.";
-                    changePassMsg.style.color = 'red';
-                    changePassMsg.style.display = 'block';
-                    return;
-                }
-                currentUser.updatePassword(newPass)
-                    .then(() => {
-                        changePassMsg.innerText = "Đổi mật khẩu thành công!";
-                        changePassMsg.style.color = 'green';
-                        changePassMsg.style.display = 'block';
-                        changePasswordForm.reset();
-                    })
-                    .catch((error) => {
-                        changePassMsg.innerText = `Lỗi: ${error.message}`;
-                        if (error.code === 'auth/requires-recent-login') {
-                            changePassMsg.innerText = "Phiên đăng nhập quá cũ. Vui lòng đăng xuất và đăng nhập lại trước khi đổi mật khẩu.";
-                        }
-                        changePassMsg.style.color = 'red';
-                        changePassMsg.style.display = 'block';
-                    });
-            });
-            
             navTests.click(); 
-
         } 
-        
+
         const modalBackdrop = document.getElementById('modal-backdrop');
         const modalClose = document.getElementById('modal-close');
         const modalTitle = document.getElementById('modal-title');
@@ -2257,281 +1851,60 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
         async function showEditTestModal(testId, testName) {
             modalBackdrop.style.display = 'block';
             modalTitle.innerText = `Chỉnh sửa Đề: ${testName}`;
-            modalBody.innerHTML = 'Đang tải thông tin đề...';
-           
             try {
                 const docRef = await db.collection("dethi").doc(testId).get();
-                if (!docRef.exists) {
-                    modalBody.innerHTML = "Lỗi: Không tìm thấy đề thi.";
-                    return;
-                }
+                if (!docRef.exists) return;
                 const data = docRef.data();
-                const isCheatChecked = (data.chongGianLan !== false) ? 'checked' : '';
-
-                const toDateTimeLocal = (isoString) => {
-                    if (!isoString) return '';
-                    return isoString.substring(0, 16); 
-                };
 
                 modalBody.innerHTML = `
                     <form id="editTestForm" data-id="${testId}">
-                        <h3 style="margin-top: 0;">Thông tin chung</h3>
                         <label>Tên đề thi:</label>
                         <input type="text" id="editTestName" value="${data.tenDe}" required>
                         <label>Thời gian làm bài (phút):</label>
                         <input type="number" id="editTestTime" value="${data.thoiGianLamBai}" required min="1">
-                        
-                        <label style="color: #007bff; font-weight: bold; margin-top: 10px; display: block;">Môn học (Để phân loại):</label>
-                        <input type="text" id="editTestSubject" value="${data.monHoc || ''}" placeholder="Ví dụ: Lập trình Web">
-
-                        <label style="color: #28a745; font-weight: bold; margin-top: 10px; display: block;">Lớp áp dụng (Tách nhau bởi dấu phẩy, để trống = Cho phép tất cả):</label>
-                        <input type="text" id="editTestTargetClass" value="${data.lopApDung || ''}" placeholder="Ví dụ: D23_TH01, D23_TH02">
-                        
-                        <h3 style="margin-top: 20px;">Quản lý Thời Gian Mở/Đóng</h3>
-                        <label>Thời gian BẮT ĐẦU (Mở đề):</label>
-                        <input type="datetime-local" id="editTestStartTime" value="${toDateTimeLocal(data.thoiGianMo)}">
-                        <label>Thời gian KẾT THÚC (Đóng đề):</label>
-                        <input type="datetime-local" id="editTestEndTime" value="${toDateTimeLocal(data.thoiGianDong)}">
-                        
-                        <label style="color: #dc3545; font-weight: bold; margin-top: 15px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" id="editTestAntiCheat" ${isCheatChecked} style="width: 20px; height: 20px; margin: 0; cursor: pointer;">
-                        Bật tính năng chống gian lận
-                        </label>
-
-                        <button type="submit" class="add-btn" style="width: 100%; margin-top: 20px;">Lưu Thay Đổi Đề Thi</button>
-                        <p id="editTestMsg" style="color: green; margin-top: 10px; display: none;"></p>
+                        <label>Môn học:</label>
+                        <input type="text" id="editTestSubject" value="${data.monHoc || ''}">
+                        <label>Lớp áp dụng (phân cách bằng dấu phẩy):</label>
+                        <input type="text" id="editTestTargetClass" value="${data.lopApDung || ''}">
+                        <button type="submit" class="add-btn" style="width: 100%; margin-top: 20px;">Lưu Thay Đổi</button>
                     </form>
                 `;
 
                 document.getElementById('editTestForm').addEventListener('submit', async (e) => {
                     e.preventDefault();
-                    const id = e.target.dataset.id;
-                    const newName = document.getElementById('editTestName').value;
-                    const newTime = parseInt(document.getElementById('editTestTime').value);
-                    const newStartTime = document.getElementById('editTestStartTime').value || null;
-                    const newEndTime = document.getElementById('editTestEndTime').value || null;
-                    
-                    const newTestSubject = document.getElementById('editTestSubject').value.trim();
-                    const newTargetClass = document.getElementById('editTestTargetClass').value.trim(); 
-                    
-                    const msg = document.getElementById('editTestMsg');
-                    const newAntiCheat = document.getElementById('editTestAntiCheat').checked;
-                    
-                    msg.style.display = 'block';
-                    msg.innerText = 'Đang lưu...';
-                    msg.style.color = 'blue';
-
-                    if (newStartTime && newEndTime && newStartTime >= newEndTime) {
-                        msg.innerText = 'Lỗi: Thời gian BẮT ĐẦU phải trước thời gian KẾT THÚC.';
-                        msg.style.color = 'red';
-                        return;
-                    }
-
-                    try {
-                        await db.collection("dethi").doc(id).update({ 
-                            tenDe: newName, 
-                            thoiGianLamBai: newTime,
-                            thoiGianMo: newStartTime, 
-                            thoiGianDong: newEndTime,
-                            monHoc: newTestSubject, 
-                            lopApDung: newTargetClass,
-                            chongGianLan: newAntiCheat
-                        });
-                        msg.innerText = `Đã cập nhật đề thi "${newName}" thành công!`;
-                        msg.style.color = 'green';
-                        setTimeout(() => modalBackdrop.style.display = 'none', 2000);
-                    } catch (error) { 
-                        console.error("Lỗi cập nhật đề thi: ", error); 
-                        msg.innerText = "Lỗi khi cập nhật đề thi. Vui lòng thử lại.";
-                        msg.style.color = 'red';
-                    }
+                    await db.collection("dethi").doc(testId).update({ 
+                        tenDe: document.getElementById('editTestName').value, 
+                        thoiGianLamBai: parseInt(document.getElementById('editTestTime').value),
+                        monHoc: document.getElementById('editTestSubject').value.trim(), 
+                        lopApDung: document.getElementById('editTestTargetClass').value.trim()
+                    });
+                    alert("Cập nhật thành công!");
+                    modalBackdrop.style.display = 'none';
                 });
-
-            } catch (error) {
-                console.error("Lỗi tải đề thi: ", error);
-                modalBody.innerHTML = 'Lỗi khi tải dữ liệu đề thi.';
-            }
-        }
-        
-        async function showEditStudentModal(oldMaHS, hoTen, lop) {
-            modalBackdrop.style.display = 'block';
-            modalTitle.innerText = `Chỉnh sửa HS/SV: ${hoTen}`;
-            modalBody.innerHTML = `
-                <form id="editStudentForm" data-old-id="${oldMaHS}">
-                    <h3 style="margin-top: 0;">Thông tin Học sinh / Sinh viên</h3>
-                    
-                    <label>Mã HSSV (ID Đăng nhập):</label>
-                    <input type="text" id="editMaHS" value="${oldMaHS}" required>
-
-                    <label>Họ và Tên:</label>
-                    <input type="text" id="editHoTen" value="${hoTen}" required>
-                    
-                    <label>Lớp (Nhập chữ):</label>
-                    <input type="text" id="editLop" value="${lop}" required>
-                    
-                    <button type="submit" class="add-btn" style="width: 100%; margin-top: 20px;">Lưu Thay Đổi</button>
-                    <p id="editStudentMsg" style="color: green; margin-top: 10px; display: none;"></p>
-                </form>
-            `;
-
-            document.getElementById('editStudentForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const oldId = e.target.dataset.oldId;
-                const newId = document.getElementById('editMaHS').value.trim();
-                const newHoTen = document.getElementById('editHoTen').value.trim();
-                const newLop = document.getElementById('editLop').value.trim();
-                const msg = document.getElementById('editStudentMsg');
-                
-                if (!newId || !newHoTen || !newLop) {
-                    alert("Vui lòng điền đầy đủ thông tin.");
-                    return;
-                }
-
-                msg.style.display = 'block';
-                msg.innerText = 'Đang lưu...';
-                msg.style.color = 'blue';
-
-                const newData = { hoTen: newHoTen, lop: newLop };
-
-                try {
-                    if (newId === oldId) {
-                        await db.collection('hocsinh').doc(oldId).update(newData);
-                        msg.innerText = 'Cập nhật thành công!';
-                        msg.style.color = 'green';
-                    } else {
-                        const checkRef = db.collection('hocsinh').doc(newId);
-                        const checkDoc = await checkRef.get();
-                        if (checkDoc.exists) {
-                            msg.innerText = `Lỗi: Mã HSSV "${newId}" mới đã tồn tại. Vui lòng chọn mã khác.`;
-                            msg.style.color = 'red';
-                            return;
-                        }
-                        
-                        await checkRef.set(newData);
-                        await db.collection('hocsinh').doc(oldId).delete();
-                        
-                        msg.innerText = 'Đã thay đổi Mã HSSV và cập nhật thành công!';
-                        msg.style.color = 'green';
-                    }
-                    
-                    setTimeout(() => modalBackdrop.style.display = 'none', 2000);
-
-                } catch (error) {
-                    console.error("Lỗi cập nhật: ", error);
-                    msg.innerText = "Lỗi khi lưu. Vui lòng thử lại.";
-                    msg.style.color = 'red';
-                }
-            });
+            } catch (error) { console.error(error); }
         }
 
         async function showSubmissionDetail(submissionId) {
             modalBackdrop.style.display = 'block';
             modalTitle.innerText = "Chi tiết bài làm";
-            modalBody.innerHTML = 'Đang tải...';
-
             try {
                 const docRef = await db.collection("ketqua").doc(submissionId).get();
-                if (!docRef.exists) {
-                    modalBody.innerHTML = "Lỗi: Không tìm thấy bài nộp.";
-                    return;
-                }
+                if (!docRef.exists) return;
                 const data = docRef.data();
-                const questions = data.quizData;
-                const userAnswers = data.userAnswers;
-
-                if (!questions || !userAnswers) {
-                    modalBody.innerHTML = "Bài nộp này không có dữ liệu chi tiết.";
-                    return;
-                }
-
                 modalTitle.innerText = `Bài làm của: ${data.hoTen} - Lớp: ${data.lop}`;
                 modalBody.innerHTML = ''; 
 
-                if (data.nopTuDong === true && data.answeredCount !== undefined) {
-                    const autoSubmitInfo = document.createElement('div');
-                    autoSubmitInfo.className = 'auto-submit-info-admin';
-                    autoSubmitInfo.innerHTML = `
-                        <h4 style="margin-top:0;">Thông tin Nộp bài Tự động</h4>
-                        <p><strong>Lý do:</strong> ${data.lyDoNopTuDong || 'Tự động'}</p>
-                        <p><strong>Số câu đã chọn:</strong> ${data.answeredCount} / ${data.tongSoCau}</p>
-                    `;
-                    modalBody.appendChild(autoSubmitInfo);
-                }
-
-                questions.forEach((q, index) => {
+                data.quizData.forEach((q, index) => {
                     const questionDiv = document.createElement('div');
                     questionDiv.className = 'review-question';
-                    
-                    if (q.comprehensionText) {
-                        const textPassage = document.createElement('pre'); 
-                        textPassage.style.backgroundColor = '#f8f9fa';
-                        textPassage.style.border = '1px solid #eee';
-                        textPassage.style.padding = '10px';
-                        textPassage.style.borderRadius = '8px';
-                        textPassage.style.whiteSpace = 'pre-wrap';
-                        textPassage.innerText = q.comprehensionText;
-                        questionDiv.appendChild(textPassage);
-                    } else if (q.imageUrl) {
-                        const image = document.createElement('img');
-                        image.src = q.imageUrl;
-                        image.style.maxWidth = '100%';
-                        image.style.maxHeight = '300px';
-                        image.style.marginBottom = '10px';
-                        image.style.borderRadius = '8px';
-                        image.style.border = '1px solid #ddd';
-                        questionDiv.appendChild(image);
-                    }
-
-                    const promptP = document.createElement('p');
-                    promptP.innerText = `${index + 1}. ${q.prompt}`;
-                    questionDiv.appendChild(promptP);
-
-                    const userAnswer = userAnswers[index]; 
-                    const correctAnswer = decodeURIComponent(atob(q.answer)); 
-
-                    q.options.forEach(option => {
-                        const optionSpan = document.createElement('span');
-                        optionSpan.className = 'review-option';
-                        optionSpan.innerText = option;
-
-                        if (option === correctAnswer) {
-                            optionSpan.classList.add('correct');
-                        } else if (option === userAnswer) {
-                            optionSpan.classList.add('wrong');
-                        }
-                        questionDiv.appendChild(optionSpan);
-                    });
-                    
-                    if (userAnswer === null) {
-                        const unansweredSpan = document.createElement('span');
-                        unansweredSpan.className = 'review-option unanswered';
-                        unansweredSpan.innerText = '[Chưa trả lời câu này]';
-                        questionDiv.appendChild(unansweredSpan);
-                    }
-                    
+                    questionDiv.innerHTML = `<p>${index + 1}. ${q.prompt}</p>`;
                     modalBody.appendChild(questionDiv);
                 });
-
-            } catch (error) {
-                console.error("Lỗi tải chi tiết: ", error);
-                modalBody.innerHTML = 'Lỗi khi tải dữ liệu. Kiểm tra Quy tắc Firestore.';
-            }
+            } catch (error) { console.error(error); }
         }
 
-        modalClose.addEventListener('click', () => {
-            modalBackdrop.style.display = 'none';
-        });
-        modalBackdrop.addEventListener('click', (e) => {
-            if (e.target === modalBackdrop) {
-                modalBackdrop.style.display = 'none';
-            }
-        });
-        
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && modalBackdrop.style.display === 'block') {
-                modalBackdrop.style.display = 'none';
-            }
-        });
+        modalClose.addEventListener('click', () => modalBackdrop.style.display = 'none');
+        modalBackdrop.addEventListener('click', (e) => { if (e.target === modalBackdrop) modalBackdrop.style.display = 'none'; });
     </script>
 </body>
 </html>
