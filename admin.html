@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trang Quản Trị - Bé Lôi System</title>
+    <title>Trang Quản Trị</title>
     <style>
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
@@ -343,7 +343,7 @@
                 
                 <input type="search" id="test-search-input" placeholder="🔍 Tìm nhanh tên đề thi, người tạo..." style="margin-bottom: 12px;">
                 
-                <!-- KHU VỰC BỘ LỌC ĐƯỢC LÀM LẠI ĐẸP & TRỰC QUAN -->
+                <!-- KHU VỰC BỘ LỌC CẤP HỌC & LỚP -->
                 <div class="filter-container-custom">
                     <label style="font-weight: 600; font-size: 0.9em; color: #495057; display: block; margin-bottom: 8px;">
                         📌 Chọn Cấp học:
@@ -476,7 +476,7 @@ D. Lựa chọn D
             </div>
         </div>
 
-        <!-- TAB TẠO ĐỀ THI MỚI (TÁCH RIÊNG KHỎI QUẢN LÝ ĐỀ THI) -->
+        <!-- TAB TẠO ĐỀ THI MỚI (LẤY LỚP TỪ DỮ LIỆU HỌC SINH THỰC TẾ) -->
         <div id="create-test-view" class="card" style="max-width: 800px; margin: 0 auto;">
             <h2>Tạo Đề Thi Mới</h2>
             <form id="createTestForm">
@@ -501,15 +501,16 @@ D. Lựa chọn D
                 <input type="text" id="testSubject" placeholder="Ví dụ: Toán, Ngữ Văn, Tiếng Anh">
 
                 <label style="color: #28a745; font-weight: bold; margin-top: 10px; display: block;">Cấp học:</label>
-                <select id="createTestLevel" onchange="updateClassSelect('createTestLevel', 'createTestTargetClassSelect', 'createTestTargetClassInput')" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 8px;">
+                <select id="createTestLevel" onchange="updateCreateTestClassSelect()" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 8px;">
+                    <option value="">Tất cả Cấp học</option>
                     <option value="1">Cấp 1 (Lớp 1-5)</option>
                     <option value="2">Cấp 2 (Lớp 6-9)</option>
                     <option value="3" selected>Cấp 3 (Lớp 10-12)</option>
                     <option value="uni">Đại học</option>
-                    <option value="other">Khác (Tự nhập)</option>
+                    <option value="other">Khác</option>
                 </select>
 
-                <label style="color: #28a745; font-weight: bold; display: block;">Lớp áp dụng (Tách bằng dấu phẩy nếu nhập thủ công, để trống = Tất cả):</label>
+                <label style="color: #28a745; font-weight: bold; display: block;">Lớp áp dụng (Lấy thực tế từ CSDL Học Sinh):</label>
                 <select id="createTestTargetClassSelect" onchange="handleClassSelectChange('createTestTargetClassSelect', 'createTestTargetClassInput')" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 8px;"></select>
                 <input type="text" id="createTestTargetClassInput" placeholder="Ví dụ: 10A1, 10A2..." style="display:none; margin-bottom: 10px;">
                 
@@ -687,7 +688,7 @@ HS003,Lê Văn C,10A1</code></pre>
         let allStudentsCache = [];
         let allResultsCache = [];
 
-        let selectedLevelFilter = ""; // Cấp học đang chọn
+        let selectedLevelFilter = ""; 
         let currentQuestionCount = 0; 
         
         try {
@@ -701,8 +702,6 @@ HS003,Lê Văn C,10A1</code></pre>
         // BÉ LÔI FIX: Thuật toán suy luận cấp học cho các đề thi cũ không có thuộc tính capHoc
         function getTestCapHoc(test) {
             if (test.capHoc) return test.capHoc;
-            
-            // Nếu không ghi lớp áp dụng -> đề dùng chung mọi cấp
             if (!test.lopApDung || test.lopApDung.trim() === "") return "all";
             
             const lopUpper = test.lopApDung.toUpperCase();
@@ -718,7 +717,65 @@ HS003,Lê Văn C,10A1</code></pre>
             return "other";
         }
 
-        // Sinh danh sách Lớp tự động cho Form Tạo HS / Đề Thi
+        // BÉ LÔI FIX: Cập nhật danh sách Lớp thực tế từ dữ liệu Quản lý Học sinh vào Tab "Tạo Đề Thi Mới"
+        window.updateCreateTestClassSelect = function() {
+            const level = document.getElementById('createTestLevel').value;
+            const select = document.getElementById('createTestTargetClassSelect');
+            const input = document.getElementById('createTestTargetClassInput');
+
+            select.innerHTML = '';
+            input.style.display = 'none';
+            select.style.display = 'block';
+
+            // Lấy các Lớp thực tế tồn tại trong CSDL Học sinh
+            let realClasses = new Set();
+            allStudentsCache.forEach(student => {
+                if (student.lop && student.lop.trim()) {
+                    const lopStr = student.lop.trim();
+                    
+                    // Phân loại cấp học từ tên lớp
+                    let numMatch = lopStr.match(/\d+/);
+                    let cap = "other";
+                    if (numMatch) {
+                        let num = parseInt(numMatch[0], 10);
+                        if (num >= 1 && num <= 5) cap = "1";
+                        else if (num >= 6 && num <= 9) cap = "2";
+                        else if (num >= 10 && num <= 12) cap = "3";
+                    }
+
+                    // Nếu chọn "Tất cả cấp" hoặc lớp thuộc đúng cấp học được chọn
+                    if (!level || level === "other" || level === "uni" || cap === level) {
+                        realClasses.add(lopStr);
+                    }
+                }
+            });
+
+            const sortedClasses = Array.from(realClasses).sort();
+
+            // Option 1: Mặc định áp dụng cho tất cả
+            const defaultOpt = document.createElement('option');
+            defaultOpt.value = "";
+            defaultOpt.text = sortedClasses.length > 0 
+                ? `-- Chọn Lớp thực tế (${sortedClasses.length} lớp hiện có) --` 
+                : "-- Chưa có học sinh thuộc cấp này trong CSDL --";
+            select.appendChild(defaultOpt);
+
+            // Các Option Lớp thực tế
+            sortedClasses.forEach(cls => {
+                const opt = document.createElement('option');
+                opt.value = cls;
+                opt.text = `Lớp ${cls}`;
+                select.appendChild(opt);
+            });
+
+            // Option Tự nhập
+            const manualOpt = document.createElement('option');
+            manualOpt.value = "manual";
+            manualOpt.text = "✏️ Tự nhập lớp khác...";
+            select.appendChild(manualOpt);
+        };
+
+        // Sinh danh sách Lớp mẫu tự động khi THÊM HỌC SINH MỚI
         window.updateClassSelect = function(levelId, selectId, inputId) {
             const level = document.getElementById(levelId).value;
             const select = document.getElementById(selectId);
@@ -766,7 +823,7 @@ HS003,Lê Văn C,10A1</code></pre>
             }
         };
 
-        // Cập nhật các Lớp có sẵn trong danh sách Đề dựa theo Cấp học được chọn
+        // Cập nhật các Lớp thực tế vào Bộ lọc danh sách Đề thi
         function updateTestClassFilterOptions() {
             const selectClass = document.getElementById('filter-test-class');
             selectClass.innerHTML = '<option value="">-- Tất cả các Lớp --</option>';
@@ -918,7 +975,30 @@ HS003,Lê Văn C,10A1</code></pre>
             
             // Khởi tạo các menu dropdown chọn lớp
             updateClassSelect('studentLevel', 'studentClassSelect', 'studentClassInput');
-            updateClassSelect('createTestLevel', 'createTestTargetClassSelect', 'createTestTargetClassInput');
+            
+            // LẮNG NGHE DỮ LIỆU HỌC SINH THỜI GIAN THỰC ĐỂ TỰ ĐỘNG LÊN LỚP THỰC TẾ
+            if (!window.studentsListener) {
+                window.studentsListener = db.collection('hocsinh').onSnapshot(snapshot => {
+                    allStudentsCache = [];
+                    snapshot.forEach(doc => {
+                        allStudentsCache.push({ id: doc.id, ...doc.data() });
+                    });
+                    
+                    // Sắp xếp danh sách học sinh
+                    allStudentsCache.sort((a, b) => {
+                        const lopCompare = (a.lop || '').localeCompare(b.lop || '');
+                        if (lopCompare !== 0) return lopCompare;
+                        return (a.hoTen || '').localeCompare(b.hoTen || '');
+                    });
+
+                    // Cập nhật lại dropdown lớp trong CẢ Tab "Tạo Đề Thi Mới" lẫn Bộ lọc
+                    updateCreateTestClassSelect();
+                    updateFilterDropdowns();
+                    renderStudentList();
+                }, error => {
+                    console.error("Lỗi đồng bộ dữ liệu Học sinh: ", error);
+                });
+            }
 
             // Thiết lập sự kiện click cho bộ lọc Cấp học dạng Pills
             const pillBtns = document.querySelectorAll('.level-pill-btn');
@@ -1054,7 +1134,7 @@ HS003,Lê Văn C,10A1</code></pre>
                 deleteSelectedTestsBtn.style.display = selectedTestIds.size > 0 ? 'inline-block' : 'none';
             }
 
-            // BÉ LÔI FIX: RENDER DANH SÁCH ĐỀ THI LINHG HOẠT - TƯƠNG THÍCH 100% VỚI ĐỀ THI CŨ
+            // RENDER DANH SÁCH ĐỀ THI LINH HOẠT
             window.renderTestList = function() {
                 updateFilterDropdowns(); 
                 
@@ -1069,14 +1149,9 @@ HS003,Lê Văn C,10A1</code></pre>
                 
                 const filteredTests = allTestsCache.filter(test => {
                     const matchQuery = test.tenDe.toLowerCase().includes(query) || (test.nguoiTao && test.nguoiTao.toLowerCase().includes(query));
-                    
-                    // Lấy cấp học (Tự động suy luận nếu là đề cũ)
                     const testCapHoc = getTestCapHoc(test);
                     
-                    // Đề khớp cấp học nếu: không chọn bộ lọc cấp, HOẶC cấp học trùng khớp, HOẶC đề dùng chung ("all")
                     const matchLevel = (selectedLevelFilter === "") || (testCapHoc === selectedLevelFilter) || (testCapHoc === "all");
-                    
-                    // Đề khớp lớp nếu: không chọn lớp, HOẶC tên lớp nằm trong lớp áp dụng, HOẶC đề mở cho tất cả lớp (để trống)
                     const matchClass = (classFilter === "") || 
                                        (!test.lopApDung || test.lopApDung.trim() === "") || 
                                        (test.lopApDung && test.lopApDung.toLowerCase().includes(classFilter));
@@ -1113,7 +1188,6 @@ HS003,Lê Văn C,10A1</code></pre>
                         timeInfo += `<span style="font-size: 0.7em; color: #ffc107; margin-top: 5px;">Mở: ${mo} | Đóng: ${dong}</span>`;
                     }
 
-                    // Nhãn phân loại đề cũ / mới
                     const isOldTest = !test.capHoc;
                     const badgeHtml = isOldTest 
                         ? `<span class="tag-badge tag-badge-old">Đề cũ</span>` 
@@ -1350,30 +1424,6 @@ HS003,Lê Văn C,10A1</code></pre>
                 addQuestionForm.reset(); 
             }
 
-            window.loadStudentList = async function() {
-                studentListLoading.style.display = 'block';
-                studentListDiv.innerHTML = '';
-                try {
-                    const snapshot = await db.collection('hocsinh').get();
-                    allStudentsCache = []; 
-                    snapshot.forEach(doc => {
-                        allStudentsCache.push({ id: doc.id, ...doc.data() });
-                    });
-                    
-                    allStudentsCache.sort((a, b) => {
-                        const lopCompare = (a.lop || '').localeCompare(b.lop || '');
-                        if (lopCompare !== 0) return lopCompare;
-                        return (a.hoTen || '').localeCompare(b.hoTen || '');
-                    });
-                    
-                    renderStudentList(); 
-                    
-                } catch (error) {
-                    console.error("Lỗi tải danh sách HS: ", error);
-                    studentListLoading.innerText = 'Lỗi tải danh sách.';
-                }
-            }
-            
             window.renderStudentList = function() {
                 updateFilterDropdowns(); 
                 
@@ -1428,7 +1478,6 @@ HS003,Lê Văn C,10A1</code></pre>
                 if (!confirm(`Bạn có chắc muốn XÓA Mã HS "${maHS}" của học sinh "${hoTen}"?`)) return;
                 try {
                     await db.collection('hocsinh').doc(maHS).delete();
-                    loadStudentList(); 
                 } catch (error) {
                     console.error("Lỗi xóa Mã HS: ", error);
                     alert("Lỗi khi xóa Mã HS.");
@@ -1567,10 +1616,12 @@ HS003,Lê Văn C,10A1</code></pre>
             }
             
             navTests.addEventListener('click', () => setActiveTab(navTests, testManagerView));
-            navCreateTest.addEventListener('click', () => setActiveTab(navCreateTest, createTestView));
+            navCreateTest.addEventListener('click', () => {
+                setActiveTab(navCreateTest, createTestView);
+                updateCreateTestClassSelect(); // Cập nhật lại lớp thực tế khi mở tab
+            });
             navStudents.addEventListener('click', () => {
                 setActiveTab(navStudents, studentManagerView);
-                loadStudentList(); 
             });
             navResults.addEventListener('click', () => {
                 setActiveTab(navResults, resultsView);
@@ -1622,7 +1673,7 @@ HS003,Lê Văn C,10A1</code></pre>
                 const levelVal = document.getElementById('createTestLevel').value;
                 const selectVal = document.getElementById('createTestTargetClassSelect').value;
                 const inputVal = document.getElementById('createTestTargetClassInput').value.trim();
-                let targetClass = (levelVal === 'uni' || levelVal === 'other' || selectVal === 'manual') ? inputVal : selectVal;
+                let targetClass = (selectVal === 'manual') ? inputVal : selectVal;
                 
                 const adminEmail = currentUser.email; 
                 if (!testName || !testTime) return;
@@ -1984,7 +2035,6 @@ HS003,Lê Văn C,10A1</code></pre>
                         createStudentMsg.style.color = 'green';
                         createStudentMsg.innerText = `Tạo thành công: ${hoTen} (Mã: ${maHS})`;
                         createStudentForm.reset();
-                        loadStudentList(); 
                     }
                 } catch (error) {
                     console.error("Lỗi tạo Mã HS: ", error);
@@ -2035,7 +2085,6 @@ HS003,Lê Văn C,10A1</code></pre>
                     }
                     alert(successMsg);
                     addBulkStudentForm.reset();
-                    loadStudentList(); 
                 } catch (error) {
                     console.error("Lỗi thêm hàng loạt HS: ", error);
                     alert("Lỗi khi lưu hàng loạt. Vui lòng thử lại.");
@@ -2352,7 +2401,6 @@ HS003,Lê Văn C,10A1</code></pre>
                         msg.style.color = 'green';
                     }
                     
-                    loadStudentList(); 
                     setTimeout(() => modalBackdrop.style.display = 'none', 2000);
 
                 } catch (error) {
