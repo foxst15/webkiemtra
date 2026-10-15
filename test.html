@@ -540,6 +540,7 @@
             updateProgress();
         }
 
+        // BÉ LÔI FIX: Giảm threshold xuống 250px cho điện thoại không bị kích hoạt nhầm
         function startAdvancedFocusCheck() {
             if (checkFocusInterval) return;
 
@@ -551,18 +552,8 @@
                     return;
                 }
 
-                if (!document.hasFocus()) {
-                    if (!isFocused) return;
-                    isFocused = false;
-                    synchronousSubmitOnUnload(true, "Gian lận (Mất tiêu điểm do Lớp phủ/Trợ lý AI)");
-                    window.location.replace('results.html');
-                    return;
-                } else {
-                    isFocused = true;
-                }
-
-                if (window.innerWidth < 400 || window.innerHeight < 300) {
-                    synchronousSubmitOnUnload(true, "Gian lận (Thay đổi kích thước cửa sổ)");
+                if (window.innerWidth < 250 || window.innerHeight < 250) {
+                    synchronousSubmitOnUnload(true, "Gian lận (Thu nhỏ cửa sổ bất thường)");
                     window.location.replace('results.html');
                 }
             }, 500); 
@@ -797,6 +788,7 @@
             }
         }
 
+        // BÉ LÔI FIX: Bật cảnh báo 3s khi Blur/Mất tiêu điểm thay vì sút ra ngoài ngay
         function setupAntiCheat() {
             document.addEventListener('visibilitychange', () => {
                 if (!isAntiCheatEnabled || !isQuizReady) return; 
@@ -813,8 +805,7 @@
                 if (!isAntiCheatEnabled || !isQuizReady) return; 
                 if (daNopBai) return;
                 if (!document.hidden) {
-                    synchronousSubmitOnUnload(true, "Mất tập trung (Lớp phủ Blur)");
-                    window.location.replace('results.html');
+                    startCheatWarning("Mất tập trung (Nhấp chuột ra ngoài làm bài)");
                 }
             });
 
@@ -855,6 +846,7 @@
             };
         }
 
+        // BÉ LÔI FIX: Ưu tiên lưu điểm trước, bọc try-catch chống tràn bộ nhớ localStorage
         function synchronousSubmitOnUnload(isAutoSubmit = true, autoSubmitReason = "Rời khỏi trang") {
             if (daNopBai) return;
             daNopBai = true;
@@ -892,12 +884,19 @@
                 quizData: fullQuestionObjects 
             };
 
-            localStorage.setItem('pendingSubmission', JSON.stringify(submissionData));
             localStorage.setItem('score', finalScore.toFixed(2));
             localStorage.setItem('totalQuestions', totalQuestions);
             localStorage.setItem('correctCount', score);
             localStorage.setItem('answeredCount', globalAnsweredCount);
             localStorage.setItem('isAutoSubmit', isAutoSubmit);
+
+            try {
+                localStorage.setItem('pendingSubmission', JSON.stringify(submissionData));
+            } catch (error) {
+                console.warn("Lỗi tràn bộ nhớ! Tiến hành dọn dẹp bớt ảnh...", error);
+                submissionData.quizData = []; 
+                localStorage.setItem('pendingSubmission', JSON.stringify(submissionData));
+            }
         }
 
         async function submitTest(isAutoSubmit = false, autoSubmitReason = null) {
@@ -984,4 +983,5 @@
         }
     </script>
 </body>
+
 </html>
