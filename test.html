@@ -540,7 +540,6 @@
             updateProgress();
         }
 
-        // BÉ LÔI FIX: Giảm threshold xuống 250px cho điện thoại không bị kích hoạt nhầm
         function startAdvancedFocusCheck() {
             if (checkFocusInterval) return;
 
@@ -788,7 +787,6 @@
             }
         }
 
-        // BÉ LÔI FIX: Bật cảnh báo 3s khi Blur/Mất tiêu điểm thay vì sút ra ngoài ngay
         function setupAntiCheat() {
             document.addEventListener('visibilitychange', () => {
                 if (!isAntiCheatEnabled || !isQuizReady) return; 
@@ -846,7 +844,6 @@
             };
         }
 
-        // BÉ LÔI FIX: Ưu tiên lưu điểm trước, bọc try-catch chống tràn bộ nhớ localStorage
         function synchronousSubmitOnUnload(isAutoSubmit = true, autoSubmitReason = "Rời khỏi trang") {
             if (daNopBai) return;
             daNopBai = true;
