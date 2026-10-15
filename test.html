@@ -6,6 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bài kiểm tra</title>
     <style>
+        /* CHỐNG SAO CHÉP VÀ CHỌN VĂN BẢN TOÀN TRANG (ĐẶC BIỆT TRÊN MOBILE) */
+        *, *::before, *::after {
+            -webkit-user-select: none !important; /* Safari / Chrome Mobile */
+            -moz-user-select: none !important;    /* Firefox */
+            -ms-user-select: none !important;     /* IE / Edge */
+            user-select: none !important;         /* Standard */
+            -webkit-touch-callout: none !important; /* Chặn Menu chạm giữ (Copy/Search) trên iOS/Android */
+            -webkit-tap-highlight-color: transparent;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
@@ -27,12 +37,12 @@
             background: #fff;
             padding: 2rem;
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, .05)
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .05);
         }
 
         h1 {
             text-align: center;
-            color: #333
+            color: #333;
         }
 
         #studentInfo {
@@ -41,7 +51,7 @@
             padding: 1rem;
             background: #e9ecef;
             border-radius: 8px;
-            color: #333
+            color: #333;
         }
 
         .question {
@@ -71,6 +81,9 @@
             border-radius: 8px;
             object-fit: contain;
             border: 1px solid #ddd;
+            /* Chặn đè giữ ảnh trên mobile */
+            pointer-events: none;
+            -webkit-user-drag: none;
         }
 
         .question-navigation {
@@ -106,11 +119,11 @@
         .question p {
             font-weight: 600;
             font-size: 1.1rem;
-            margin-bottom: 1rem
+            margin-bottom: 1rem;
         }
 
         .options {
-            margin-left: .5rem
+            margin-left: .5rem;
         }
 
         .options label {
@@ -120,15 +133,15 @@
             cursor: pointer;
             padding: .75rem;
             border-radius: 8px;
-            transition: background-color .2s
+            transition: background-color .2s;
         }
 
         .options label:hover {
-            background-color: #f8f9fa
+            background-color: #f8f9fa;
         }
 
         .options input[type=radio] {
-            margin-right: .75rem
+            margin-right: .75rem;
         }
 
         #submitBtn {
@@ -146,12 +159,12 @@
         }
 
         #submitBtn:hover {
-            background-color: #218838
+            background-color: #218838;
         }
 
         #submitBtn:disabled {
             background-color: #aaa;
-            cursor: not-allowed
+            cursor: not-allowed;
         }
 
         #loading {
@@ -302,11 +315,9 @@
 
                 <div id="loading">Đang tải đề thi, vui lòng chờ...</div>
 
-                <form id="testForm">
-                </form>
+                <form id="testForm"></form>
 
                 <div id="quiz-controls" style="display: none;">
-
                     <div class="question-navigation">
                         <button id="prevBtn" class="nav-btn" disabled>
                             <span style="font-size: 1.2em;">&larr;</span> Câu trước
@@ -322,9 +333,7 @@
                 </div>
 
                 <div id="error-actions" style="text-align: center; display: none;">
-                    <a href="select-test.html" id="back-button">
-                        Quay lại trang Chọn đề
-                    </a>
+                    <a href="select-test.html" id="back-button">Quay lại trang Chọn đề</a>
                 </div>
             </div>
         </div>
@@ -335,8 +344,7 @@
                 Đã trả lời: <strong id="answered-count">0</strong> / <span id="total-questions-count">--</span>
             </div>
             <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;">
-            <div id="question-map-container" class="question-map">
-            </div>
+            <div id="question-map-container" class="question-map"></div>
         </div>
     </div>
 
@@ -362,7 +370,6 @@
         const selectedTestName = localStorage.getItem('selectedTestName');
         const testTimeMinutes = parseInt(localStorage.getItem('selectedTestTime') || 15, 10);
 
-        // BÉ LÔI FIX: Kiểm tra nếu không có thông tin học sinh thì mới chuyển hướng về index
         if (!studentName || !studentClass) {
             window.location.href = 'index.html';
         }
@@ -386,10 +393,19 @@
         let isAntiCheatEnabled = false;
         let isQuizReady = false;
 
-        // Chặn menu chuột phải & phím tắt F12 / Ctrl+Shift+I
-        document.addEventListener('contextmenu', e => e.preventDefault());
+        // BẢO VỆ CHỐNG SAO CHÉP & GIAN LẬN TOÀN DIỆN
+        ['copy', 'cut', 'paste', 'selectstart', 'dragstart', 'contextmenu'].forEach(eventType => {
+            document.addEventListener(eventType, e => e.preventDefault());
+        });
+
+        // Chặn phím tắt gian lận (Ctrl+C, Ctrl+A, Ctrl+X, Ctrl+U, Ctrl+S, Ctrl+P, F12)
         document.addEventListener('keydown', function (e) {
-            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || (e.ctrlKey && e.key === 'U')) {
+            const forbiddenKeys = ['c', 'a', 'x', 'u', 's', 'p'];
+            if (
+                e.key === 'F12' ||
+                (e.ctrlKey && forbiddenKeys.includes(e.key.toLowerCase())) ||
+                (e.ctrlKey && e.shiftKey && ['i', 'j', 'c'].includes(e.key.toLowerCase()))
+            ) {
                 e.preventDefault();
             }
         });
@@ -496,7 +512,6 @@
             const totalQuestions = userSelections.length;
             const isCompleted = (answeredCount === totalQuestions && totalQuestions > 0);
 
-            // Bắt buộc làm đủ 100% số câu mới mở khóa nút Nộp bài!
             submitButton.disabled = !isCompleted;
             submitButton.innerText = isCompleted
                 ? "Nộp bài (HOÀN THÀNH)"
@@ -743,7 +758,6 @@
         }
 
         function setupAntiCheat() {
-            // Chỉ nộp bài khi thực sự chuyển tab hẳn hoặc ẩn ứng dụng
             document.addEventListener('visibilitychange', () => {
                 if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
                 if (document.hidden) {
@@ -754,7 +768,6 @@
                 }
             });
 
-            // Khi nhấp chuột ra ngoài cửa sổ chỉ bật cảnh báo 3s
             window.addEventListener('blur', () => {
                 if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
                 if (!document.hidden) {
@@ -767,7 +780,6 @@
                 stopCheatWarning();
             });
 
-            // Chống bấm F5 / Reload
             document.addEventListener('keydown', function (e) {
                 if ((e.key === 'r' && e.ctrlKey) || e.key === 'F5') {
                     if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
@@ -902,7 +914,6 @@
             showQuestion(currentQuestionIndex + 1);
         });
 
-        // Bắt đầu tải đề thi
         loadQuiz();
     </script>
 </body>
