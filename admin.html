@@ -20,7 +20,7 @@
         .login-box button { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; width: 100%; }
         #error-msg { color: red; margin-top: 10px; display: none; }
 
-        #management-container { display: none; max-width: 1600px; margin: auto; } 
+        #management-container { display: none; max-width: 1650px; margin: auto; } 
         .card { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         h2 { margin-top: 0; }
         input[type="text"], input[type="number"], input[type="email"], input[type="password"], input[type="datetime-local"], textarea, input[type="search"] { 
@@ -71,13 +71,23 @@
         }
         .filter-row { display: flex; gap: 10px; flex-wrap: wrap; }
 
-        /* BÉ LÔI FIX: CẤU TRÚC 2 CỘT SONG SONG BÊN CẠNH NHAU */
+        /* BÉ LÔI FIX: CHIA KHU VỰC QUẢN LÝ ĐỀ THI VÀ CÂU HỎI SONG SONG */
         #test-manager-view { 
             display: none; 
-            grid-template-columns: 420px 1fr; 
+            grid-template-columns: 360px 1fr; 
             gap: 20px; 
             align-items: start;
         }
+
+        /* GRID BÊN TRONG CỤM CÂU HỎI: FORM TRÁI - DANH SÁCH CÂU HỎI PHẢI */
+        .question-manager-grid {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 20px;
+            align-items: start;
+            margin-top: 15px;
+        }
+
         #create-test-view { display: none; }
         
         button.add-btn { background-color: #28a745; }
@@ -87,7 +97,7 @@
         .action-btn-delete:hover { background-color: #c82333; }
         
         #test-list {
-            max-height: 600px;
+            max-height: 650px;
             overflow-y: auto;
             border: 1px solid #eee;
             border-radius: 8px;
@@ -102,10 +112,19 @@
         
         #question-manager { display: none; }
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .question-item { border-bottom: 1px solid #eee; padding: 15px 0; display: flex; justify-content: space-between; align-items: center; }
+        
+        #question-list {
+            max-height: 550px;
+            overflow-y: auto;
+            border: 1px solid #e3e6f0;
+            border-radius: 8px;
+            padding: 10px;
+            background: #fafafa;
+        }
+        .question-item { border-bottom: 1px solid #e0e0e0; padding: 12px 0; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
         .question-item:last-child { border-bottom: none; }
-        .question-prompt { font-weight: 600; }
-        .question-answer { font-style: italic; color: #28a745; }
+        .question-prompt { font-weight: 600; color: #333; margin-bottom: 4px; }
+        .question-answer { font-style: italic; color: #28a745; font-size: 0.9em; }
 
         #results-view { display: none; }
         #results-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
@@ -122,7 +141,7 @@
         .toggle-buttons { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
         .toggle-buttons button { 
             flex: 1; background-color: #eee; color: #333; border: 1px solid #ccc;
-            border-bottom: 4px solid transparent; font-size: 1em; padding: 10px 5px; min-width: 100px;
+            border-bottom: 4px solid transparent; font-size: 0.9em; padding: 8px 5px; min-width: 90px;
         }
         #admin-nav button.active, .toggle-buttons button.active { 
             color: #007bff; border-bottom-color: #007bff; background-color: #fff;
@@ -130,7 +149,7 @@
         
         pre { background-color: #f8f9fa; border: 1px solid #eee; padding: 10px; border-radius: 8px; white-space: pre-wrap; word-wrap: break-word; font-family: monospace; }
 
-        #student-manager-view { display: none; grid-template-columns: 380px 1fr; gap: 20px; }
+        #student-manager-view { display: none; grid-template-columns: 360px 1fr; gap: 20px; }
         #student-list { max-height: 600px; overflow-y: auto; border: 1px solid #eee; padding: 5px; border-radius: 8px; }
         .student-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
         .student-list-item:hover { background-color: #f8f9fa; }
@@ -139,7 +158,7 @@
         .student-name-class { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
         .student-name-class .student-name { font-size: 1.1em; font-weight: 600; color: #000; }
         .student-item-info .lopHS { font-size: 1em; font-weight: 600; color: #007bff; font-style: normal; }
-        .student-item-info .maHS { font-size: 1.2em; font-weight: 700; color: #dc3545; }
+        .student-item-info .maHS { font-size: 1.1em; font-weight: 700; color: #dc3545; }
         .student-item-actions { display: flex; gap: 5px; }
         
         #account-manager-view { display: none; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -161,7 +180,6 @@
         .review-option.correct { background-color: #d4edda; border: 1px solid #c3e6cb; font-weight: bold; }
         .review-option.wrong { background-color: #f8d7da; border: 1px solid #f5c6cb; text-decoration: line-through; }
         .review-option.unanswered { background-color: #f8f9fa; border: 1px solid #dee2e6; color: #6c757d; font-style: italic; font-weight: bold; }
-        .auto-submit-info-admin { background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
 
         .avatar-upload-section { margin-bottom: 20px; padding: 15px; border-bottom: 1px solid #eee; text-align: center; }
         #current-admin-avatar { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #007bff; margin-bottom: 10px; }
@@ -174,8 +192,9 @@
         .tag-badge-old { background-color: #e2e3e5; color: #383d41; }
         .tag-badge-level { background-color: #cce5ff; color: #004085; }
 
-        @media (max-width: 1024px) {
+        @media (max-width: 1200px) {
             #test-manager-view { grid-template-columns: 1fr; }
+            .question-manager-grid { grid-template-columns: 1fr; }
             .options-grid { grid-template-columns: 1fr; }
             #student-manager-view { grid-template-columns: 1fr; }
             #account-manager-view { grid-template-columns: 1fr; }
@@ -218,15 +237,14 @@
             <button id="nav-account">Quản lý Tài Khoản</button>
         </div>
 
-        <!-- TAB QUẢN LÝ ĐỀ THI (HỖ TRỢ HIỆN BÊN CẠNH) -->
+        <!-- TAB QUẢN LÝ ĐỀ THI & CÂU HỎI -->
         <div id="test-manager-view">
-            <!-- CỘT TRÁI: DANH SÁCH ĐỀ THI -->
+            <!-- CỘT 1: DANH SÁCH ĐỀ THI -->
             <div class="card">
                 <h2>Danh Sách Đề Thi</h2>
                 
                 <input type="search" id="test-search-input" placeholder="🔍 Tìm nhanh tên đề thi, người tạo..." style="margin-bottom: 12px;">
                 
-                <!-- BỘ LỌC CẤP HỌC & LỚP & MÔN HỌC -->
                 <div class="filter-container-custom">
                     <label style="font-weight: 600; font-size: 0.9em; color: #495057; display: block; margin-bottom: 8px;">
                         📌 Chọn Cấp học:
@@ -263,100 +281,92 @@
                 </div>
             </div>
 
-            <!-- CỘT PHẢI: CHI TIẾT & CÂU HỎI BÊN CẠNH -->
+            <!-- CỘT 2: QUẢN LÝ CÂU HỎI (CÓ FORM TRÁI - DANH SÁCH CÂU HỎI BÊN PHẢI) -->
             <div class="card" id="question-manager">
-                 <h2 id="question-manager-title">Chọn một đề thi để xem/thêm câu hỏi</h2>
+                 <h2 id="question-manager-title">Bấm chọn một đề thi ở danh sách bên trái để quản lý câu hỏi</h2>
                  
-                 <div class="toggle-buttons">
-                    <button id="toggle-add-single" class="active">Thêm từng câu</button>
-                    <button id="toggle-add-bulk">Thêm hàng loạt (Bulk)</button>
-                    <button id="toggle-add-comprehension">Thêm Đọc-Hiểu (TV/Anh)</button>
-                 </div>
-                 
-                 <form id="addQuestionForm" style="display: block;">
-                    <h3>Thêm câu hỏi mới</h3>
-                    
-                    <label>Tải Hình ảnh từ Tệp (Tùy chọn, Max 500KB):</label>
-                    <input type="file" id="questionImageFile" accept="image/*">
-                    <div id="image-upload-status" style="font-size: 0.9em; margin-bottom: 10px;"></div>
-                    
-                    <label style="margin-top: 10px;">HOẶC URL Hình ảnh (Tùy chọn):</label>
-                    <input type="text" id="questionImageUrl" placeholder="Dán link ảnh tại đây (nếu không tải tệp)">
+                 <div class="question-manager-grid">
+                     <!-- SUB-COLUMN TRÁI: FORM THÊM / SỬA CÂU HỎI -->
+                     <div class="q-form-col">
+                         <div class="toggle-buttons">
+                            <button id="toggle-add-single" class="active">Thêm từng câu</button>
+                            <button id="toggle-add-bulk">Thêm Bulk</button>
+                            <button id="toggle-add-comprehension">Đọc-Hiểu</button>
+                         </div>
+                         
+                         <form id="addQuestionForm" style="display: block;">
+                            <h3 style="margin-top:0;">Thêm câu hỏi mới</h3>
+                            
+                            <label>Ảnh từ Tệp (Max 500KB):</label>
+                            <input type="file" id="questionImageFile" accept="image/*">
+                            <div id="image-upload-status" style="font-size: 0.85em; margin-bottom: 5px;"></div>
+                            
+                            <label style="margin-top: 5px;">HOẶC URL Hình ảnh:</label>
+                            <input type="text" id="questionImageUrl" placeholder="Dán link ảnh tại đây...">
 
-                    <label>Nội dung câu hỏi:</label>
-                    <input type="text" id="prompt" required>
-                    <div class="options-grid">
-                        <input type="text" id="opt1" placeholder="Lựa chọn A" required>
-                        <input type="text" id="opt2" placeholder="Lựa chọn B" required>
-                        <input type="text" id="opt3" placeholder="Lựa chọn C" required>
-                        <input type="text" id="opt4" placeholder="Lựa chọn D" required>
-                    </div>
-                    <label>Đáp án đúng (Gõ lại y hệt):</label>
-                    <input type="text" id="answer" required>
-                    <button type="submit" class="add-btn">Thêm câu hỏi</button>
-                 </form>
-                
-                 <form id="addBulkQuestionForm" style="display: none;">
-                    <h3>Thêm hàng loạt câu hỏi</h3>
-                    
-                    <div style="background: #e0eaff; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed #007bff;">
-                        <label style="font-weight: bold; color: #007bff; display: block; margin-bottom: 5px;">📄 Trích xuất từ file Word (.docx):</label>
-                        <input type="file" id="docxFileInput" accept=".docx" style="display: block; width: 100%; margin-bottom: 5px;">
-                        <small style="color: #555;">Tải file lên, hệ thống sẽ tự động bóc tách chữ vào ô bên dưới.</small>
-                    </div>
+                            <label>Nội dung câu hỏi:</label>
+                            <input type="text" id="prompt" required>
+                            <div class="options-grid">
+                                <input type="text" id="opt1" placeholder="Lựa chọn A" required>
+                                <input type="text" id="opt2" placeholder="Lựa chọn B" required>
+                                <input type="text" id="opt3" placeholder="Lựa chọn C" required>
+                                <input type="text" id="opt4" placeholder="Lựa chọn D" required>
+                            </div>
+                            <label>Đáp án đúng (Gõ lại y hệt):</label>
+                            <input type="text" id="answer" required>
+                            <button type="submit" class="add-btn" style="width: 100%; margin-top: 5px;">Lưu câu hỏi</button>
+                         </form>
+                        
+                         <form id="addBulkQuestionForm" style="display: none;">
+                            <h3 style="margin-top:0;">Thêm hàng loạt câu hỏi</h3>
+                            
+                            <div style="background: #e0eaff; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px dashed #007bff;">
+                                <label style="font-weight: bold; color: #007bff; display: block; margin-bottom: 5px; font-size: 0.9em;">📄 Trích xuất file Word (.docx):</label>
+                                <input type="file" id="docxFileInput" accept=".docx" style="display: block; width: 100%; margin-bottom: 0;">
+                            </div>
 
-                    <p>Dán nội dung vào đây. Mỗi câu hỏi phải theo định dạng (tối thiểu 6 dòng):</p>
-                    <pre><code>Nội dung câu hỏi...
+                            <p style="font-size: 0.85em; margin: 5px 0;">Định dạng từng khối câu hỏi (cách nhau 1 dòng trống):</p>
+                            <pre style="font-size: 0.8em; padding: 8px;"><code>Nội dung câu hỏi...
 A. Lựa chọn A
 B. Lựa chọn B
 C. Lựa chọn C
 D. Lựa chọn D
-Đáp án: Lựa chọn A (hoặc A, B, C, D)
-Image: URL_Anh (Tùy chọn)</code></pre>
-                    <p><strong>LƯU Ý:</strong> Các câu hỏi phải cách nhau bằng <strong>một dòng trống</strong>.</p>
-                    <textarea id="bulkQuestionsText" rows="15" style="width: 100%; font-family: monospace;"></textarea>
-                    <button type="submit" class="add-btn" style="width: 100%;">Lưu hàng loạt câu hỏi</button>
-                 </form>
-                
-                 <form id="addComprehensionForm" style="display: none;">
-                    <h3>Thêm Đọc-Hiểu (Tiếng Việt/Anh)</h3>
-                    <p>Dùng cho các bài có <strong>một đoạn văn chung</strong> và nhiều câu hỏi.
-                       <br><strong>Lưu ý:</strong> Hệ thống ưu tiên Tệp ảnh > Đoạn văn bản > URL ảnh.
-                    </p>
-                    
-                    <label>1. Tải Tệp Ảnh Đoạn Văn (Ưu tiên cao nhất, Max 500KB):</label>
-                    <input type="file" id="comprehensionImageFile" accept="image/*">
-                    <div id="comprehension-upload-status" style="font-size: 0.9em; margin-bottom: 10px;"></div>
+Đáp án: Lựa chọn A</code></pre>
+                            <textarea id="bulkQuestionsText" rows="12" style="width: 100%; font-family: monospace;"></textarea>
+                            <button type="submit" class="add-btn" style="width: 100%;">Lưu hàng loạt</button>
+                         </form>
+                        
+                         <form id="addComprehensionForm" style="display: none;">
+                            <h3 style="margin-top:0;">Thêm Đọc-Hiểu</h3>
+                            <label>1. Tệp Ảnh Đoạn Văn (Max 500KB):</label>
+                            <input type="file" id="comprehensionImageFile" accept="image/*">
+                            <div id="comprehension-upload-status" style="font-size: 0.85em; margin-bottom: 5px;"></div>
 
-                    <label>2. HOẶC Dán Đoạn Văn (Chữ) (Ưu tiên nhì):</label>
-                    <textarea id="comprehensionText" rows="5" placeholder="Dán đoạn văn bản (chữ) vào đây..."></textarea>
-                    
-                    <label>3. HOẶC Dán URL Ảnh (Ưu tiên thấp nhất):</label>
-                    <input type="text" id="comprehensionImageUrl" placeholder="https://i.imgur.com/...">
-                    
-                    <label style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">4. Dán hàng loạt câu hỏi (BỎ qua dòng "Image:"):</label>
-                    <pre><code>Nội dung câu hỏi...
-A. Lựa chọn A
-B. Lựa chọn B
-C. Lựa chọn C
-D. Lựa chọn D
-Đáp án: Lựa chọn A (hoặc A, B, C, D)</code></pre>
-                    <textarea id="comprehensionBulkText" rows="12" style="width: 100%; font-family: monospace;"></textarea>
-                    <button type="submit" class="add-btn" style="width: 100%;">Lưu Đề Đọc-Hiểu</button>
-                 </form>
+                            <label>2. HOẶC Dán Đoạn Văn (Chữ):</label>
+                            <textarea id="comprehensionText" rows="3" placeholder="Dán đoạn văn bản..."></textarea>
+                            
+                            <label>3. HOẶC URL Ảnh:</label>
+                            <input type="text" id="comprehensionImageUrl" placeholder="https://...">
+                            
+                            <label style="margin-top: 10px;">4. Dán hàng loạt câu hỏi:</label>
+                            <textarea id="comprehensionBulkText" rows="10" style="width: 100%; font-family: monospace;"></textarea>
+                            <button type="submit" class="add-btn" style="width: 100%;">Lưu Đề Đọc-Hiểu</button>
+                         </form>
+                     </div>
 
-                 <div id="question-list-container" style="display: none; margin-top: 20px;">
-                    <h3>Danh sách câu hỏi</h3>
-                    <div id="question-batch-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-top: 1px solid #eee; padding-top: 10px;">
-                        <div>
-                            <input type="checkbox" id="select-all-questions-checkbox" style="margin-right: 5px;">
-                            <label for="select-all-questions-checkbox" style="cursor: pointer;">Chọn tất cả</label>
+                     <!-- SUB-COLUMN PHẢI: DANH SÁCH CÂU HỎI TRONG ĐỀ SẮP THEO LIST BÊN PHẢI -->
+                     <div class="q-list-col" id="question-list-container" style="display: none;">
+                        <div id="question-batch-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px; border: 1px solid #eee;">
+                            <div>
+                                <input type="checkbox" id="select-all-questions-checkbox" style="cursor: pointer; margin-right: 5px;">
+                                <label for="select-all-questions-checkbox" style="cursor: pointer; font-weight: bold;">Chọn tất cả câu hỏi</label>
+                            </div>
+                            <button id="delete-selected-questions-btn" class="action-btn-delete" style="display: none;">
+                                Xóa câu đã chọn (<span id="selected-questions-count">0</span>)
+                            </button>
                         </div>
-                        <button id="delete-selected-questions-btn" class="action-btn-delete" style="display: none;">
-                            Xóa (<span id="selected-questions-count">0</span>)
-                        </button>
-                    </div>
-                    <div id="question-list"></div>
+                        <div id="question-list"></div>
+                     </div>
                  </div>
             </div>
         </div>
@@ -382,7 +392,7 @@ D. Lựa chọn D
                 <label>Thời gian KẾT THÚC (Tùy chọn):</label>
                 <input type="datetime-local" id="testEndTime">
                 
-                <label style="color: #007bff; font-weight: bold; margin-top: 10px; display: block;">Môn học (Tùy chọn, để phân loại):</label>
+                <label style="color: #007bff; font-weight: bold; margin-top: 10px; display: block;">Môn học (Tùy chọn):</label>
                 <input type="text" id="testSubject" placeholder="Ví dụ: Lập trình Web, Cơ sở dữ liệu">
 
                 <label style="color: #28a745; font-weight: bold; margin-top: 10px; display: block;">Cấp học:</label>
@@ -403,7 +413,7 @@ D. Lựa chọn D
             </form>
         </div>
 
-        <!-- TAB QUẢN LÝ HỌC SINH / SINH VIÊN -->
+        <!-- TAB QUẢN LÝ HỌC SINH / SINH VIÊN (CHỈ HIỆN KHI CHỌN CẤP VÀ LỚP) -->
         <div id="student-manager-view">
             <div class="card">
                 <h2>Quản lý Mã Học Sinh / Sinh Viên</h2>
@@ -442,25 +452,39 @@ D. Lựa chọn D
                 <form id="addBulkStudentForm" style="display: none; margin-top: 15px;">
                     <p>Dán danh sách vào đây. Mỗi HS/SV một dòng theo định dạng:</p>
                     <pre><code>MãHSSV,TênHọcSinh,Lớp</code></pre>
-                    <p><strong>Ví dụ Lớp Đại học / Cao đẳng:</strong></p>
-                    <pre><code>d23480201012,Nguyễn Văn A,D23_TH01
-d23480201013,Trần Thị B,D23_TH01
-d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                     <textarea id="bulkStudentsText" rows="15" style="width: 100%; font-family: monospace;"></textarea>
                     <button type="submit" class="add-btn" style="width: 100%;">Thêm Hàng Loạt</button>
                 </form>
-
             </div>
+
             <div class="card" id="student-list-manager">
                  <h2>Danh sách Học Sinh / Sinh Viên</h2>
                  
-                 <input type="search" id="student-search-input" placeholder="Tìm kiếm Tên, Mã HS/SV..." style="margin-bottom: 10px;">
-                 <div class="filter-row">
-                    <select id="filter-student-class" class="filter-select"><option value="">-- Tất cả các Lớp --</option></select>
+                 <div class="filter-container-custom">
+                    <label style="font-weight: 600; font-size: 0.9em; color: #495057; display: block; margin-bottom: 8px;">
+                        📌 Bước 1: Chọn Cấp học:
+                    </label>
+                    <div class="level-pills-group" id="student-level-pills">
+                        <button type="button" class="level-pill-btn active" data-level="">-- Chưa chọn --</button>
+                        <button type="button" class="level-pill-btn" data-level="1">Cấp 1 (1-5)</button>
+                        <button type="button" class="level-pill-btn" data-level="2">Cấp 2 (6-9)</button>
+                        <button type="button" class="level-pill-btn" data-level="3">Cấp 3 (10-12)</button>
+                        <button type="button" class="level-pill-btn" data-level="uni">Đại học</button>
+                        <button type="button" class="level-pill-btn" data-level="other">Khác</button>
+                    </div>
+
+                    <div class="filter-row">
+                        <select id="filter-student-class" class="filter-select" onchange="renderStudentList()">
+                            <option value="">-- Bước 2: Chọn Lớp --</option>
+                        </select>
+                        <input type="search" id="student-search-input" placeholder="🔍 Tìm kiếm Tên, Mã HS/SV..." style="flex-grow: 2; margin-bottom: 0;">
+                    </div>
                  </div>
 
-                 <p id="student-list-loading">Đang tải danh sách...</p>
                  <div id="student-list">
+                     <p style="text-align: center; padding: 30px; color: #6c757d; font-weight: 500;">
+                         📌 Vui lòng chọn <b>Cấp học</b> và <b>Lớp</b> ở trên để xem danh sách Học sinh / Sinh viên ạ!
+                     </p>
                  </div>
             </div>
         </div>
@@ -598,6 +622,7 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
         let allResultsCache = [];
 
         let selectedTestLevelFilter = ""; 
+        let selectedStudentLevelFilter = "";
         let selectedResultsLevelFilter = "";
         let currentQuestionCount = 0; 
         
@@ -740,7 +765,6 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
             }
         };
 
-        // BÉ LÔI FIX: PHÂN LOẠI MÔN HỌC CHÍNH XÁC THEO LỚP ĐƯỢC CHỌN
         function updateTestClassAndSubjectOptions() {
             const selectClass = document.getElementById('filter-test-class');
             const selectSubject = document.getElementById('filter-test-subject');
@@ -748,7 +772,6 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
             const currentSelectedClass = selectClass.value;
             const currentSelectedSubject = selectSubject.value;
 
-            // 1. Cập nhật danh sách Lớp theo Cấp học
             selectClass.innerHTML = '<option value="">-- Tất cả các Lớp --</option>';
             let availableClasses = new Set();
             
@@ -772,10 +795,8 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
             });
             selectClass.value = currentSelectedClass;
 
-            // 2. Cập nhật danh sách Môn học - RÀNG BUỘC THEO LỚP HOẶC CẤP HỌC ĐƯỢC CHỌN
             selectSubject.innerHTML = '<option value="">-- Tất cả Môn học --</option>';
             let availableSubjects = new Set();
-
             const selectedClassVal = selectClass.value.toLowerCase();
 
             allTestsCache.forEach(t => {
@@ -807,7 +828,29 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
             renderTestList();
         };
 
-        // BÉ LÔI FIX: CẬP NHẬT LỚP CHO TAB KẾT QUẢ THEO CẤP HỌC
+        // BÉ LÔI FIX: CẬP NHẬT LỚP CHO TAB QUẢN LÝ HỌC SINH VÀ TAB KẾT QUẢ
+        function updateStudentClassOptions() {
+            const selectClass = document.getElementById('filter-student-class');
+            selectClass.innerHTML = '<option value="">-- Bước 2: Chọn Lớp --</option>';
+
+            if (!selectedStudentLevelFilter) return;
+
+            let availableClasses = new Set();
+            allStudentsCache.forEach(hs => {
+                const hsLevel = getStudentCapHoc(hs);
+                if (hsLevel === selectedStudentLevelFilter && hs.lop && hs.lop.trim()) {
+                    availableClasses.add(hs.lop.trim());
+                }
+            });
+
+            [...availableClasses].sort().forEach(cls => {
+                const o = document.createElement('option');
+                o.value = cls;
+                o.text = `Lớp ${cls}`;
+                selectClass.appendChild(o);
+            });
+        }
+
         function updateResultsClassOptions() {
             const selectClass = document.getElementById('filter-results-class');
             selectClass.innerHTML = '<option value="">-- Bước 2: Chọn Lớp --</option>';
@@ -876,7 +919,7 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                     updateAllAvatars(defaultAvatar);
                 }
             } catch (error) {
-                console.error("Lỗi tải avatar từ Firestore: ", error);
+                console.error("Lỗi tải avatar: ", error);
                 updateAllAvatars(defaultAvatar);
             }
         }
@@ -889,10 +932,9 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                 const file = this.files[0];
                 if (file) {
                     if (file.size > 200 * 1024) { 
-                        statusDiv.innerText = 'Lỗi: Kích thước ảnh quá lớn (tối đa 200KB).';
+                        statusDiv.innerText = 'Lỗi: Ảnh quá lớn (max 200KB).';
                         statusDiv.style.color = '#dc3545';
                         this.value = ''; 
-                        setTimeout(() => statusDiv.innerText = '', 5000);
                         return;
                     }
                     
@@ -908,12 +950,11 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                             
                             updateAllAvatars(newAvatarUrl);
                             statusDiv.style.color = '#28a745';
-                            statusDiv.innerText = 'Đã cập nhật ảnh đại diện thành công!';
-                            setTimeout(() => statusDiv.innerText = '', 3000);
+                            statusDiv.innerText = 'Cập nhật thành công!';
                         };
                         reader.readAsDataURL(file);
                     } catch (error) {
-                        statusDiv.innerText = 'Lỗi khi lưu ảnh. Vui lòng thử lại.';
+                        statusDiv.innerText = 'Lỗi khi lưu ảnh.';
                         statusDiv.style.color = '#dc3545';
                     }
                 }
@@ -946,7 +987,7 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
             }
         });
 
-        // --- KHU VỰC LOGIC QUẢN LÝ ---
+        // --- KHU VỰC LOGIC CHÍNH ---
         
         let selectedSubmissionIds = new Set();
         let selectedQuestionIds = new Set();
@@ -970,15 +1011,14 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                     });
 
                     updateCreateTestClassSelect();
-                    updateFilterDropdowns();
+                    updateTestClassAndSubjectOptions();
+                    updateStudentClassOptions();
                     updateResultsClassOptions();
                     renderStudentList();
-                }, error => {
-                    console.error("Lỗi đồng bộ dữ liệu Học sinh/Sinh viên: ", error);
-                });
+                }, error => { console.error("Lỗi đồng bộ Học sinh: ", error); });
             }
 
-            // Thiết lập sự kiện Pill Bộ Lọc cho Tab Đề Thi
+            // PILLS CHO TAB ĐỀ THI
             const testPillBtns = document.querySelectorAll('#test-level-pills .level-pill-btn');
             testPillBtns.forEach(btn => {
                 btn.addEventListener('click', (e) => {
@@ -991,7 +1031,20 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                 });
             });
 
-            // BÉ LÔI FIX: Thiết lập sự kiện Pill Bộ Lọc cho Tab Xem Kết Quả
+            // BÉ LÔI FIX: PILLS CHO TAB QUẢN LÝ HỌC SINH
+            const studentPillBtns = document.querySelectorAll('#student-level-pills .level-pill-btn');
+            studentPillBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    studentPillBtns.forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    selectedStudentLevelFilter = e.target.dataset.level;
+                    
+                    updateStudentClassOptions();
+                    renderStudentList();
+                });
+            });
+
+            // PILLS CHO TAB KẾT QUẢ
             const resultsPillBtns = document.querySelectorAll('#results-level-pills .level-pill-btn');
             resultsPillBtns.forEach(btn => {
                 btn.addEventListener('click', (e) => {
@@ -1015,12 +1068,9 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                         mammoth.extractRawText({arrayBuffer: arrayBuffer})
                             .then(function(result){
                                 document.getElementById('bulkQuestionsText').value = result.value;
-                                alert("Đã bóc tách chữ từ file Word thành công! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧\nXin hãy kiểm tra lại định dạng trước khi lưu!");
+                                alert("Đã bóc tách file Word thành công! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧");
                             })
-                            .catch(function(err){
-                                console.error(err);
-                                alert("Lỗi khi đọc file Word (╥﹏╥)");
-                            });
+                            .catch(function(err){ alert("Lỗi đọc file Word."); });
                     };
                     reader.readAsArrayBuffer(file);
                 });
@@ -1057,7 +1107,6 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
             
             const filterTestClass = document.getElementById('filter-test-class');
             const filterTestSubject = document.getElementById('filter-test-subject');
-            const filterStudentClass = document.getElementById('filter-student-class');
 
             const toggleAddSingle = document.getElementById('toggle-add-single');
             const toggleAddBulk = document.getElementById('toggle-add-bulk');
@@ -1066,9 +1115,7 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
             const addComprehensionForm = document.getElementById('addComprehensionForm'); 
 
             const createStudentForm = document.getElementById('createStudentForm');
-            const createStudentMsg = document.getElementById('create-student-msg');
             const studentListDiv = document.getElementById('student-list');
-            const studentListLoading = document.getElementById('student-list-loading');
             const toggleAddStudentSingle = document.getElementById('toggle-add-student-single');
             const toggleAddStudentBulk = document.getElementById('toggle-add-student-bulk');
             const addStudentFormContainer = document.getElementById('addStudentFormContainer');
@@ -1096,27 +1143,13 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                     activeView.style.display = 'block'; 
                 }
             }
-            
-            function updateFilterDropdowns() {
-                const studentClasses = new Set();
-                allStudentsCache.forEach(hs => {
-                    if (hs.lop && hs.lop.trim()) studentClasses.add(hs.lop.trim());
-                });
-                
-                const currentStudentClass = filterStudentClass.value;
-                filterStudentClass.innerHTML = '<option value="">-- Tất cả các Lớp --</option>' + 
-                    [...studentClasses].sort().map(c => `<option value="${c}">${c}</option>`).join('');
-                filterStudentClass.value = currentStudentClass;
-
-                updateTestClassAndSubjectOptions();
-            }
 
             function updateTestBatchUI() {
                 selectedTestsCountSpan.innerText = selectedTestIds.size;
                 deleteSelectedTestsBtn.style.display = selectedTestIds.size > 0 ? 'inline-block' : 'none';
             }
 
-            // RENDER DANH SÁCH ĐỀ THI (LỌC THEO CẤP - LỚP - MÔN)
+            // RENDER DANH SÁCH ĐỀ THI
             window.renderTestList = function() {
                 const classFilter = filterTestClass.value.toLowerCase();
                 const subjectFilter = filterTestSubject.value.toLowerCase();
@@ -1145,7 +1178,7 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                 });
 
                 if (filteredTests.length === 0) { 
-                    testListDiv.innerHTML = '<p style="text-align:center; padding:20px; color:#6c757d;">Không tìm thấy đề thi nào khớp với lựa chọn.</p>'; 
+                    testListDiv.innerHTML = '<p style="text-align:center; padding:20px; color:#6c757d;">Không tìm thấy đề thi nào.</p>'; 
                     return; 
                 }
                 
@@ -1162,7 +1195,7 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                     else extraInfo.push(`Lớp: Tất cả`);
                     
                     if (extraInfo.length > 0) {
-                        timeInfo += `<span style="font-size: 0.85em; color: #28a745; margin-top: 4px;"><b>${extraInfo.join(' | ')}</b></span>`;
+                        timeInfo += `<span style="font-size: 0.85em; color: #28a745; margin-top: 2px;"><b>${extraInfo.join(' | ')}</b></span>`;
                     }
 
                     const isOldTest = !test.capHoc;
@@ -1172,18 +1205,17 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                         : `<span class="tag-badge tag-badge-level">${badgeText}</span>`;
 
                     item.innerHTML = `
-                        <div style="flex-shrink: 0; margin-right: 12px;">
-                            <input type="checkbox" class="test-row-checkbox" data-id="${testId}" style="cursor: pointer; transform: scale(1.2);">
+                        <div style="flex-shrink: 0; margin-right: 10px;">
+                            <input type="checkbox" class="test-row-checkbox" data-id="${testId}" style="cursor: pointer; transform: scale(1.1);">
                         </div>
                         <div class="test-item-info" style="flex-grow: 1;">
                             <div>
                                 ${badgeHtml}
-                                <span style="font-size: 1.05em; color: #007bff; font-weight: bold; display: inline;">${test.tenDe}</span>
+                                <span style="font-size: 1em; color: #007bff; font-weight: bold; display: inline;">${test.tenDe}</span>
                             </div>
                             ${timeInfo}
-                            <span class="creator">Tạo bởi: ${test.nguoiTao || 'Không rõ'}</span>
                         </div>
-                        <div style="display: flex; flex-direction: column; gap: 5px; flex-shrink:0;"> 
+                        <div style="display: flex; flex-direction: column; gap: 4px; flex-shrink:0;"> 
                             <button class="detail-btn edit-test-btn" data-id="${testId}" data-name="${test.tenDe}">Sửa</button>
                             <button class="delete-btn single-del-test-btn" data-id="${testId}">Xóa</button>
                         </div>
@@ -1210,48 +1242,33 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
             }
             
             async function deleteTest(testId, testName) {
-                if (!confirm(`CẢNH BÁO:\nBạn có chắc chắn muốn XÓA TOÀN BỘ đề thi "${testName}"?`)) return;
+                if (!confirm(`XÓA ĐỀ THI: "${testName}"?`)) return;
                 try {
                     await db.collection("dethi").doc(testId).delete();
-                    alert("Đã xóa đề thi!");
                     if (selectedTestId === testId) resetQuestionManager();
-                } catch (error) { console.error("Lỗi xóa đề thi: ", error); }
+                } catch (error) { console.error("Lỗi xóa đề: ", error); }
             }
 
             async function deleteSelectedTests() {
                 if (selectedTestIds.size === 0) return;
-                if (!confirm(`BẠN CÓ CHẮC CHẮN muốn XÓA TOÀN BỘ ${selectedTestIds.size} đề thi đã chọn?`)) return;
-
-                deleteSelectedTestsBtn.disabled = true;
-                deleteSelectedTestsBtn.innerText = `Đang xóa ${selectedTestIds.size} đề...`;
+                if (!confirm(`XÓA ${selectedTestIds.size} đề thi đã chọn?`)) return;
 
                 try {
                     const batch = db.batch();
-                    selectedTestIds.forEach(id => {
-                        const docRef = db.collection("dethi").doc(id);
-                        batch.delete(docRef);
-                    });
-                    
+                    selectedTestIds.forEach(id => batch.delete(db.collection("dethi").doc(id)));
                     await batch.commit();
-                    alert(`Đã xóa thành công ${selectedTestIds.size} đề thi!`);
                     
                     if(selectedTestIds.has(selectedTestId)) resetQuestionManager();
-                    
                     selectedTestIds.clear();
                     selectAllTestsCheckbox.checked = false;
-                } catch (error) {
-                    console.error("Lỗi xóa hàng loạt đề thi:", error);
-                    alert("Lỗi xóa đề thi. Vui lòng thử lại.");
-                } finally {
-                    deleteSelectedTestsBtn.disabled = false;
-                    updateTestBatchUI();
-                }
+                } catch (error) { console.error("Lỗi xóa hàng loạt đề:", error); } 
+                finally { updateTestBatchUI(); }
             }
             
             function selectTest(testId, testName) {
                 selectedTestId = testId; 
                 qManagerDiv.style.display = 'block';
-                qManagerTitle.innerText = `Cụm câu hỏi cho đề: ${testName}`;
+                qManagerTitle.innerText = `Đề thi: ${testName}`;
                 toggleAddSingle.click(); 
                 qListContainer.style.display = 'block';
                 loadQuestionList(testId);
@@ -1262,6 +1279,7 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                 updateQuestionBatchActionsUI();
             }
             
+            // BÉ LÔI FIX: HIỂN THỊ DANH SÁCH CÂU HỎI TRONG ĐỀ SẮP XẾP BÊN PHẢI DẠNG LIST
             function loadQuestionList(testId) {
                 if (questionListener) questionListener();
                 qListDiv.innerHTML = '<p>Đang tải câu hỏi...</p>';
@@ -1293,7 +1311,7 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                         updateQuestionBatchActionsUI();
                         
                         if (allQuestions.length === 0) { 
-                            qListDiv.innerHTML = '<p>Đề này chưa có câu hỏi nào.</p>'; 
+                            qListDiv.innerHTML = '<p style="text-align: center; padding: 20px; color: #6c757d;">Chưa có câu hỏi nào trong đề thi này.</p>'; 
                             return; 
                         }
                         
@@ -1304,19 +1322,19 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                             item.className = 'question-item';
                             
                             const passageHtml = q.comprehensionText 
-                                ? `<pre style="font-size: 0.9em; color: #555; max-height: 100px; overflow-y: auto;">${q.comprehensionText}</pre>`
-                                : (q.imageUrl ? `<img src="${q.imageUrl}" style="max-width: 100px; max-height: 100px; margin-bottom: 5px; border-radius: 4px;">` : '');
+                                ? `<pre style="font-size: 0.85em; color: #555; max-height: 80px; overflow-y: auto; margin-bottom: 5px;">${q.comprehensionText}</pre>`
+                                : (q.imageUrl ? `<img src="${q.imageUrl}" style="max-width: 80px; max-height: 80px; margin-bottom: 5px; border-radius: 4px;">` : '');
                             
                             item.innerHTML = `
-                                <div style="flex-shrink: 0; padding-right: 10px; display: flex; align-items: center;">
+                                <div style="flex-shrink: 0; padding-top: 3px;">
                                     <input type="checkbox" class="question-row-checkbox" data-id="${qId}" style="cursor: pointer;">
                                 </div>
                                 <div style="flex-grow: 1;">
                                     ${passageHtml}
                                     <div class="question-prompt">${count++}. ${q.prompt}</div>
-                                    <div class="question-answer">Đáp án: ${q.answer}</div>
+                                    <div class="question-answer">ĐA: ${q.answer}</div>
                                 </div>
-                                <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 5px;">
+                                <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 4px;">
                                     <button class="detail-btn edit-question-btn" data-id="${qId}">Sửa</button>
                                     <button class="delete-btn" onclick="deleteQuestion('${qId}')">Xóa</button>
                                 </div>
@@ -1333,7 +1351,7 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
 
             window.deleteQuestion = async function(questionId) {
                 if (!selectedTestId) return;
-                if (confirm("Bạn có chắc muốn xóa câu hỏi này?")) {
+                if (confirm("Muốn xóa câu hỏi này?")) {
                     try {
                         await db.collection("dethi").doc(selectedTestId).collection("cauhoi").doc(questionId).delete();
                     } catch (error) { console.error("Lỗi xóa câu hỏi: ", error); }
@@ -1349,13 +1367,9 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
             window.editQuestion = async function(questionId) {
                 if (!selectedTestId) return;
                 document.getElementById('toggle-add-single').click();
-                document.getElementById('question-manager').scrollIntoView({ behavior: 'smooth' });
                 try {
                     const docRef = await db.collection("dethi").doc(selectedTestId).collection("cauhoi").doc(questionId).get();
-                    if (!docRef.exists) {
-                        alert("Lỗi: Không tìm thấy câu hỏi để sửa.");
-                        return;
-                    }
+                    if (!docRef.exists) return;
                     const q = docRef.data();
                     isEditingQuestionId = questionId; 
                     document.getElementById('addQuestionForm').querySelector('h3').innerText = "Chỉnh sửa Câu hỏi";
@@ -1369,38 +1383,42 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                     
                     const isBase64 = q.imageUrl && q.imageUrl.startsWith('data:image');
                     document.getElementById('questionImageUrl').value = isBase64 ? '' : q.imageUrl || '';
-                } catch (error) {
-                    console.error("Lỗi tải câu hỏi: ", error);
-                    resetQuestionFormState();
-                }
+                } catch (error) { resetQuestionFormState(); }
             }
             
             function resetQuestionFormState() {
                 isEditingQuestionId = null;
                 document.getElementById('addQuestionForm').querySelector('h3').innerText = "Thêm câu hỏi mới";
-                document.getElementById('addQuestionForm').querySelector('button[type="submit"]').innerText = "Thêm câu hỏi";
+                document.getElementById('addQuestionForm').querySelector('button[type="submit"]').innerText = "Lưu câu hỏi";
                 document.getElementById('image-upload-status').innerText = '';
                 document.getElementById('questionImageFile').value = '';
                 addQuestionForm.reset(); 
             }
 
+            // BÉ LÔI FIX: RENDER DANH SÁCH HỌC SINH / SINH VIÊN KHI VÀ CHỈ KHI ĐÃ CHỌN CẤP VÀ LỚP
             window.renderStudentList = function() {
-                updateFilterDropdowns(); 
-                
+                const selectedClass = document.getElementById('filter-student-class').value;
                 const query = document.getElementById('student-search-input').value.toLowerCase();
-                const classFilter = filterStudentClass.value.toLowerCase();
                 
+                studentListDiv.innerHTML = '';
+
+                if (!selectedStudentLevelFilter || !selectedClass) {
+                    studentListDiv.innerHTML = `
+                        <p style="text-align: center; padding: 30px; color: #6c757d; font-weight: 500;">
+                            📌 Vui lòng chọn <b>Cấp học</b> và <b>Lớp</b> ở trên để xem danh sách Học sinh / Sinh viên ạ!
+                        </p>
+                    `;
+                    return;
+                }
+
                 const filteredStudents = allStudentsCache.filter(hs => {
+                    const matchClass = hs.lop && hs.lop.toLowerCase() === selectedClass.toLowerCase();
                     const matchQuery = hs.hoTen.toLowerCase().includes(query) || hs.id.toLowerCase().includes(query);
-                    const matchClass = classFilter === "" || (hs.lop && hs.lop.toLowerCase() === classFilter);
-                    return matchQuery && matchClass;
+                    return matchClass && matchQuery;
                 });
 
-                studentListDiv.innerHTML = '';
-                studentListLoading.style.display = 'none';
-
                 if (filteredStudents.length === 0) {
-                    studentListDiv.innerHTML = '<p>Không tìm thấy học sinh/sinh viên nào khớp với bộ lọc.</p>';
+                    studentListDiv.innerHTML = '<p style="text-align: center; padding: 20px;">Không có học sinh/sinh viên nào ở Lớp này.</p>';
                     return;
                 }
                                     
@@ -1435,10 +1453,8 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
             }
             
             async function deleteStudent(maHS, hoTen) {
-                if (!confirm(`Bạn có chắc muốn XÓA Mã HSSV "${maHS}" của "${hoTen}"?`)) return;
-                try {
-                    await db.collection('hocsinh').doc(maHS).delete();
-                } catch (error) { console.error("Lỗi xóa Mã HSSV: ", error); }
+                if (!confirm(`XÓA Mã HSSV "${maHS}" của "${hoTen}"?`)) return;
+                try { await db.collection('hocsinh').doc(maHS).delete(); } catch (error) { console.error("Lỗi xóa Mã: ", error); }
             }
 
             function updateBatchActionsUI() {
@@ -1453,27 +1469,18 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
 
             async function deleteSelectedSubmissions() {
                 if (selectedSubmissionIds.size === 0) return;
-                if (!confirm(`BẠN CÓ CHẮC CHẮN muốn XÓA ${selectedSubmissionIds.size} bài làm đã chọn?`)) return;
+                if (!confirm(`XÓA ${selectedSubmissionIds.size} bài làm đã chọn?`)) return;
 
-                deleteSelectedBtn.disabled = true;
-                deleteSelectedBtn.innerText = `Đang xóa ${selectedSubmissionIds.size} bài...`;
                 const batch = db.batch();
-                let deleteCount = 0;
-                selectedSubmissionIds.forEach(id => {
-                    const docRef = db.collection("ketqua").doc(id);
-                    batch.delete(docRef);
-                    deleteCount++;
-                });
+                selectedSubmissionIds.forEach(id => batch.delete(db.collection("ketqua").doc(id)));
                 try {
                     await batch.commit();
-                    alert(`Đã xóa thành công ${deleteCount} bài làm!`);
                     selectedSubmissionIds.clear();
                     selectAllCheckbox.checked = false;
-                } catch (error) { console.error("Lỗi khi xóa hàng loạt: ", error); } 
-                finally { deleteSelectedBtn.disabled = false; }
+                } catch (error) { console.error("Lỗi xóa bài làm: ", error); }
             }
 
-            // BÉ LÔI FIX: RENDER XEM KẾT QUẢ KHI VÀ CHỈ KHI ĐÃ CHỌN CẤP VÀ LỚP
+            // RENDER XEM KẾT QUẢ KHI VÀ CHỈ KHI CHỌN CẤP VÀ LỚP
             window.renderResultsList = function() {
                 const selectedClass = document.getElementById('filter-results-class').value;
                 const query = document.getElementById('results-search-input').value.toLowerCase();
@@ -1482,7 +1489,6 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                 selectedSubmissionIds.clear(); 
                 selectAllCheckbox.checked = false; 
 
-                // MẶC ĐỊNH CHƯA CHỌN CẤP VÀ LỚP -> BÁO THÔNG BÁO VÀ KHÔNG HIỆN DỮ LIỆU
                 if (!selectedResultsLevelFilter || !selectedClass) {
                     resultsCount.innerText = '0';
                     resultsTableBody.innerHTML = `
@@ -1496,7 +1502,6 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                     return;
                 }
 
-                // LỌC KẾT QUẢ THEO CẤP HỌC VÀ LỚP CHÍNH XÁC
                 const filteredResults = allResultsCache.filter(res => {
                     const matchClass = res.lop && res.lop.toLowerCase() === selectedClass.toLowerCase();
                     const matchQuery = (res.hoTen && res.hoTen.toLowerCase().includes(query)) ||
@@ -1507,7 +1512,7 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                 resultsCount.innerText = filteredResults.length;
 
                 if (filteredResults.length === 0) {
-                    resultsTableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 20px;">Không tìm thấy bài làm nào của Lớp này.</td></tr>';
+                    resultsTableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 20px;">Không tìm thấy bài làm nào ở Lớp này.</td></tr>';
                     updateBatchActionsUI(); 
                     return;
                 }
@@ -1549,10 +1554,8 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
             }
 
             async function deleteSubmission(submissionId, studentName) {
-                if (window.confirm(`BẠN CÓ CHẮC CHẮN muốn XÓA bài làm của ${studentName}?`)) {
-                    try {
-                        await db.collection("ketqua").doc(submissionId).delete();
-                    } catch (error) { console.error("Lỗi khi xóa bài làm: ", error); }
+                if (window.confirm(`XÓA bài làm của ${studentName}?`)) {
+                    try { await db.collection("ketqua").doc(submissionId).delete(); } catch (error) { console.error("Lỗi xóa: ", error); }
                 }
             }
             
@@ -1563,16 +1566,16 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
             });
             navStudents.addEventListener('click', () => {
                 setActiveTab(navStudents, studentManagerView);
+                renderStudentList();
             });
             navResults.addEventListener('click', () => {
                 setActiveTab(navResults, resultsView);
-                renderResultsList(); // Mặc định báo chọn cấp/lớp
+                renderResultsList(); 
             });
             navAccount.addEventListener('click', () => setActiveTab(navAccount, accountManagerView));
             
             document.getElementById('test-search-input').addEventListener('input', renderTestList);
             document.getElementById('student-search-input').addEventListener('input', renderStudentList);
-            filterStudentClass.addEventListener('change', renderStudentList);
             document.getElementById('results-search-input').addEventListener('input', renderResultsList);
 
             selectAllTestsCheckbox.addEventListener('change', (e) => {
@@ -1614,11 +1617,6 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                 
                 const adminEmail = currentUser.email; 
                 if (!testName || !testTime) return;
-                
-                if (startTime && endTime && startTime >= endTime) {
-                    alert('Lỗi: Thời gian BẮT ĐẦU phải trước thời gian KẾT THÚC.');
-                    return;
-                }
 
                 try {
                     await db.collection("dethi").add({ 
@@ -1635,7 +1633,7 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                     createTestForm.reset();
                     alert("Tạo đề thi thành công! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧");
                     navTests.click(); 
-                } catch (error) { console.error("Lỗi tạo đề thi: ", error); }
+                } catch (error) { console.error("Lỗi tạo đề: ", error); }
             });
 
             if (!window.testListListener) {
@@ -1685,27 +1683,16 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                 if (!selectedTestId) return;
                 const fileInput = document.getElementById('questionImageFile');
                 const imageUrlInput = document.getElementById('questionImageUrl');
-                const statusDiv = document.getElementById('image-upload-status');
-                statusDiv.innerText = '';
                 let finalImageUrl = imageUrlInput.value.trim();
                 const file = fileInput.files[0];
                 if (file) {
                     if (file.size > MAX_IMAGE_SIZE_KB * 1024) {
-                        statusDiv.innerText = `Lỗi: Tệp quá lớn. Max: ${MAX_IMAGE_SIZE_KB} KB.`;
-                        statusDiv.style.color = 'red';
+                        alert(`Lỗi: Tệp quá lớn. Max: ${MAX_IMAGE_SIZE_KB} KB.`);
                         return;
                     }
                     try {
-                        statusDiv.innerText = 'Đang mã hóa ảnh...';
-                        statusDiv.style.color = 'blue';
                         finalImageUrl = await fileToBase64(file); 
-                        statusDiv.innerText = 'Đã mã hóa thành công!';
-                        statusDiv.style.color = 'green';
-                    } catch (error) {
-                        statusDiv.innerText = 'Lỗi mã hóa tệp ảnh.';
-                        statusDiv.style.color = 'red';
-                        return;
-                    }
+                    } catch (error) { return; }
                 } else if (finalImageUrl === '') {
                      finalImageUrl = null;
                 }
@@ -1713,31 +1700,23 @@ d23480201014,Lê Văn C,K47_CNTT1</code></pre>
                 const options = [ document.getElementById('opt1').value, document.getElementById('opt2').value, document.getElementById('opt3').value, document.getElementById('opt4').value ];
                 const answer = document.getElementById('answer').value;
                 if (!options.includes(answer)) { 
-                    alert("Lỗi: Đáp án đúng phải là 1 trong 4 lựa chọn A, B, C, D."); 
+                    alert("Lỗi: Đáp án đúng phải là 1 trong 4 lựa chọn."); 
                     return; 
                 }
                 
                 const questionData = { 
-                    prompt: prompt, 
-                    options: options, 
-                    answer: answer, 
-                    imageUrl: finalImageUrl, 
-                    comprehensionText: null,
-                    index: currentQuestionCount + 1, 
+                    prompt: prompt, options: options, answer: answer, imageUrl: finalImageUrl, 
+                    comprehensionText: null, index: currentQuestionCount + 1, 
                 };
 
                 try {
                     if (isEditingQuestionId) {
-                        const updateData = { prompt: prompt, options: options, answer: answer, imageUrl: finalImageUrl, comprehensionText: null };
-                        await db.collection("dethi").doc(selectedTestId).collection("cauhoi").doc(isEditingQuestionId).update(updateData);
-                        statusDiv.innerText = 'CẬP NHẬT thành công!';
-                        statusDiv.style.color = 'green';
+                        await db.collection("dethi").doc(selectedTestId).collection("cauhoi").doc(isEditingQuestionId).update({
+                            prompt: prompt, options: options, answer: answer, imageUrl: finalImageUrl, comprehensionText: null
+                        });
                     } else {
                         await db.collection("dethi").doc(selectedTestId).collection("cauhoi").add(questionData);
-                        statusDiv.innerText = 'Thêm câu hỏi thành công!';
-                        statusDiv.style.color = 'green';
                     }
-                    addQuestionForm.reset();
                     resetQuestionFormState(); 
                 } catch (error) { alert("Lỗi khi thêm/cập nhật câu hỏi!"); }
             });
