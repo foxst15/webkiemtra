@@ -6,14 +6,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bài kiểm tra</title>
     <style>
-        /* CHỐNG SAO CHÉP VÀ CHỌN VĂN BẢN TOÀN TRANG (ĐẶC BIỆT TRÊN MOBILE) */
+        /* CHỐNG SAO CHÉP & IN ẤN TOÀN TRANG */
         *, *::before, *::after {
-            -webkit-user-select: none !important; /* Safari / Chrome Mobile */
-            -moz-user-select: none !important;    /* Firefox */
-            -ms-user-select: none !important;     /* IE / Edge */
-            user-select: none !important;         /* Standard */
-            -webkit-touch-callout: none !important; /* Chặn Menu chạm giữ (Copy/Search) trên iOS/Android */
+            -webkit-user-select: none !important;
+            -moz-user-select: none !important;
+            -ms-user-select: none !important;
+            user-select: none !important;
+            -webkit-touch-callout: none !important;
             -webkit-tap-highlight-color: transparent;
+        }
+
+        @media print {
+            body { display: none !important; }
+        }
+
+        /* LỚP LÀM MỜ TỨC THÌ KHI RỜI CHUỘT / MẤT FOCUS */
+        .blur-protection {
+            filter: blur(25px) !important;
+            opacity: 0.05 !important;
+            pointer-events: none !important;
+            transition: filter 0.1s ease, opacity 0.1s ease;
         }
 
         body {
@@ -38,6 +50,7 @@
             padding: 2rem;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, .05);
+            position: relative;
         }
 
         h1 {
@@ -81,7 +94,6 @@
             border-radius: 8px;
             object-fit: contain;
             border: 1px solid #ddd;
-            /* Chặn đè giữ ảnh trên mobile */
             pointer-events: none;
             -webkit-user-drag: none;
         }
@@ -173,17 +185,31 @@
             font-weight: bold;
         }
 
-        #back-button {
-            margin-top: 20px;
-            background-color: #6c757d;
+        #startOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.95);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             color: white;
-            padding: 10px 15px;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #startFullscreenBtn {
+            background: #2563eb;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 15px 30px;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 1em;
-            display: inline-block;
-            text-decoration: none;
+            margin-top: 20px;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
         }
 
         .progress-tracker {
@@ -263,36 +289,9 @@
         }
 
         @media (max-width: 900px) {
-            .page-grid {
-                grid-template-columns: 1fr;
-                padding: 0 10px;
-            }
-
-            .progress-tracker {
-                position: relative;
-                top: 0;
-                margin-top: 20px;
-            }
-
-            body {
-                padding-top: 80px;
-            }
-        }
-
-        @media (max-width: 600px) {
-            .container {
-                padding: 1.5rem;
-            }
-
-            .nav-btn {
-                min-width: calc(50% - 5px);
-            }
-
-            @media (max-width: 350px) {
-                .nav-btn {
-                    min-width: 100%;
-                }
-            }
+            .page-grid { grid-template-columns: 1fr; padding: 0 10px; }
+            .progress-tracker { position: relative; top: 0; margin-top: 20px; }
+            body { padding-top: 80px; }
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -302,13 +301,20 @@
 
 <body>
 
+    <!-- OVERLAY ÉP FULLSCREEN -->
+    <div id="startOverlay">
+        <h2>YÊU CẦU BẢO MẬT BÀI THI</h2>
+        <p>Bài thi yêu cầu chế độ **Toàn Màn Hình**. Không chuyển tab, chia đôi màn hình hoặc thoát khỏi cửa sổ làm bài!</p>
+        <button id="startFullscreenBtn" onclick="enterFullscreenAndStart()">BẮT ĐẦU LÀM BÀI</button>
+    </div>
+
     <div id="timer-bar">
         Thời gian: <span id="timer">--:--</span>
     </div>
 
-    <div class="page-grid">
+    <div class="page-grid" id="mainTestGrid">
         <div class="test-area">
-            <div class="container">
+            <div class="container" id="testContainer">
                 <h1 id="testTitle">Bài kiểm tra</h1>
                 <div id="studentInfo"></div>
                 <hr style="border: 0; border-top: 1px solid #eee; margin: 2rem 0;">
@@ -333,7 +339,7 @@
                 </div>
 
                 <div id="error-actions" style="text-align: center; display: none;">
-                    <a href="select-test.html" id="back-button">Quay lại trang Chọn đề</a>
+                    <a href="select-test.html" id="back-button" class="nav-btn">Quay lại trang Chọn đề</a>
                 </div>
             </div>
         </div>
@@ -370,12 +376,8 @@
         const selectedTestName = localStorage.getItem('selectedTestName');
         const testTimeMinutes = parseInt(localStorage.getItem('selectedTestTime') || 15, 10);
 
-        if (!studentName || !studentClass) {
-            window.location.href = 'index.html';
-        }
-        if (!selectedTestId) {
-            window.location.href = 'select-test.html';
-        }
+        if (!studentName || !studentClass) { window.location.href = 'index.html'; }
+        if (!selectedTestId) { window.location.href = 'select-test.html'; }
 
         let correctAnswers = [];
         let fullQuestionObjects = [];
@@ -393,20 +395,60 @@
         let isAntiCheatEnabled = false;
         let isQuizReady = false;
 
-        // BẢO VỆ CHỐNG SAO CHÉP & GIAN LẬN TOÀN DIỆN
+        // 1. CHỐNG SAO CHÉP & CHỤP MÀN HÌNH BẰNG PHÍM TẮT
         ['copy', 'cut', 'paste', 'selectstart', 'dragstart', 'contextmenu'].forEach(eventType => {
             document.addEventListener(eventType, e => e.preventDefault());
         });
 
-        // Chặn phím tắt gian lận (Ctrl+C, Ctrl+A, Ctrl+X, Ctrl+U, Ctrl+S, Ctrl+P, F12)
         document.addEventListener('keydown', function (e) {
-            const forbiddenKeys = ['c', 'a', 'x', 'u', 's', 'p'];
+            const forbidden = ['c', 'a', 'x', 'u', 's', 'p'];
             if (
                 e.key === 'F12' ||
-                (e.ctrlKey && forbiddenKeys.includes(e.key.toLowerCase())) ||
+                e.key === 'PrintScreen' ||
+                (e.ctrlKey && forbidden.includes(e.key.toLowerCase())) ||
                 (e.ctrlKey && e.shiftKey && ['i', 'j', 'c'].includes(e.key.toLowerCase()))
             ) {
                 e.preventDefault();
+                if (e.key === 'PrintScreen') {
+                    navigator.clipboard.writeText('');
+                    triggerBlurProtection(true);
+                }
+            }
+        });
+
+        // 2. CHẾ ĐỘ TOÀN MÀN HÌNH (FULLSCREEN)
+        function enterFullscreenAndStart() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) { elem.requestFullscreen(); }
+            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
+            else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
+            
+            document.getElementById('startOverlay').style.display = 'none';
+            loadQuiz();
+        }
+
+        // 3. TỰ ĐỘNG LÀM MỜ MÀN HÌNH KHI RỜI CHUỘT / MỞ TAB SONG SONG
+        function triggerBlurProtection(enable) {
+            const grid = document.getElementById('mainTestGrid');
+            if (enable) {
+                grid.classList.add('blur-protection');
+            } else {
+                grid.classList.remove('blur-protection');
+            }
+        }
+
+        document.addEventListener('mouseleave', (e) => {
+            if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
+            if (e.clientY <= 0 || e.clientX <= 0 || e.clientX >= window.innerWidth || e.clientY >= window.innerHeight) {
+                triggerBlurProtection(true);
+                startCheatWarning("Đưa con trỏ chuột ra ngoài khu vực bài thi");
+            }
+        });
+
+        document.addEventListener('mouseenter', () => {
+            if (document.hasFocus()) {
+                triggerBlurProtection(false);
+                stopCheatWarning();
             }
         });
 
@@ -424,20 +466,10 @@
         document.getElementById('studentInfo').innerText = `Thí sinh: ${studentName} - Lớp: ${studentClass}`;
         document.getElementById('testTitle').innerText = selectedTestName || "Bài kiểm tra";
 
-        history.pushState(null, null, location.href);
-        window.onpopstate = function () {
-            history.pushState(null, null, location.href);
-            if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
-            synchronousSubmitOnUnload(true, "Bấm nút 'Back/Forward' của trình duyệt");
-            window.location.replace('results.html');
-        };
-
         function formatTime(totalSeconds) {
             let minutes = Math.floor(totalSeconds / 60);
             let seconds = totalSeconds % 60;
-            minutes = minutes < 10 ? '0' + minutes : minutes;
-            seconds = seconds < 10 ? '0' + seconds : seconds;
-            return `${minutes}:${seconds}`;
+            return `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
         }
 
         function shuffleArray(array) {
@@ -452,7 +484,6 @@
             if (index < 0 || index >= totalQuestions) return;
 
             currentQuestionIndex = index;
-
             const questions = document.querySelectorAll('.question');
             questions.forEach(q => q.classList.remove('active'));
 
@@ -465,13 +496,7 @@
 
             const qBoxes = questionMapContainer.querySelectorAll('.q-box');
             qBoxes.forEach(box => box.classList.remove('current'));
-            if (qBoxes.length > 0) {
-                qBoxes[index].classList.add('current');
-            }
-
-            if (window.innerWidth > 900) {
-                questions[index].scrollIntoView({ behavior: 'auto', block: 'start' });
-            }
+            if (qBoxes.length > 0) { qBoxes[index].classList.add('current'); }
         }
 
         function createQuestionMap(totalQuestions) {
@@ -483,11 +508,7 @@
                 qBox.className = 'q-box';
                 qBox.dataset.index = i;
                 qBox.innerHTML = `<span>${i + 1}</span>`;
-
-                qBox.addEventListener('click', () => {
-                    showQuestion(i);
-                });
-
+                qBox.addEventListener('click', () => showQuestion(i));
                 questionMapContainer.appendChild(qBox);
             }
         }
@@ -544,9 +565,7 @@
                     const testData = testDoc.data();
                     isAntiCheatEnabled = (testData.chongGianLan !== false);
                 }
-            } catch (e) {
-                console.error("Lỗi lấy cấu hình đề thi:", e);
-            }
+            } catch (e) { console.error("Lỗi lấy cấu hình đề thi:", e); }
 
             try {
                 const snapshot = await db.collection("dethi").doc(selectedTestId).collection("cauhoi").get();
@@ -567,28 +586,20 @@
                     const indexA = a.index !== undefined && a.index !== null ? a.index : -1;
                     const indexB = b.index !== undefined && b.index !== null ? b.index : -1;
 
-                    if (indexA !== -1 && indexB !== -1) {
-                        return indexA - indexB;
-                    } else if (indexA !== -1) {
-                        return -1;
-                    } else if (indexB !== -1) {
-                        return 1;
-                    } else {
-                        return a.id.localeCompare(b.id);
-                    }
+                    if (indexA !== -1 && indexB !== -1) { return indexA - indexB; }
+                    else if (indexA !== -1) { return -1; }
+                    else if (indexB !== -1) { return 1; }
+                    else { return a.id.localeCompare(b.id); }
                 });
 
                 const testNameLower = selectedTestName.toLowerCase();
-                const shouldShuffleQuestions = !testNameLower.includes("tiếng việt") && !testNameLower.includes("english");
-
-                if (shouldShuffleQuestions) {
+                if (!testNameLower.includes("tiếng việt") && !testNameLower.includes("english")) {
                     shuffleArray(loadedQuestions);
                 }
 
                 testForm.innerHTML = '';
                 let questionIndex = 0;
                 loadedQuestions.forEach(q => {
-
                     let originalOptions = [...q.options];
                     let optionIndices = [0, 1, 2, 3];
                     shuffleArray(optionIndices);
@@ -604,8 +615,7 @@
                         textPassage.className = 'comprehension-text';
                         textPassage.innerText = q.comprehensionText;
                         questionDiv.appendChild(textPassage);
-                    }
-                    else if (q.imageUrl) {
+                    } else if (q.imageUrl) {
                         const image = document.createElement('img');
                         image.src = q.imageUrl;
                         image.className = 'question-image';
@@ -652,9 +662,7 @@
                 startTimer(testTimeMinutes * 60);
                 setupAntiCheat();
 
-                setTimeout(() => {
-                    isQuizReady = true;
-                }, 1500);
+                setTimeout(() => { isQuizReady = true; }, 1500);
 
             } catch (error) {
                 console.error("Lỗi khi tải câu hỏi: ", error);
@@ -669,14 +677,8 @@
             const timerBarElement = document.getElementById('timer-bar');
 
             timerInterval = setInterval(() => {
-                if (daNopBai) {
-                    clearInterval(timerInterval);
-                    return;
-                }
-
-                if (!isCheating) {
-                    globalTimeLeft--;
-                }
+                if (daNopBai) { clearInterval(timerInterval); return; }
+                if (!isCheating) { globalTimeLeft--; }
 
                 if (globalTimeLeft <= 0) {
                     globalTimeLeft = 0;
@@ -697,7 +699,6 @@
                     timerElement.innerText = formatTime(globalTimeLeft);
                     timerBarElement.classList.remove('warning');
                 }
-
             }, 1000);
         }
 
@@ -711,53 +712,52 @@
             isCheating = true;
             cheatCountDown = 3;
 
+            triggerBlurProtection(true);
             document.getElementById('timer').innerText = `CẢNH BÁO: QUAY LẠI! (${cheatCountDown}s)`;
             document.getElementById('timer-bar').classList.add('warning');
 
             if (cheatTimerInterval) clearInterval(cheatTimerInterval);
-
             cheatTimerInterval = setInterval(() => {
                 cheatCountDown--;
-                if (cheatCountDown < 0) {
-                    cheatCountDown = 0;
-                }
+                if (cheatCountDown < 0) { cheatCountDown = 0; }
                 if (isCheating) {
                     document.getElementById('timer').innerText = `CẢNH BÁO: QUAY LẠI! (${cheatCountDown}s)`;
                 }
             }, 1000);
 
             if (cheatTimeout) clearTimeout(cheatTimeout);
-
             cheatTimeout = setTimeout(() => {
                 if (daNopBai) return;
-                if (isCheating) {
-                    submitTest(true, reason);
-                }
+                if (isCheating) { submitTest(true, reason); }
             }, 3000);
         }
 
         function stopCheatWarning() {
-            if (cheatTimeout) {
-                clearTimeout(cheatTimeout);
-                cheatTimeout = null;
-            }
-            if (cheatTimerInterval) {
-                clearInterval(cheatTimerInterval);
-                cheatTimerInterval = null;
-            }
+            if (cheatTimeout) { clearTimeout(cheatTimeout); cheatTimeout = null; }
+            if (cheatTimerInterval) { clearInterval(cheatTimerInterval); cheatTimerInterval = null; }
             isCheating = false;
             cheatCountDown = 0;
+            triggerBlurProtection(false);
 
             if (!daNopBai) {
                 const timerBarElement = document.getElementById('timer-bar');
-                if (globalTimeLeft > 60) {
-                    timerBarElement.classList.remove('warning');
-                }
+                if (globalTimeLeft > 60) { timerBarElement.classList.remove('warning'); }
                 document.getElementById('timer').innerText = formatTime(globalTimeLeft);
             }
         }
 
         function setupAntiCheat() {
+            // Theo dõi Fullscreen
+            document.addEventListener('fullscreenchange', () => {
+                if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
+                if (!document.fullscreenElement) {
+                    startCheatWarning("Thoát chế độ Toàn Màn Hình (Fullscreen)");
+                } else {
+                    stopCheatWarning();
+                }
+            });
+
+            // Theo dõi chuyển tab/chuyển ứng dụng
             document.addEventListener('visibilitychange', () => {
                 if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
                 if (document.hidden) {
@@ -770,23 +770,12 @@
 
             window.addEventListener('blur', () => {
                 if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
-                if (!document.hidden) {
-                    startCheatWarning("Mất tập trung (Nhấp chuột ra ngoài làm bài)");
-                }
+                startCheatWarning("Mất tập trung (Mở cửa sổ khác / Nhấp ra ngoài)");
             });
 
             window.addEventListener('focus', () => {
                 if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
                 stopCheatWarning();
-            });
-
-            document.addEventListener('keydown', function (e) {
-                if ((e.key === 'r' && e.ctrlKey) || e.key === 'F5') {
-                    if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
-                    e.preventDefault();
-                    synchronousSubmitOnUnload(true, "Gian lận (Bấm F5/Reload)");
-                    window.location.replace('results.html');
-                }
             });
         }
 
@@ -798,14 +787,10 @@
             if (cheatTimerInterval) clearInterval(cheatTimerInterval);
 
             let score = 0;
-            const userAnswers = userSelections;
-
             correctAnswers = fullQuestionObjects.map(q => q.answer);
             correctAnswers.forEach((encodedAnswer, index) => {
-                const userAnswer = userAnswers[index];
-                if (userAnswer && btoa(encodeURIComponent(userAnswer)) === encodedAnswer) {
-                    score++;
-                }
+                const userAnswer = userSelections[index];
+                if (userAnswer && btoa(encodeURIComponent(userAnswer)) === encodedAnswer) { score++; }
             });
 
             const totalQuestions = correctAnswers.length;
@@ -835,7 +820,6 @@
             try {
                 localStorage.setItem('pendingSubmission', JSON.stringify(submissionData));
             } catch (error) {
-                console.warn("Lỗi bộ nhớ, tự động dọn dẹp ảnh...", error);
                 submissionData.quizData = [];
                 localStorage.setItem('pendingSubmission', JSON.stringify(submissionData));
             }
@@ -845,10 +829,7 @@
             if (daNopBai) return;
 
             if (!isAutoSubmit) {
-                let confirmMsg = "Bạn có chắc chắn muốn nộp bài không?";
-                if (!window.confirm(confirmMsg)) {
-                    return;
-                }
+                if (!window.confirm("Bạn có chắc chắn muốn nộp bài không?")) return;
             }
 
             daNopBai = true;
@@ -861,14 +842,10 @@
             submitBtn.innerText = "Đang nộp bài...";
 
             let score = 0;
-            const userAnswers = userSelections;
-
             correctAnswers = fullQuestionObjects.map(q => q.answer);
             correctAnswers.forEach((encodedAnswer, index) => {
-                const userAnswer = userAnswers[index];
-                if (userAnswer && btoa(encodeURIComponent(userAnswer)) === encodedAnswer) {
-                    score++;
-                }
+                const userAnswer = userSelections[index];
+                if (userAnswer && btoa(encodeURIComponent(userAnswer)) === encodedAnswer) { score++; }
             });
 
             const totalQuestions = correctAnswers.length;
@@ -907,14 +884,8 @@
             window.location.replace('results.html');
         }
 
-        prevBtn.addEventListener('click', () => {
-            showQuestion(currentQuestionIndex - 1);
-        });
-        nextBtn.addEventListener('click', () => {
-            showQuestion(currentQuestionIndex + 1);
-        });
-
-        loadQuiz();
+        prevBtn.addEventListener('click', () => showQuestion(currentQuestionIndex - 1));
+        nextBtn.addEventListener('click', () => showQuestion(currentQuestionIndex + 1));
     </script>
 </body>
 
