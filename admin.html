@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trang Quản Trị </title>
+    <title>Trang Quản Trị - Bé Lôi System</title>
     <style>
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
@@ -529,7 +529,7 @@ D. Lựa chọn D
             </form>
         </div>
 
-        <!-- TAB QUẢN LÝ HỌC SINH / SINH VIÊN (EXCEL HIGH-PERFORMANCE) -->
+        <!-- TAB QUẢN LÝ HỌC SINH / SINH VIÊN -->
         <div id="student-manager-view">
             <div class="card">
                 <h2>Quản lý Mã Học Sinh / Sinh Viên</h2>
@@ -614,7 +614,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
             </div>
         </div>
 
-        <!-- TAB KẾT QUẢ -->
+        <!-- TAB KẾT QUẢ (ĐÃ BỔ SUNG CỘT MÔN HỌC BẢNG & EXCEL) -->
         <div id="results-view" class="card">
             <h2>Danh sách Kết Quả Kiểm Tra</h2>
             
@@ -635,11 +635,11 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                     <select id="filter-results-class" class="filter-select" onchange="renderResultsList()">
                         <option value="">-- Bước 2: Chọn Lớp --</option>
                     </select>
-                    <input type="search" id="results-search-input" placeholder="🔍 Tìm theo Tên HS/SV, Tên đề thi..." style="flex-grow: 2; margin-bottom: 0;">
+                    <input type="search" id="results-search-input" placeholder="🔍 Tìm theo Tên HS/SV, Môn học, Tên đề thi..." style="flex-grow: 2; margin-bottom: 0;">
                 </div>
             </div>
             
-            <div id="batch-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-top: 1px solid #eee; padding-top: 15px;">
+            <div id="batch-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-top: 1px solid #eee; padding-top: 15px; flex-wrap: wrap; gap: 10px;">
                 <p style="display: flex; align-items: center; gap: 15px; margin: 0;">
                     <span>Số bài nộp tìm thấy: <strong id="results-count">0</strong></span>
                     <span>
@@ -647,7 +647,14 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                         <label for="select-all-checkbox" style="cursor: pointer;">Chọn tất cả</label>
                     </span>
                 </p>
-                <button id="delete-selected-btn" class="action-btn-delete" style="display: none;">Xóa Bài Đã Chọn (<span id="selected-count">0</span>)</button>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button id="export-results-excel-btn" style="background-color: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s;">
+                        📊 Xuất Excel Kết Quả
+                    </button>
+                    <button id="delete-selected-btn" class="action-btn-delete" style="display: none;">
+                        Xóa Bài Đã Chọn (<span id="selected-count">0</span>)
+                    </button>
+                </div>
             </div>
 
             <div style="overflow-x: auto;">
@@ -657,6 +664,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                             <th></th>
                             <th>Họ Tên</th>
                             <th>Lớp</th>
+                            <th>Môn Học</th> <!-- BÉ LÔI BỔ SUNG CỘT MÔN HỌC -->
                             <th>Tên Đề Thi</th>
                             <th>Điểm</th>
                             <th>Chi tiết</th>
@@ -667,7 +675,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                     </thead>
                     <tbody id="results-table-body">
                         <tr>
-                            <td colspan="9" style="text-align: center; padding: 30px; color: #6c757d; font-weight: 500;">
+                            <td colspan="10" style="text-align: center; padding: 30px; color: #6c757d; font-weight: 500;">
                                 📌 Vui lòng chọn <b>Cấp học</b> và <b>Lớp</b> ở trên để xem danh sách kết quả kiểm tra ạ!
                             </td>
                         </tr>
@@ -1192,7 +1200,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                 }, error => { console.error("Lỗi đồng bộ Học sinh: ", error); });
             }
 
-            // LẮNG NGHE SỰ KIỆN ĐỌC FILE EXCEL CỦA HỌC SINH
+            // ĐỌC FILE EXCEL CỦA HỌC SINH
             const excelFileInput = document.getElementById('excelStudentFileInput');
             if (excelFileInput) {
                 excelFileInput.addEventListener('change', function(e) {
@@ -1366,6 +1374,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
             const selectAllCheckbox = document.getElementById('select-all-checkbox');
             const deleteSelectedBtn = document.getElementById('delete-selected-btn');
             const selectedCountSpan = document.getElementById('selected-count');
+            const exportResultsExcelBtn = document.getElementById('export-results-excel-btn');
 
             function setActiveTab(activeNav, activeView) {
                 [navTests, navCreateTest, navStudents, navResults, navAccount].forEach(nav => nav.classList.remove('active'));
@@ -1711,7 +1720,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                     resultsCount.innerText = '0';
                     resultsTableBody.innerHTML = `
                         <tr>
-                            <td colspan="9" style="text-align: center; padding: 30px; color: #6c757d; font-weight: 500;">
+                            <td colspan="10" style="text-align: center; padding: 30px; color: #6c757d; font-weight: 500;">
                                 📌 Vui lòng chọn <b>Cấp học</b> và <b>Lớp</b> ở trên để xem danh sách kết quả kiểm tra ạ!
                             </td>
                         </tr>
@@ -1723,6 +1732,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                 const filteredResults = allResultsCache.filter(res => {
                     const matchClass = res.lop && res.lop.toLowerCase() === selectedClass.toLowerCase();
                     const matchQuery = (res.hoTen && res.hoTen.toLowerCase().includes(query)) ||
+                                       (res.monHoc && res.monHoc.toLowerCase().includes(query)) ||
                                        (res.tenDeThi && res.tenDeThi.toLowerCase().includes(query));
                     return matchClass && matchQuery;
                 });
@@ -1730,7 +1740,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                 resultsCount.innerText = filteredResults.length;
 
                 if (filteredResults.length === 0) {
-                    resultsTableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 20px;">Không tìm thấy bài làm nào ở Lớp này.</td></tr>';
+                    resultsTableBody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px;">Không tìm thấy bài làm nào ở Lớp này.</td></tr>';
                     updateBatchActionsUI(); 
                     return;
                 }
@@ -1751,10 +1761,12 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                     
                     const isSelected = selectedSubmissionIds.has(res.id);
                     
+                    // HIỂN THỊ CỘT MÔN HỌC
                     tr.innerHTML = `
                         <td><input type="checkbox" class="row-checkbox" data-id="${res.id}" ${isSelected ? 'checked' : ''} style="cursor: pointer;"></td>
                         <td>${res.hoTen || 'N/A'}</td>
                         <td>${res.lop || 'N/A'}</td>
+                        <td><b style="color: #007bff;">${res.monHoc || 'Khác'}</b></td>
                         <td>${res.tenDeThi || 'N/A'}</td>
                         <td class="${diemClass}">${res.diemSo || 'N/A'}</td>
                         <td>${res.soCauDung || 'N/A'} / ${res.tongSoCau || 'N/A'}</td>
@@ -1770,6 +1782,65 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                 
                 updateBatchActionsUI();
             }
+
+            // XUẤT EXCEL KẾT QUẢ CÓ THÊM CỘT MÔN HỌC
+            function exportResultsToExcel() {
+                const selectedClass = document.getElementById('filter-results-class').value;
+                const query = document.getElementById('results-search-input').value.toLowerCase();
+
+                if (!selectedResultsLevelFilter || !selectedClass) {
+                    alert("Vui lòng chọn Cấp học và Lớp ở bộ lọc trước khi xuất file Excel ạ!");
+                    return;
+                }
+
+                const filteredResults = allResultsCache.filter(res => {
+                    const matchClass = res.lop && res.lop.toLowerCase() === selectedClass.toLowerCase();
+                    const matchQuery = (res.hoTen && res.hoTen.toLowerCase().includes(query)) ||
+                                       (res.monHoc && res.monHoc.toLowerCase().includes(query)) ||
+                                       (res.tenDeThi && res.tenDeThi.toLowerCase().includes(query));
+                    return matchClass && matchQuery;
+                });
+
+                if (filteredResults.length === 0) {
+                    alert("Không có bài làm nào trong danh sách hiện tại để xuất Excel!");
+                    return;
+                }
+
+                const exportData = filteredResults.map((res, index) => {
+                    let nopLuc = "Không rõ";
+                    if (res.thoiGianNop) { 
+                        nopLuc = new Date(res.thoiGianNop.toMillis()).toLocaleString('vi-VN'); 
+                    }
+                    let lyDoText = 'Thủ công';
+                    if (res.nopTuDong) {
+                        lyDoText = res.lyDoNopTuDong || 'Tự động';
+                    }
+
+                    return {
+                        "STT": index + 1,
+                        "Họ và Tên": res.hoTen || '',
+                        "Lớp": res.lop || '',
+                        "Môn Học": res.monHoc || 'Khác',
+                        "Tên Đề Thi": res.tenDeThi || '',
+                        "Điểm Số": parseFloat(res.diemSo) || 0,
+                        "Số Câu Đúng": `${res.soCauDung || 0}/${res.tongSoCau || 0}`,
+                        "Thời Gian Nộp": nopLuc,
+                        "Hình Thức / Lý Do Nộp": lyDoText
+                    };
+                });
+
+                const worksheet = XLSX.utils.json_to_sheet(exportData);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "KetQuaKiemTra");
+
+                const nowStr = new Date().toISOString().slice(0, 10);
+                const fileName = `Ket_Qua_Kiem_Tra_Lop_${selectedClass}_${nowStr}.xlsx`;
+                XLSX.writeFile(workbook, fileName);
+                
+                alert(`Bé Lôi đã xuất file Excel thành công: "${fileName}"! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧`);
+            }
+
+            exportResultsExcelBtn.addEventListener('click', exportResultsToExcel);
 
             async function deleteSubmission(submissionId, studentName) {
                 if (window.confirm(`XÓA bài làm của ${studentName}?`)) {
