@@ -757,8 +757,33 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
         // BÉ LÔI BỔ SUNG: HÀM TỰ ĐỘNG CHUẨN HÓA TÊN (VIẾT HOA CHỮ CÁI ĐẦU)
         function toTitleCase(str) {
             if (!str) return '';
-            str = str.replace(/\s+/g, ' ').trim(); // Xóa khoảng trắng thừa
+            str = str.replace(/\s+/g, ' ').trim();
             return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        }
+
+        // BÉ LÔI BỔ SUNG: HÀM GIẢI MÃ CHUỖI BASE64 / URI ENCODED AN TOÀN
+        function decodeSafe(str) {
+            if (!str) return 'Không chọn';
+            try {
+                // Thử giải mã Base64 + UTF-8 / URI
+                let decoded = decodeURIComponent(escape(atob(str)));
+                if (decoded.includes('%')) {
+                    try { decoded = decodeURIComponent(decoded); } catch(e){}
+                }
+                return decoded;
+            } catch (e) {
+                try {
+                    return decodeURIComponent(str);
+                } catch (err) {
+                    return str;
+                }
+            }
+        }
+
+        // BÉ LÔI BỔ SUNG: LỌC BỚT TIỀN TỐ "Câu X:" TRÙNG LẶP IN TRÊN TIÊU ĐỀ
+        function cleanQuestionPrompt(prompt) {
+            if (!prompt) return '';
+            return prompt.replace(/^Câu\s*\d+\s*[:\.]\s*/i, '').trim();
         }
 
         let db; 
@@ -1624,8 +1649,8 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                                 </div>
                                 <div style="flex-grow: 1;">
                                     ${passageHtml}
-                                    <div class="question-prompt">${count++}. ${q.prompt}</div>
-                                    <div class="question-answer">ĐA: ${q.answer}</div>
+                                    <div class="question-prompt">${count++}. ${cleanQuestionPrompt(q.prompt)}</div>
+                                    <div class="question-answer">ĐA: ${decodeSafe(q.answer)}</div>
                                 </div>
                                 <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 4px;">
                                     <button class="detail-btn edit-question-btn" data-id="${qId}">Sửa</button>
@@ -1667,12 +1692,12 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                     isEditingQuestionId = questionId; 
                     document.getElementById('addQuestionForm').querySelector('h3').innerText = "Chỉnh sửa Câu hỏi";
                     document.getElementById('addQuestionForm').querySelector('button[type="submit"]').innerText = "CẬP NHẬT Câu Hỏi";
-                    document.getElementById('prompt').value = q.prompt;
-                    document.getElementById('opt1').value = q.options[0];
-                    document.getElementById('opt2').value = q.options[1];
-                    document.getElementById('opt3').value = q.options[2];
-                    document.getElementById('opt4').value = q.options[3];
-                    document.getElementById('answer').value = q.answer;
+                    document.getElementById('prompt').value = cleanQuestionPrompt(q.prompt);
+                    document.getElementById('opt1').value = decodeSafe(q.options[0]);
+                    document.getElementById('opt2').value = decodeSafe(q.options[1]);
+                    document.getElementById('opt3').value = decodeSafe(q.options[2]);
+                    document.getElementById('opt4').value = decodeSafe(q.options[3]);
+                    document.getElementById('answer').value = decodeSafe(q.answer);
                     
                     const isBase64 = q.imageUrl && q.imageUrl.startsWith('data:image');
                     document.getElementById('questionImageUrl').value = isBase64 ? '' : q.imageUrl || '';
@@ -1708,7 +1733,6 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
 
                 const filteredStudents = allStudentsCache.filter(hs => {
                     const matchClass = hs.lop && hs.lop.toLowerCase() === selectedClass.toLowerCase();
-                    // BÉ LÔI FIX: Chuẩn hóa tên lúc search
                     const displayHoTen = toTitleCase(hs.hoTen || '');
                     const matchQuery = displayHoTen.toLowerCase().includes(query) || hs.id.toLowerCase().includes(query);
                     return matchClass && matchQuery;
@@ -1723,7 +1747,6 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                     const item = document.createElement('div');
                     item.className = 'student-list-item';
                     
-                    // BÉ LÔI FIX: Hiển thị tên chuẩn hóa
                     const displayHoTen = toTitleCase(hs.hoTen || '');
 
                     item.innerHTML = `
@@ -1821,10 +1844,8 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                 }
 
                 const filteredResults = allResultsCache.filter(res => {
-                    // BÉ LÔI FIX: Chuẩn hóa tên lúc lấy dữ liệu
                     res.displayHoTen = toTitleCase(res.hoTen || '');
 
-                    // BÉ LÔI FIX: Thuật toán đối chiếu bù đắp Môn Học bị thiếu
                     res.displayMonHoc = res.monHoc;
                     if (!res.displayMonHoc || res.displayMonHoc.trim() === '') {
                         const foundTest = allTestsCache.find(t => t.tenDe === res.tenDeThi || t.id === res.deThiId);
@@ -1893,7 +1914,6 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                 }
 
                 const filteredResults = allResultsCache.filter(res => {
-                    // Cần chạy lại bù đắp cho Export
                     res.displayHoTen = toTitleCase(res.hoTen || '');
                     res.displayMonHoc = res.monHoc;
                     if (!res.displayMonHoc || res.displayMonHoc.trim() === '') {
@@ -2005,7 +2025,6 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
             createStudentForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const maHS = document.getElementById('studentCode').value.trim();
-                // BÉ LÔI FIX: Chuẩn hóa tên khi tạo mới HS
                 const hoTen = toTitleCase(document.getElementById('studentFullName').value.trim());
                 const levelVal = document.getElementById('studentLevel').value;
                 const selectVal = document.getElementById('studentClassSelect').value;
@@ -2040,7 +2059,6 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                     const parts = line.split(',');
                     if (parts.length === 3) {
                         const maHS = parts[0].trim();
-                        // BÉ LÔI FIX: Chuẩn hóa tên khi tải hàng loạt
                         const hoTen = toTitleCase(parts[1].trim());
                         const lop = parts[2].trim();
                         if (maHS && hoTen && lop) {
@@ -2361,17 +2379,17 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
 
             document.getElementById('editStudentModalForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                // BÉ LÔI FIX: Chuẩn hóa tên khi sửa
                 const newName = toTitleCase(document.getElementById('editStudentFullName').value.trim());
                 const newClass = document.getElementById('editStudentClass').value.trim();
                 try {
-                    await db.collection('hocsinh').update({ hoTen: newName, lop: newClass });
+                    await db.collection('hocsinh').doc(maHS).update({ hoTen: newName, lop: newClass });
                     alert("Cập nhật thành công!");
                     modalBackdrop.style.display = 'none';
                 } catch (err) { alert("Lỗi khi cập nhật!"); }
             });
         }
 
+        // BÉ LÔI FIX: HÀM XEM CHI TIẾT ĐÃ GIẢI MÃ ĐÁP ÁN VÀ XÓA LẶP "CÂU X: CÂU Y:"
         async function showSubmissionDetail(submissionId) {
             modalBackdrop.style.display = 'block';
             modalTitle.innerText = "Chi tiết bài làm";
@@ -2379,24 +2397,40 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                 const docRef = await db.collection("ketqua").doc(submissionId).get();
                 if (!docRef.exists) return;
                 const data = docRef.data();
-                modalTitle.innerText = `Bài làm của: ${data.hoTen} - Lớp: ${data.lop}`;
+                
+                const studentName = toTitleCase(data.hoTen || '');
+                modalTitle.innerText = `Bài làm của: ${studentName} - Lớp: ${data.lop || 'N/A'}`;
                 modalBody.innerHTML = ''; 
 
-                if (data.quizData) {
+                if (data.quizData && data.quizData.length > 0) {
                     data.quizData.forEach((q, index) => {
                         const questionDiv = document.createElement('div');
                         questionDiv.style.marginBottom = "15px";
                         questionDiv.style.borderBottom = "1px solid #eee";
                         questionDiv.style.paddingBottom = "10px";
+                        
+                        // Lọc sạch trùng lặp "Câu X: Câu Y:" và giải mã đáp án
+                        const cleanPrompt = cleanQuestionPrompt(q.prompt);
+                        const rawAns = q.answer || '';
+                        const rawChoice = q.userChoice || '';
+
+                        const decodedAns = decodeSafe(rawAns);
+                        const decodedChoice = rawChoice ? decodeSafe(rawChoice) : 'Không chọn';
+
                         questionDiv.innerHTML = `
-                            <p style="font-weight: bold; margin-bottom: 5px;">Câu ${index + 1}: ${q.prompt}</p>
-                            <p style="color: #28a745; margin: 2px 0;">✔ Đáp án đúng: <b>${q.answer}</b></p>
-                            <p style="color: #007bff; margin: 2px 0;">👉 Thí sinh chọn: <b>${q.userChoice || 'Không chọn'}</b></p>
+                            <p style="font-weight: bold; margin-bottom: 5px; color: #333;">Câu ${index + 1}: ${cleanPrompt}</p>
+                            <p style="color: #28a745; margin: 3px 0;">✔ Đáp án đúng: <b>${decodedAns}</b></p>
+                            <p style="color: #007bff; margin: 3px 0;">👉 Thí sinh chọn: <b>${decodedChoice}</b></p>
                         `;
                         modalBody.appendChild(questionDiv);
                     });
+                } else {
+                    modalBody.innerHTML = '<p style="text-align: center; color: #6c757d;">Không tìm thấy thông tin chi tiết câu hỏi của bài làm này.</p>';
                 }
-            } catch (error) { console.error(error); }
+            } catch (error) { 
+                console.error("Lỗi xem chi tiết bài làm: ", error); 
+                modalBody.innerHTML = '<p style="color: red;">Lỗi khi tải chi tiết bài làm.</p>';
+            }
         }
 
         modalClose.addEventListener('click', () => modalBackdrop.style.display = 'none');
