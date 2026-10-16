@@ -754,6 +754,13 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
         
         const MAX_IMAGE_SIZE_KB = 500; 
 
+        // BÉ LÔI BỔ SUNG: HÀM TỰ ĐỘNG CHUẨN HÓA TÊN (VIẾT HOA CHỮ CÁI ĐẦU)
+        function toTitleCase(str) {
+            if (!str) return '';
+            str = str.replace(/\s+/g, ' ').trim(); // Xóa khoảng trắng thừa
+            return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        }
+
         let db; 
         let auth; 
         let selectedTestId = null; 
@@ -1023,10 +1030,9 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
             renderTestList();
         };
 
-        // BÉ LÔI FIX LỖI: GHI NHỚ LỚP ĐANG CHỌN KHI CẬP NHẬT Lại DANH SÁCH
         function updateStudentClassOptions() {
             const selectClass = document.getElementById('filter-student-class');
-            const currentSelectedClass = selectClass.value; // GHI NHỚ LỚP ĐANG CHỌN
+            const currentSelectedClass = selectClass.value; 
 
             selectClass.innerHTML = '<option value="">-- Bước 2: Chọn Lớp --</option>';
 
@@ -1047,16 +1053,14 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                 selectClass.appendChild(o);
             });
 
-            // PHỤC HỒI LẠI LỚP VỪA CHỌN
             if (availableClasses.has(currentSelectedClass)) {
                 selectClass.value = currentSelectedClass;
             }
         }
 
-        // BÉ LÔI FIX LỖI: GHI NHỚ LỚP ĐANG CHỌN BÊN TAB KẾT QUẢ
         function updateResultsClassOptions() {
             const selectClass = document.getElementById('filter-results-class');
-            const currentSelectedClass = selectClass.value; // GHI NHỚ LỚP ĐANG CHỌN
+            const currentSelectedClass = selectClass.value; 
 
             selectClass.innerHTML = '<option value="">-- Bước 2: Chọn Lớp --</option>';
 
@@ -1077,7 +1081,6 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                 selectClass.appendChild(o);
             });
 
-            // PHỤC HỒI LẠI LỚP VỪA CHỌN
             if (availableClasses.has(currentSelectedClass)) {
                 selectClass.value = currentSelectedClass;
             }
@@ -1318,7 +1321,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                     e.target.classList.add('active');
                     selectedStudentLevelFilter = e.target.dataset.level;
                     
-                    document.getElementById('filter-student-class').value = ""; // Đổi Cấp học mới reset Lớp
+                    document.getElementById('filter-student-class').value = ""; 
                     updateStudentClassOptions();
                     renderStudentList();
                 });
@@ -1331,7 +1334,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                     e.target.classList.add('active');
                     selectedResultsLevelFilter = e.target.dataset.level;
                     
-                    document.getElementById('filter-results-class').value = ""; // Đổi Cấp học mới reset Lớp
+                    document.getElementById('filter-results-class').value = ""; 
                     updateResultsClassOptions();
                     renderResultsList();
                 });
@@ -1705,7 +1708,9 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
 
                 const filteredStudents = allStudentsCache.filter(hs => {
                     const matchClass = hs.lop && hs.lop.toLowerCase() === selectedClass.toLowerCase();
-                    const matchQuery = hs.hoTen.toLowerCase().includes(query) || hs.id.toLowerCase().includes(query);
+                    // BÉ LÔI FIX: Chuẩn hóa tên lúc search
+                    const displayHoTen = toTitleCase(hs.hoTen || '');
+                    const matchQuery = displayHoTen.toLowerCase().includes(query) || hs.id.toLowerCase().includes(query);
                     return matchClass && matchQuery;
                 });
 
@@ -1718,20 +1723,23 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                     const item = document.createElement('div');
                     item.className = 'student-list-item';
                     
+                    // BÉ LÔI FIX: Hiển thị tên chuẩn hóa
+                    const displayHoTen = toTitleCase(hs.hoTen || '');
+
                     item.innerHTML = `
                         <div style="flex-shrink: 0; margin-right: 10px; display: flex; align-items: center;">
                             <input type="checkbox" class="student-row-checkbox" data-id="${hs.id}" style="cursor: pointer; transform: scale(1.1);">
                         </div>
                         <div class="student-item-info" style="flex-grow: 1;">
                             <div class="student-name-class">
-                                <span class="student-name">${hs.hoTen}</span>
+                                <span class="student-name">${displayHoTen}</span>
                                 <span class="lopHS">(Lớp: ${hs.lop})</span>
                             </div>
                             <span class="maHS">Mã HSSV: ${hs.id}</span>
                         </div>
                         <div class="student-item-actions">
-                            <button class="detail-btn edit-student-btn" data-id="${hs.id}" data-name="${hs.hoTen}" data-lop="${hs.lop}">Sửa</button>
-                            <button class="delete-btn single-del-student-btn" data-id="${hs.id}" data-name="${hs.hoTen}">Xóa</button>
+                            <button class="detail-btn edit-student-btn" data-id="${hs.id}" data-name="${displayHoTen}" data-lop="${hs.lop}">Sửa</button>
+                            <button class="delete-btn single-del-student-btn" data-id="${hs.id}" data-name="${displayHoTen}">Xóa</button>
                         </div>
                     `;
                     
@@ -1813,9 +1821,19 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                 }
 
                 const filteredResults = allResultsCache.filter(res => {
+                    // BÉ LÔI FIX: Chuẩn hóa tên lúc lấy dữ liệu
+                    res.displayHoTen = toTitleCase(res.hoTen || '');
+
+                    // BÉ LÔI FIX: Thuật toán đối chiếu bù đắp Môn Học bị thiếu
+                    res.displayMonHoc = res.monHoc;
+                    if (!res.displayMonHoc || res.displayMonHoc.trim() === '') {
+                        const foundTest = allTestsCache.find(t => t.tenDe === res.tenDeThi || t.id === res.deThiId);
+                        res.displayMonHoc = (foundTest && foundTest.monHoc) ? foundTest.monHoc : 'Khác';
+                    }
+
                     const matchClass = res.lop && res.lop.toLowerCase() === selectedClass.toLowerCase();
-                    const matchQuery = (res.hoTen && res.hoTen.toLowerCase().includes(query)) ||
-                                       (res.monHoc && res.monHoc.toLowerCase().includes(query)) ||
+                    const matchQuery = res.displayHoTen.toLowerCase().includes(query) ||
+                                       res.displayMonHoc.toLowerCase().includes(query) ||
                                        (res.tenDeThi && res.tenDeThi.toLowerCase().includes(query));
                     return matchClass && matchQuery;
                 });
@@ -1846,9 +1864,9 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                     
                     tr.innerHTML = `
                         <td><input type="checkbox" class="row-checkbox" data-id="${res.id}" ${isSelected ? 'checked' : ''} style="cursor: pointer;"></td>
-                        <td>${res.hoTen || 'N/A'}</td>
+                        <td>${res.displayHoTen || 'N/A'}</td>
                         <td>${res.lop || 'N/A'}</td>
-                        <td><b style="color: #007bff;">${res.monHoc || 'Khác'}</b></td>
+                        <td><b style="color: #007bff;">${res.displayMonHoc}</b></td>
                         <td>${res.tenDeThi || 'N/A'}</td>
                         <td class="${diemClass}">${res.diemSo || 'N/A'}</td>
                         <td>${res.soCauDung || 'N/A'} / ${res.tongSoCau || 'N/A'}</td>
@@ -1856,7 +1874,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                         <td class="${lyDoClass}">${lyDoText}</td>
                         <td>
                             <button class="detail-btn" data-id="${res.id}">Xem</button>
-                            <button class="action-btn-delete single-delete-btn" data-id="${res.id}" data-name="${res.hoTen}">Xóa</button>
+                            <button class="action-btn-delete single-delete-btn" data-id="${res.id}" data-name="${res.displayHoTen}">Xóa</button>
                         </td>
                     `;
                     resultsTableBody.appendChild(tr);
@@ -1875,9 +1893,17 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                 }
 
                 const filteredResults = allResultsCache.filter(res => {
+                    // Cần chạy lại bù đắp cho Export
+                    res.displayHoTen = toTitleCase(res.hoTen || '');
+                    res.displayMonHoc = res.monHoc;
+                    if (!res.displayMonHoc || res.displayMonHoc.trim() === '') {
+                        const foundTest = allTestsCache.find(t => t.tenDe === res.tenDeThi || t.id === res.deThiId);
+                        res.displayMonHoc = (foundTest && foundTest.monHoc) ? foundTest.monHoc : 'Khác';
+                    }
+
                     const matchClass = res.lop && res.lop.toLowerCase() === selectedClass.toLowerCase();
-                    const matchQuery = (res.hoTen && res.hoTen.toLowerCase().includes(query)) ||
-                                       (res.monHoc && res.monHoc.toLowerCase().includes(query)) ||
+                    const matchQuery = res.displayHoTen.toLowerCase().includes(query) ||
+                                       res.displayMonHoc.toLowerCase().includes(query) ||
                                        (res.tenDeThi && res.tenDeThi.toLowerCase().includes(query));
                     return matchClass && matchQuery;
                 });
@@ -1899,9 +1925,9 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
 
                     return {
                         "STT": index + 1,
-                        "Họ và Tên": res.hoTen || '',
+                        "Họ và Tên": res.displayHoTen || '',
                         "Lớp": res.lop || '',
-                        "Môn Học": res.monHoc || 'Khác',
+                        "Môn Học": res.displayMonHoc || 'Khác',
                         "Tên Đề Thi": res.tenDeThi || '',
                         "Điểm Số": parseFloat(res.diemSo) || 0,
                         "Số Câu Đúng": `${res.soCauDung || 0}/${res.tongSoCau || 0}`,
@@ -1979,7 +2005,8 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
             createStudentForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const maHS = document.getElementById('studentCode').value.trim();
-                const hoTen = document.getElementById('studentFullName').value.trim();
+                // BÉ LÔI FIX: Chuẩn hóa tên khi tạo mới HS
+                const hoTen = toTitleCase(document.getElementById('studentFullName').value.trim());
                 const levelVal = document.getElementById('studentLevel').value;
                 const selectVal = document.getElementById('studentClassSelect').value;
                 const inputVal = document.getElementById('studentClassInput').value.trim();
@@ -2013,7 +2040,8 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                     const parts = line.split(',');
                     if (parts.length === 3) {
                         const maHS = parts[0].trim();
-                        const hoTen = parts[1].trim();
+                        // BÉ LÔI FIX: Chuẩn hóa tên khi tải hàng loạt
+                        const hoTen = toTitleCase(parts[1].trim());
                         const lop = parts[2].trim();
                         if (maHS && hoTen && lop) {
                             const docRef = db.collection('hocsinh').doc(maHS);
@@ -2333,10 +2361,11 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
 
             document.getElementById('editStudentModalForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const newName = document.getElementById('editStudentFullName').value.trim();
+                // BÉ LÔI FIX: Chuẩn hóa tên khi sửa
+                const newName = toTitleCase(document.getElementById('editStudentFullName').value.trim());
                 const newClass = document.getElementById('editStudentClass').value.trim();
                 try {
-                    await db.collection('hocsinh').doc(maHS).update({ hoTen: newName, lop: newClass });
+                    await db.collection('hocsinh').update({ hoTen: newName, lop: newClass });
                     alert("Cập nhật thành công!");
                     modalBackdrop.style.display = 'none';
                 } catch (err) { alert("Lỗi khi cập nhật!"); }
