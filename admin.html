@@ -606,6 +606,16 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                     </div>
                  </div>
 
+                 <div id="student-batch-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px; border: 1px solid #eee;">
+                    <div>
+                        <input type="checkbox" id="select-all-students-checkbox" style="cursor: pointer; margin-right: 5px;">
+                        <label for="select-all-students-checkbox" style="cursor: pointer; display: inline; font-weight: bold;">Chọn tất cả</label>
+                    </div>
+                    <button id="delete-selected-students-btn" class="action-btn-delete" style="display: none;">
+                        Xóa HSSV đã chọn (<span id="selected-students-count">0</span>)
+                    </button>
+                </div>
+
                  <div id="student-list">
                      <p style="text-align: center; padding: 30px; color: #6c757d; font-weight: 500;">
                          📌 Vui lòng chọn <b>Cấp học</b> và <b>Lớp</b> ở trên để xem danh sách Học sinh / Sinh viên ạ!
@@ -614,7 +624,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
             </div>
         </div>
 
-        <!-- TAB KẾT QUẢ (ĐÃ BỔ SUNG CỘT MÔN HỌC BẢNG & EXCEL) -->
+        <!-- TAB KẾT QUẢ -->
         <div id="results-view" class="card">
             <h2>Danh sách Kết Quả Kiểm Tra</h2>
             
@@ -664,7 +674,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                             <th></th>
                             <th>Họ Tên</th>
                             <th>Lớp</th>
-                            <th>Môn Học</th> <!-- BÉ LÔI BỔ SUNG CỘT MÔN HỌC -->
+                            <th>Môn Học</th>
                             <th>Tên Đề Thi</th>
                             <th>Điểm</th>
                             <th>Chi tiết</th>
@@ -1013,8 +1023,11 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
             renderTestList();
         };
 
+        // BÉ LÔI FIX LỖI: GHI NHỚ LỚP ĐANG CHỌN KHI CẬP NHẬT Lại DANH SÁCH
         function updateStudentClassOptions() {
             const selectClass = document.getElementById('filter-student-class');
+            const currentSelectedClass = selectClass.value; // GHI NHỚ LỚP ĐANG CHỌN
+
             selectClass.innerHTML = '<option value="">-- Bước 2: Chọn Lớp --</option>';
 
             if (!selectedStudentLevelFilter) return;
@@ -1033,10 +1046,18 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                 o.text = `Lớp ${cls}`;
                 selectClass.appendChild(o);
             });
+
+            // PHỤC HỒI LẠI LỚP VỪA CHỌN
+            if (availableClasses.has(currentSelectedClass)) {
+                selectClass.value = currentSelectedClass;
+            }
         }
 
+        // BÉ LÔI FIX LỖI: GHI NHỚ LỚP ĐANG CHỌN BÊN TAB KẾT QUẢ
         function updateResultsClassOptions() {
             const selectClass = document.getElementById('filter-results-class');
+            const currentSelectedClass = selectClass.value; // GHI NHỚ LỚP ĐANG CHỌN
+
             selectClass.innerHTML = '<option value="">-- Bước 2: Chọn Lớp --</option>';
 
             if (!selectedResultsLevelFilter) return;
@@ -1055,6 +1076,11 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                 o.text = `Lớp ${cls}`;
                 selectClass.appendChild(o);
             });
+
+            // PHỤC HỒI LẠI LỚP VỪA CHỌN
+            if (availableClasses.has(currentSelectedClass)) {
+                selectClass.value = currentSelectedClass;
+            }
         }
 
         const loginContainer = document.getElementById('login-container');
@@ -1174,6 +1200,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
         let selectedSubmissionIds = new Set();
         let selectedQuestionIds = new Set();
         let selectedTestIds = new Set(); 
+        let selectedStudentIds = new Set();
         
         function initializeAdminApp() {
             
@@ -1291,6 +1318,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                     e.target.classList.add('active');
                     selectedStudentLevelFilter = e.target.dataset.level;
                     
+                    document.getElementById('filter-student-class').value = ""; // Đổi Cấp học mới reset Lớp
                     updateStudentClassOptions();
                     renderStudentList();
                 });
@@ -1303,6 +1331,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                     e.target.classList.add('active');
                     selectedResultsLevelFilter = e.target.dataset.level;
                     
+                    document.getElementById('filter-results-class').value = ""; // Đổi Cấp học mới reset Lớp
                     updateResultsClassOptions();
                     renderResultsList();
                 });
@@ -1355,6 +1384,10 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
             const selectAllTestsCheckbox = document.getElementById('select-all-tests-checkbox');
             const deleteSelectedTestsBtn = document.getElementById('delete-selected-tests-btn');
             const selectedTestsCountSpan = document.getElementById('selected-tests-count');
+
+            const selectAllStudentsCheckbox = document.getElementById('select-all-students-checkbox');
+            const deleteSelectedStudentsBtn = document.getElementById('delete-selected-students-btn');
+            const selectedStudentsCountSpan = document.getElementById('selected-students-count');
             
             const filterTestClass = document.getElementById('filter-test-class');
             const filterTestSubject = document.getElementById('filter-test-subject');
@@ -1396,6 +1429,11 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
             function updateQuestionBatchActionsUI() {
                 selectedQuestionsCountSpan.innerText = selectedQuestionIds.size;
                 deleteSelectedQuestionsBtn.style.display = selectedQuestionIds.size > 0 ? 'inline-block' : 'none';
+            }
+
+            function updateStudentBatchUI() {
+                selectedStudentsCountSpan.innerText = selectedStudentIds.size;
+                deleteSelectedStudentsBtn.style.display = selectedStudentIds.size > 0 ? 'inline-block' : 'none';
             }
 
             function updateBatchActionsUI() {
@@ -1652,6 +1690,9 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                 const query = document.getElementById('student-search-input').value.toLowerCase();
                 
                 studentListDiv.innerHTML = '';
+                selectedStudentIds.clear();
+                selectAllStudentsCheckbox.checked = false;
+                updateStudentBatchUI();
 
                 if (!selectedStudentLevelFilter || !selectedClass) {
                     studentListDiv.innerHTML = `
@@ -1678,7 +1719,10 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                     item.className = 'student-list-item';
                     
                     item.innerHTML = `
-                        <div class="student-item-info">
+                        <div style="flex-shrink: 0; margin-right: 10px; display: flex; align-items: center;">
+                            <input type="checkbox" class="student-row-checkbox" data-id="${hs.id}" style="cursor: pointer; transform: scale(1.1);">
+                        </div>
+                        <div class="student-item-info" style="flex-grow: 1;">
                             <div class="student-name-class">
                                 <span class="student-name">${hs.hoTen}</span>
                                 <span class="lopHS">(Lớp: ${hs.lop})</span>
@@ -1687,16 +1731,27 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                         </div>
                         <div class="student-item-actions">
                             <button class="detail-btn edit-student-btn" data-id="${hs.id}" data-name="${hs.hoTen}" data-lop="${hs.lop}">Sửa</button>
-                            <button class="delete-btn" data-id="${hs.id}" data-name="${hs.hoTen}">Xóa</button>
+                            <button class="delete-btn single-del-student-btn" data-id="${hs.id}" data-name="${hs.hoTen}">Xóa</button>
                         </div>
                     `;
                     
-                    item.querySelector('.delete-btn').addEventListener('click', (e) => {
+                    item.querySelector('.single-del-student-btn').addEventListener('click', (e) => {
+                        e.stopPropagation();
                         deleteStudent(e.target.dataset.id, e.target.dataset.name);
                     });
                     
                     item.querySelector('.edit-student-btn').addEventListener('click', (e) => {
+                        e.stopPropagation();
                         showEditStudentModal(e.target.dataset.id, e.target.dataset.name, e.target.dataset.lop);
+                    });
+
+                    item.querySelector('.student-row-checkbox').addEventListener('change', (e) => {
+                        if (e.target.checked) {
+                            selectedStudentIds.add(hs.id);
+                        } else {
+                            selectedStudentIds.delete(hs.id);
+                        }
+                        updateStudentBatchUI();
                     });
                     
                     studentListDiv.appendChild(item);
@@ -1707,6 +1762,34 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                 if (!confirm(`XÓA Mã HSSV "${maHS}" của "${hoTen}"?`)) return;
                 try { await db.collection('hocsinh').doc(maHS).delete(); } catch (error) { console.error("Lỗi xóa Mã: ", error); }
             }
+
+            async function deleteSelectedStudents() {
+                if (selectedStudentIds.size === 0) return;
+                if (!confirm(`XÓA ${selectedStudentIds.size} Mã Học sinh / Sinh viên đã chọn?`)) return;
+
+                try {
+                    const batch = db.batch();
+                    selectedStudentIds.forEach(id => batch.delete(db.collection("hocsinh").doc(id)));
+                    await batch.commit();
+                    
+                    selectedStudentIds.clear();
+                    selectAllStudentsCheckbox.checked = false;
+                } catch (error) { console.error("Lỗi xóa hàng loạt HSSV:", error); } 
+                finally { updateStudentBatchUI(); }
+            }
+
+            selectAllStudentsCheckbox.addEventListener('change', (e) => {
+                const isChecked = e.target.checked;
+                const checkboxes = studentListDiv.querySelectorAll('.student-row-checkbox');
+                selectedStudentIds.clear();
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                    if (isChecked) selectedStudentIds.add(checkbox.dataset.id);
+                });
+                updateStudentBatchUI();
+            });
+
+            deleteSelectedStudentsBtn.addEventListener('click', deleteSelectedStudents);
 
             window.renderResultsList = function() {
                 const selectedClass = document.getElementById('filter-results-class').value;
@@ -1761,7 +1844,6 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                     
                     const isSelected = selectedSubmissionIds.has(res.id);
                     
-                    // HIỂN THỊ CỘT MÔN HỌC
                     tr.innerHTML = `
                         <td><input type="checkbox" class="row-checkbox" data-id="${res.id}" ${isSelected ? 'checked' : ''} style="cursor: pointer;"></td>
                         <td>${res.hoTen || 'N/A'}</td>
@@ -1783,7 +1865,6 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                 updateBatchActionsUI();
             }
 
-            // XUẤT EXCEL KẾT QUẢ CÓ THÊM CỘT MÔN HỌC
             function exportResultsToExcel() {
                 const selectedClass = document.getElementById('filter-results-class').value;
                 const query = document.getElementById('results-search-input').value.toLowerCase();
