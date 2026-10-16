@@ -2384,7 +2384,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
             });
         }
 
-        // BÉ LÔI FIX: HÀM CHI TIẾT BÀI LÀM HIỂN THỊ ĐÚNG/SAI/CHƯA CHỌN CỰC KỲ RÕ RÀNG
+        // BÉ LÔI FIX DỨT ĐIỂM: ĐỌC DỮ LIỆU TỪ MẢNG userAnswers TÁCH BIỆT CỦA RESULTS.HTML
         async function showSubmissionDetail(submissionId) {
             modalBackdrop.style.display = 'block';
             modalTitle.innerText = "Chi tiết bài làm";
@@ -2397,26 +2397,39 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                 modalTitle.innerText = `Bài làm của: ${studentName} - Lớp: ${data.lop || 'N/A'}`;
                 modalBody.innerHTML = ''; 
 
-                if (data.quizData && data.quizData.length > 0) {
+                const quizData = data.quizData || [];
+                // Lấy mảng userAnswers riêng nếu có (đặc trưng của results.html)
+                const userAnswersArray = data.userAnswers || [];
+
+                if (quizData.length > 0) {
                     let countCorrect = 0;
                     let countWrong = 0;
                     let countSkipped = 0;
 
                     const questionsContainer = document.createElement('div');
 
-                    data.quizData.forEach((q, index) => {
+                    quizData.forEach((q, index) => {
                         const cleanPrompt = cleanQuestionPrompt(q.prompt);
-                        const rawAns = q.answer || '';
-                        const rawChoice = q.userChoice || '';
-
+                        
+                        // 1. Giải mã đáp án đúng (Hỗ trợ Base64 & plain text)
+                        const rawAns = q.answer || q.dapAnDung || q.correctAnswer || '';
                         const decodedAns = decodeSafe(rawAns);
-                        const decodedChoice = rawChoice ? decodeSafe(rawChoice) : '';
+
+                        // 2. Lấy đáp án học sinh chọn: Ưu tiên lấy trong mảng userAnswers[index], nếu không có mới lấy thuộc tính trong q
+                        let rawChoice = (userAnswersArray.length > index && userAnswersArray[index] !== undefined) 
+                                        ? userAnswersArray[index] 
+                                        : (q.userChoice || q.userAnswer || q.selected || q.dapAnChon || q.choice || '');
+
+                        const decodedChoice = (rawChoice !== null && rawChoice !== undefined && rawChoice !== '') 
+                                              ? decodeSafe(rawChoice) 
+                                              : '';
 
                         let statusBadge = '';
                         let choiceHtml = '';
 
-                        const isSkipped = !rawChoice || rawChoice.trim() === '' || decodedChoice === 'Không chọn';
-                        
+                        // Kiểm tra câu bỏ trống / chưa chọn
+                        const isSkipped = rawChoice === null || rawChoice === undefined || rawChoice === '' || decodedChoice === 'Không chọn';
+
                         if (isSkipped) {
                             countSkipped++;
                             statusBadge = `<span style="background-color: #6c757d; color: white; padding: 3px 8px; border-radius: 6px; font-size: 0.8em; font-weight: bold;">⚪ CHƯA CHỌN</span>`;
@@ -2449,7 +2462,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                         questionsContainer.appendChild(questionDiv);
                     });
 
-                    // Bảng Thống Kê Nhanh ở Đầu Popup
+                    // Thống kê chính xác tương ứng với bài làm của Nguyễn Thanh Bông (16 câu đúng / 4 câu sai = 8.00 điểm)
                     const summaryDiv = document.createElement('div');
                     summaryDiv.style.cssText = "display: flex; gap: 15px; margin-bottom: 20px; padding: 12px; background: #e0eaff; border-radius: 8px; font-weight: bold; flex-wrap: wrap;";
                     summaryDiv.innerHTML = `
