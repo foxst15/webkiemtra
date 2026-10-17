@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trang Quản Trị </title>
+    <title>Trang Quản Trị - Bé Lôi System</title>
     <style>
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
@@ -402,15 +402,13 @@
                                 <input type="file" id="docxFileInput" accept=".docx" style="display: block; width: 100%; margin-bottom: 0;">
                             </div>
 
-                            <p style="font-size: 0.85em; margin: 5px 0;">Định dạng từng khối câu hỏi (cách nhau 1 dòng trống):</p>
-                            <pre style="font-size: 0.8em; padding: 8px;"><code>Nội dung câu hỏi...
-A. Lựa chọn A
-B. Lựa chọn B
-C. Lựa chọn C
-D. Lựa chọn D
-Đáp án: Lựa chọn A</code></pre>
+                            <p style="font-size: 0.85em; margin: 5px 0; color: #555;">(Hỗ trợ mọi định dạng: A. / A) , hoặc dán dài trên 1 dòng)</p>
+                            <pre style="font-size: 0.8em; padding: 8px;"><code>Câu 1: Nội dung câu hỏi...
+A. Lựa chọn A  B. Lựa chọn B
+C. Lựa chọn C  D. Lựa chọn D
+Đáp án: A</code></pre>
                             <textarea id="bulkQuestionsText" rows="12" style="width: 100%; font-family: monospace;"></textarea>
-                            <button type="submit" class="add-btn" style="width: 100%;">Lưu hàng loạt</button>
+                            <button type="submit" class="add-btn" style="width: 100%;">Lưu hàng loạt thông minh</button>
                          </form>
                         
                          <form id="addComprehensionForm" style="display: none;">
@@ -1371,7 +1369,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                         mammoth.extractRawText({arrayBuffer: arrayBuffer})
                             .then(function(result){
                                 document.getElementById('bulkQuestionsText').value = result.value;
-                                alert("Đã bóc tách file Word thành công! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧");
+                                alert("Đã bóc tách file Word thành công! Xin hãy tự do chỉnh sửa lại một chút nếu cần thiết ạ! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧");
                             })
                             .catch(function(err){ alert("Lỗi đọc file Word."); });
                     };
@@ -1854,6 +1852,13 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                     return matchClass && matchQuery;
                 });
 
+                // BÉ LÔI FIX: SẮP XẾP BÀI NỘP MỚI NHẤT LÊN ĐẦU TIÊN
+                filteredResults.sort((a, b) => {
+                    const timeA = a.thoiGianNop ? a.thoiGianNop.toMillis() : 0;
+                    const timeB = b.thoiGianNop ? b.thoiGianNop.toMillis() : 0;
+                    return timeB - timeA; // Giảm dần: mới nộp nhất lên trên cùng
+                });
+
                 resultsCount.innerText = filteredResults.length;
 
                 if (filteredResults.length === 0) {
@@ -2130,42 +2135,116 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                 } catch (error) { alert("Lỗi khi thêm/cập nhật câu hỏi!"); }
             });
 
+            // BÉ LÔI FIX: BỘ LỌC THÊM HÀNG LOẠT SIÊU LINH HOẠT TỰ NHẬN DIỆN MỌI ĐỊNH DẠNG
             addBulkQuestionForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 if (!selectedTestId) return;
+
                 const text = document.getElementById('bulkQuestionsText').value;
-                const blocks = text.split(/\n\s*\n/); 
-                let questionsToAdd = [];
-                for (const block of blocks) {
-                    const lines = block.split('\n').map(l => l.trim()).filter(l => l !== "");
-                    if (lines.length < 6) continue;
-                    const prompt = lines[0];
-                    const options = [ lines[1].substring(lines[1].indexOf(".") + 1).trim(), lines[2].substring(lines[2].indexOf(".") + 1).trim(), lines[3].substring(lines[3].indexOf(".") + 1).trim(), lines[4].substring(lines[4].indexOf(".") + 1).trim() ];
-                    const answerLine = lines[5];
-                    const answerText = answerLine.substring(answerLine.indexOf(":") + 1).trim();
-                    let finalAnswer = "";
-                    if (options.includes(answerText)) { finalAnswer = answerText; }
-                    else {
-                        const letter = answerText.toUpperCase();
-                        if (letter === 'A') finalAnswer = options[0];
-                        else if (letter === 'B') finalAnswer = options[1];
-                        else if (letter === 'C') finalAnswer = options[2];
-                        else if (letter === 'D') finalAnswer = options[3];
-                    }
-                    if (finalAnswer) questionsToAdd.push({ prompt: prompt, options: options, answer: finalAnswer, imageUrl: null, comprehensionText: null });
+                
+                // Tách các câu hỏi bằng từ khóa "Câu X" hoặc các dòng trống liên tiếp (đánh dấu bằng |||SPLIT|||)
+                let processedText = text.replace(/(^|\n)(Câu\s*\d+[\.:])/gi, "|||SPLIT|||\$2");
+                let blocks = processedText.split("|||SPLIT|||");
+                
+                // Nếu người dùng không dùng chữ "Câu ", ta chia theo dòng trống (2 enter)
+                if (blocks.length <= 1) {
+                    blocks = text.split(/\n\s*\n+/);
                 }
+
+                let questionsToAdd = [];
+                let errorCount = 0;
+
+                for (let block of blocks) {
+                    block = block.trim();
+                    if (!block || block.length < 15) continue; // Bỏ qua block quá ngắn
+
+                    // 1. TÌM ĐÁP ÁN (Hỗ trợ: Đáp án: A, ĐA: A, Answer: A, Chọn: A...)
+                    const ansRegex = /(?:Đáp án|ĐA|Answer|Chọn)\s*[:\.\-]?\s*([A-D])/i;
+                    const ansMatch = block.match(ansRegex);
+                    
+                    if (!ansMatch) {
+                        errorCount++;
+                        continue; // Không thấy đáp án thì bỏ qua câu này
+                    }
+                    const answerLetter = ansMatch[1].toUpperCase();
+
+                    // Cắt bỏ phần đáp án ra khỏi block text để không bị lẫn vào option D
+                    let contentWithoutAns = block.replace(ansMatch[0], '').trim();
+
+                    // 2. TÌM CÁC LỰA CHỌN A, B, C, D (Hỗ trợ A. hoặc A) nằm trên cùng 1 dòng hoặc nhiều dòng)
+                    const options = {};
+                    // Regex thông minh: Tìm kí tự A, B, C, D theo sau là dấu . hoặc ) và quét nội dung đến khi gặp chữ cái tiếp theo
+                    const optRegex = /([A-D])[\.\)]\s*([\s\S]*?)(?=(?:[A-D][\.\)]\s*|\$))/gi;
+                    
+                    let match;
+                    while ((match = optRegex.exec(contentWithoutAns)) !== null) {
+                        options[match[1].toUpperCase()] = match[2].trim();
+                    }
+
+                    // Nếu người dùng không dùng A. B. C. D. mà chỉ xuống dòng 4 lần
+                    if (Object.keys(options).length < 4) {
+                         const lines = contentWithoutAns.split('\n').map(l => l.trim()).filter(l => l !== "");
+                         // Lấy 4 dòng cuối (trước đáp án) làm 4 lựa chọn
+                         if (lines.length >= 5) {
+                             options['A'] = lines[lines.length - 4].replace(/^[A-D][\.\)]\s*/i, '');
+                             options['B'] = lines[lines.length - 3].replace(/^[A-D][\.\)]\s*/i, '');
+                             options['C'] = lines[lines.length - 2].replace(/^[A-D][\.\)]\s*/i, '');
+                             options['D'] = lines[lines.length - 1].replace(/^[A-D][\.\)]\s*/i, '');
+                             contentWithoutAns = lines.slice(0, lines.length - 4).join('\n');
+                         } else {
+                             errorCount++;
+                             continue;
+                         }
+                    } else {
+                         // Cắt phần option ra khỏi content để lấy phần Câu hỏi (Prompt)
+                         const firstOptIndex = contentWithoutAns.search(/[A-D][\.\)]\s/i);
+                         if (firstOptIndex !== -1) {
+                             contentWithoutAns = contentWithoutAns.substring(0, firstOptIndex).trim();
+                         }
+                    }
+
+                    // 3. XỬ LÝ PROMPT (Câu hỏi)
+                    let prompt = contentWithoutAns;
+                    prompt = cleanQuestionPrompt(prompt); // Hàm loại bỏ lặp chữ "Câu X:"
+
+                    // 4. KIỂM TRA & LƯU
+                    const finalAnswer = options[answerLetter] || "";
+                    
+                    if (prompt && finalAnswer && options['A'] && options['B'] && options['C'] && options['D']) {
+                        questionsToAdd.push({
+                            prompt: prompt,
+                            options: [options['A'], options['B'], options['C'], options['D']],
+                            answer: finalAnswer,
+                            imageUrl: null,
+                            comprehensionText: null
+                        });
+                    } else {
+                        errorCount++;
+                    }
+                }
+
                 if (questionsToAdd.length > 0) {
                     const batch = db.batch();
                     const collectionRef = db.collection("dethi").doc(selectedTestId).collection("cauhoi");
                     let nextIndex = currentQuestionCount;
+                    
                     questionsToAdd.forEach(q => { 
                         const docRef = collectionRef.doc(); 
                         nextIndex++;
                         batch.set(docRef, { ...q, index: nextIndex }); 
                     });
-                    await batch.commit();
-                    alert(`Đã thêm thành công ${questionsToAdd.length} câu hỏi!`);
-                    addBulkQuestionForm.reset();
+                    
+                    try {
+                        await batch.commit();
+                        let msg = `Đã bóc tách thành công ${questionsToAdd.length} câu hỏi! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧`;
+                        if (errorCount > 0) msg += `\nLưu ý: Có ${errorCount} khối văn bản bị bỏ qua vì không đúng chuẩn (thiếu từ khóa đáp án hoặc thiếu A, B, C, D).`;
+                        alert(msg);
+                        addBulkQuestionForm.reset();
+                    } catch(err) {
+                        alert("Lỗi khi lưu lên hệ thống Firestore!");
+                    }
+                } else {
+                    alert("Không nhận diện được câu hỏi nào ạ! Xin chủ nhân kiểm tra lại định dạng (Cần có kí hiệu A. B. C. D. và Đáp án: X)");
                 }
             });
 
@@ -2384,7 +2463,6 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
             });
         }
 
-        // BÉ LÔI FIX DỨT ĐIỂM: ĐỌC DỮ LIỆU TỪ MẢNG userAnswers TÁCH BIỆT CỦA RESULTS.HTML
         async function showSubmissionDetail(submissionId) {
             modalBackdrop.style.display = 'block';
             modalTitle.innerText = "Chi tiết bài làm";
@@ -2398,7 +2476,6 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                 modalBody.innerHTML = ''; 
 
                 const quizData = data.quizData || [];
-                // Lấy mảng userAnswers riêng nếu có (đặc trưng của results.html)
                 const userAnswersArray = data.userAnswers || [];
 
                 if (quizData.length > 0) {
@@ -2411,11 +2488,9 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                     quizData.forEach((q, index) => {
                         const cleanPrompt = cleanQuestionPrompt(q.prompt);
                         
-                        // 1. Giải mã đáp án đúng (Hỗ trợ Base64 & plain text)
                         const rawAns = q.answer || q.dapAnDung || q.correctAnswer || '';
                         const decodedAns = decodeSafe(rawAns);
 
-                        // 2. Lấy đáp án học sinh chọn: Ưu tiên lấy trong mảng userAnswers[index], nếu không có mới lấy thuộc tính trong q
                         let rawChoice = (userAnswersArray.length > index && userAnswersArray[index] !== undefined) 
                                         ? userAnswersArray[index] 
                                         : (q.userChoice || q.userAnswer || q.selected || q.dapAnChon || q.choice || '');
@@ -2427,7 +2502,6 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                         let statusBadge = '';
                         let choiceHtml = '';
 
-                        // Kiểm tra câu bỏ trống / chưa chọn
                         const isSkipped = rawChoice === null || rawChoice === undefined || rawChoice === '' || decodedChoice === 'Không chọn';
 
                         if (isSkipped) {
@@ -2462,7 +2536,6 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                         questionsContainer.appendChild(questionDiv);
                     });
 
-                    // Thống kê chính xác tương ứng với bài làm của Nguyễn Thanh Bông (16 câu đúng / 4 câu sai = 8.00 điểm)
                     const summaryDiv = document.createElement('div');
                     summaryDiv.style.cssText = "display: flex; gap: 15px; margin-bottom: 20px; padding: 12px; background: #e0eaff; border-radius: 8px; font-weight: bold; flex-wrap: wrap;";
                     summaryDiv.innerHTML = `
