@@ -782,6 +782,17 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
             return prompt.replace(/^Câu\s*\d+\s*[:\.]\s*/i, '').trim();
         }
 
+        // Mã hóa thẻ HTML để chống lỗi hiển thị DOM (các thẻ <video>, <option>, v.v.)
+        function escapeHtml(unsafe) {
+            if (typeof unsafe !== 'string') return unsafe;
+            return unsafe
+                 .replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
+        }
+
         let db; 
         let auth; 
         let selectedTestId = null; 
@@ -1308,9 +1319,9 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
 
                             if (parsedLines.length > 0) {
                                 document.getElementById('bulkStudentsText').value = parsedLines.join('\n');
-                                alert(`Đã trích xuất thành công ${parsedLines.length} HSSV từ file Excel.\nVui lòng kiểm tra lại dữ liệu và nhấn "Lưu Hàng Loạt Vào CSDL".`);
+                                alert(`Đã trích xuất thành công ${parsedLines.length} HSSV từ file Excel. Vui lòng kiểm tra lại dữ liệu và nhấn "Lưu Hàng Loạt Vào CSDL".`);
                             } else {
-                                alert("Không tìm thấy dòng dữ liệu hợp lệ trong file Excel! Xin đảm bảo file chứa 3 cột: Mã, Họ Tên, Lớp.");
+                                alert("Không tìm thấy dòng dữ liệu hợp lệ trong file Excel! Đảm bảo file chứa 3 cột: Mã, Họ Tên, Lớp.");
                             }
 
                         } catch (err) {
@@ -1644,8 +1655,8 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                                 </div>
                                 <div style="flex-grow: 1;">
                                     ${passageHtml}
-                                    <div class="question-prompt">${count++}. ${cleanQuestionPrompt(q.prompt)}</div>
-                                    <div class="question-answer">ĐA: ${decodeSafe(q.answer)}</div>
+                                    <div class="question-prompt">${count++}. ${escapeHtml(cleanQuestionPrompt(q.prompt))}</div>
+                                    <div class="question-answer">ĐA: ${escapeHtml(decodeSafe(q.answer))}</div>
                                 </div>
                                 <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 4px;">
                                     <button class="detail-btn edit-question-btn" data-id="${qId}">Sửa</button>
@@ -2012,7 +2023,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                     });
                     createTestForm.reset();
                     renderClassBadges();
-                    alert("Khởi tạo đề thi mới thành công!");
+                    alert("Khởi tạo đề thi mới thành công.");
                     navTests.click(); 
                 } catch (error) { console.error("Lỗi tạo đề: ", error); }
             });
@@ -2069,21 +2080,21 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                 });
 
                 if (addedCount === 0 && errorList.length > 0) {
-                     alert(`Không thêm được ai. Lỗi định dạng ở các dòng: ${errorList.join(', ')}.\nĐịnh dạng phải là: MãHSSV,HọTên,Lớp`);
+                     alert(`Không thêm được dữ liệu. Lỗi định dạng ở các dòng: ${errorList.join(', ')}.\nĐịnh dạng phải là: MãHSSV,HọTên,Lớp`);
                      return;
                 }
 
                 try {
                     await batch.commit();
-                    let successMsg = `Đã thêm/cập nhật thành công ${addedCount} người vào CSDL!`;
+                    let successMsg = `Đã thêm/cập nhật thành công ${addedCount} dữ liệu vào CSDL.`;
                     if (errorList.length > 0) {
-                        successMsg += `\nĐã bỏ qua ${errorList.length} dòng bị lỗi (Dòng: ${errorList.join(', ')}).`;
+                        successMsg += `\nĐã bỏ qua ${errorList.length} dòng bị lỗi định dạng (Dòng: ${errorList.join(', ')}).`;
                     }
                     alert(successMsg);
                     addBulkStudentForm.reset();
                 } catch (error) {
                     console.error("Lỗi thêm hàng loạt: ", error);
-                    alert("Lỗi khi lưu vào CSDL. Xin vui lòng thử lại.");
+                    alert("Lỗi khi lưu vào CSDL. Vui lòng thử lại.");
                 }
             });
 
@@ -2127,7 +2138,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                         await db.collection("dethi").doc(selectedTestId).collection("cauhoi").add(questionData);
                     }
                     resetQuestionFormState(); 
-                } catch (error) { alert("Lỗi khi thêm/cập nhật câu hỏi!"); }
+                } catch (error) { alert("Lỗi khi thêm/cập nhật câu hỏi."); }
             });
 
             addBulkQuestionForm.addEventListener('submit', async (e) => {
@@ -2135,46 +2146,39 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                 if (!selectedTestId) return;
                 const text = document.getElementById('bulkQuestionsText').value;
                 
-                // BÉ LÔI FIX: Cắt khối linh hoạt bằng chữ "Câu..." (Cho phép bỏ qua các lỗi xuống dòng của Word)
                 const questionBlocks = text.split(/(?=Câu\s*\d+[\.:]?\s*)/gi).filter(b => b.trim() !== '');
                 let questionsToAdd = [];
 
                 for (const block of questionBlocks) {
                     let lines = block.split('\n').map(l => l.trim()).filter(l => l !== "");
-                    if(lines.length < 5) continue; // Bỏ qua nếu không đủ cấu trúc cơ bản
+                    if(lines.length < 5) continue; 
 
                     let promptArr = [];
                     let options = [];
                     let answerText = "";
 
-                    // Đọc từng dòng để phân loại: Đề bài, Lựa chọn, hoặc Đáp án
                     for(let i = 0; i < lines.length; i++) {
                         let line = lines[i];
 
                         if (/^[A-D][\.\:\/\)]\s*/i.test(line)) {
-                            // Cắt bỏ "A.", "B-", "C/ "... lấy nội dung đáp án
                             options.push(line.replace(/^[A-D][\.\:\/\)]\s*/i, '').trim());
                         } else if (/^(Đáp án|ĐA|Answer)[\.\:\s]*/i.test(line)) {
-                            // Lấy kết quả
                             answerText = line.replace(/^(Đáp án|ĐA|Answer)[\.\:\s]*/i, '').trim();
                         } else {
                             if (options.length === 0) {
                                 promptArr.push(line);
                             } else if (options.length > 0 && answerText === "") {
-                                // Nối những dòng bị rớt của đáp án (nếu có)
                                 options[options.length-1] += " " + line;
                             }
                         }
                     }
 
-                    const prompt = promptArr.join('\n'); // Hỗ trợ câu hỏi dài nhiều dòng
+                    const prompt = promptArr.join('\n'); 
 
-                    // Xử lý đối chiếu đáp án đúng
                     let finalAnswer = "";
                     if (options.includes(answerText)) { 
                         finalAnswer = answerText; 
                     } else {
-                        // Nhận diện nếu user chỉ gõ "Đáp án: A"
                         const letterMatch = answerText.match(/^[A-D]/i);
                         if (letterMatch) {
                             const letter = letterMatch[0].toUpperCase();
@@ -2185,7 +2189,6 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                         }
                     }
 
-                    // Chỉ đẩy lên CSDL nếu đủ dữ kiện
                     if (prompt && options.length >= 4 && finalAnswer) {
                         questionsToAdd.push({ 
                             prompt: prompt, 
@@ -2207,10 +2210,10 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                         batch.set(docRef, { ...q, index: nextIndex }); 
                     });
                     await batch.commit();
-                    alert(`Đã thêm thành công ${questionsToAdd.length} câu hỏi!`);
+                    alert(`Đã thêm thành công ${questionsToAdd.length} câu hỏi.`);
                     addBulkQuestionForm.reset();
                 } else {
-                    alert("Không tìm thấy câu hỏi hợp lệ. Vui lòng kiểm tra lại định dạng cú pháp (Câu... A. B. C. D. Đáp án:).");
+                    alert("Không tìm thấy câu hỏi hợp lệ. Vui lòng kiểm tra lại định dạng cú pháp (Ví dụ: Câu 1... A. B. C. D. Đáp án: A).");
                 }
             });
 
@@ -2357,7 +2360,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                         allResultsCache.push(data); 
                     });
                     
-                    // BÉ LÔI FIX: Sắp xếp mảng theo thời gian nộp bài từ mới nhất đến cũ nhất
+                    // Sắp xếp mảng kết quả theo thời gian nộp bài từ mới nhất đến cũ nhất
                     allResultsCache.sort((a, b) => {
                         const timeA = a.thoiGianNop ? a.thoiGianNop.toMillis() : 0;
                         const timeB = b.thoiGianNop ? b.thoiGianNop.toMillis() : 0;
@@ -2437,7 +2440,6 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
             });
         }
 
-        // BÉ LÔI FIX DỨT ĐIỂM: ĐỌC DỮ LIỆU TỪ MẢNG userAnswers TÁCH BIỆT CỦA RESULTS.HTML
         async function showSubmissionDetail(submissionId) {
             modalBackdrop.style.display = 'block';
             modalTitle.innerText = "Chi tiết bài làm";
@@ -2451,7 +2453,6 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                 modalBody.innerHTML = ''; 
 
                 const quizData = data.quizData || [];
-                // Lấy mảng userAnswers riêng nếu có (đặc trưng của results.html)
                 const userAnswersArray = data.userAnswers || [];
 
                 if (quizData.length > 0) {
@@ -2464,11 +2465,9 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                     quizData.forEach((q, index) => {
                         const cleanPrompt = cleanQuestionPrompt(q.prompt);
                         
-                        // 1. Giải mã đáp án đúng (Hỗ trợ Base64 & plain text)
                         const rawAns = q.answer || q.dapAnDung || q.correctAnswer || '';
                         const decodedAns = decodeSafe(rawAns);
 
-                        // 2. Lấy đáp án học sinh chọn: Ưu tiên lấy trong mảng userAnswers[index], nếu không có mới lấy thuộc tính trong q
                         let rawChoice = (userAnswersArray.length > index && userAnswersArray[index] !== undefined) 
                                         ? userAnswersArray[index] 
                                         : (q.userChoice || q.userAnswer || q.selected || q.dapAnChon || q.choice || '');
@@ -2477,24 +2476,29 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                                               ? decodeSafe(rawChoice) 
                                               : '';
 
+                        const isSkipped = rawChoice === null || rawChoice === undefined || rawChoice === '' || decodedChoice === 'Không chọn';
+                        const isCorrect = !isSkipped && (decodedChoice.trim().toLowerCase() === decodedAns.trim().toLowerCase());
+
+                        // Mã hóa HTML trước khi hiển thị
+                        const displayAns = escapeHtml(decodedAns);
+                        const displayChoice = escapeHtml(decodedChoice);
+                        const displayPrompt = escapeHtml(cleanPrompt);
+
                         let statusBadge = '';
                         let choiceHtml = '';
-
-                        // Kiểm tra câu bỏ trống / chưa chọn
-                        const isSkipped = rawChoice === null || rawChoice === undefined || rawChoice === '' || decodedChoice === 'Không chọn';
 
                         if (isSkipped) {
                             countSkipped++;
                             statusBadge = `<span style="background-color: #6c757d; color: white; padding: 3px 8px; border-radius: 6px; font-size: 0.8em; font-weight: bold;">⚪ CHƯA CHỌN</span>`;
                             choiceHtml = `<span style="color: #6c757d; font-weight: bold;">Không chọn</span>`;
-                        } else if (decodedChoice.trim().toLowerCase() === decodedAns.trim().toLowerCase()) {
+                        } else if (isCorrect) {
                             countCorrect++;
                             statusBadge = `<span style="background-color: #28a745; color: white; padding: 3px 8px; border-radius: 6px; font-size: 0.8em; font-weight: bold;">✔ ĐÚNG</span>`;
-                            choiceHtml = `<span style="color: #28a745; font-weight: bold;">${decodedChoice}</span>`;
+                            choiceHtml = `<span style="color: #28a745; font-weight: bold;">${displayChoice}</span>`;
                         } else {
                             countWrong++;
                             statusBadge = `<span style="background-color: #dc3545; color: white; padding: 3px 8px; border-radius: 6px; font-size: 0.8em; font-weight: bold;">✖ SAI</span>`;
-                            choiceHtml = `<span style="color: #dc3545; font-weight: bold; text-decoration: line-through;">${decodedChoice}</span>`;
+                            choiceHtml = `<span style="color: #dc3545; font-weight: bold; text-decoration: line-through;">${displayChoice}</span>`;
                         }
 
                         const questionDiv = document.createElement('div');
@@ -2502,20 +2506,19 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                         questionDiv.style.padding = "12px";
                         questionDiv.style.borderRadius = "8px";
                         questionDiv.style.border = "1px solid #e0e0e0";
-                        questionDiv.style.background = isSkipped ? '#f8f9fa' : (decodedChoice.trim().toLowerCase() === decodedAns.trim().toLowerCase() ? '#f4fbf7' : '#fff5f5');
+                        questionDiv.style.background = isSkipped ? '#f8f9fa' : (isCorrect ? '#f4fbf7' : '#fff5f5');
 
                         questionDiv.innerHTML = `
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                <span style="font-weight: bold; color: #333;">Câu ${index + 1}: ${cleanPrompt}</span>
+                                <span style="font-weight: bold; color: #333;">Câu ${index + 1}: ${displayPrompt}</span>
                                 ${statusBadge}
                             </div>
-                            <p style="color: #28a745; margin: 4px 0; font-size: 0.95em;">✔ Đáp án đúng: <b>${decodedAns}</b></p>
+                            <p style="color: #28a745; margin: 4px 0; font-size: 0.95em;">✔ Đáp án đúng: <b>${displayAns}</b></p>
                             <p style="color: #007bff; margin: 4px 0; font-size: 0.95em;">👉 Thí sinh chọn: ${choiceHtml}</p>
                         `;
                         questionsContainer.appendChild(questionDiv);
                     });
 
-                    // Thống kê chính xác tương ứng với bài làm của Nguyễn Thanh Bông (16 câu đúng / 4 câu sai = 8.00 điểm)
                     const summaryDiv = document.createElement('div');
                     summaryDiv.style.cssText = "display: flex; gap: 15px; margin-bottom: 20px; padding: 12px; background: #e0eaff; border-radius: 8px; font-weight: bold; flex-wrap: wrap;";
                     summaryDiv.innerHTML = `
