@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bài kiểm tra</title>
     <style>
-        /* CHỐNG SAO CHÉP, BÔI ĐEN VÀ IN ẤN TOÀN TRANG */
+        /* CHỐNG SAO CHÉP & IN ẤN TOÀN TRANG */
         *, *::before, *::after {
             -webkit-user-select: none !important;
             -moz-user-select: none !important;
@@ -20,7 +20,7 @@
             body { display: none !important; }
         }
 
-        /* LỚP LÀM MỜ TỨC THÌ KHI PHÁT HIỆN GIAN LẬN HỢẶC MẤT TẬP TRUNG */
+        /* LỚP LÀM MỜ TỨC THÌ KHI RỜI CHUỘT / MẤT FOCUS */
         .blur-protection {
             filter: blur(25px) !important;
             opacity: 0.05 !important;
@@ -301,10 +301,10 @@
 
 <body>
 
-    <!-- OVERLAY ÉP BẮT ĐẦU VÀO FULLSCREEN -->
+    <!-- OVERLAY ÉP FULLSCREEN -->
     <div id="startOverlay">
-        <h2>BẢO BẢO AN TOÀN BÀI THI</h2>
-        <p>Hệ thống yêu cầu chế độ Toàn Màn Hình. Mọi hành vi thoát màn hình, chia đôi cửa sổ hoặc sử dụng ứng dụng nổi sẽ bị thu bài!</p>
+        <h2>YÊU CẦU BẢO MẬT BÀI THI</h2>
+        <p>Bài thi yêu cầu chế độ **Toàn Màn Hình**. Không chuyển tab, chia đôi màn hình hoặc thoát khỏi cửa sổ làm bài!</p>
         <button id="startFullscreenBtn" onclick="enterFullscreenAndStart()">BẮT ĐẦU LÀM BÀI</button>
     </div>
 
@@ -394,9 +394,8 @@
 
         let isAntiCheatEnabled = false;
         let isQuizReady = false;
-        let lastTouchTimestamp = Date.now();
 
-        // 1. CHỐNG SAO CHÉP & PHÍM TẮT CẤM
+        // 1. CHỐNG SAO CHÉP & CHỤP MÀN HÌNH BẰNG PHÍM TẮT
         ['copy', 'cut', 'paste', 'selectstart', 'dragstart', 'contextmenu'].forEach(eventType => {
             document.addEventListener(eventType, e => e.preventDefault());
         });
@@ -417,12 +416,7 @@
             }
         });
 
-        // 2. GHI NHẬN TƯƠNG TÁC CẢM ỨNG
-        ['touchstart', 'touchmove', 'click'].forEach(evt => {
-            document.addEventListener(evt, () => { lastTouchTimestamp = Date.now(); });
-        });
-
-        // 3. FULLSCREEN ENFORCEMENT
+        // 2. CHẾ ĐỘ TOÀN MÀN HÌNH (FULLSCREEN)
         function enterFullscreenAndStart() {
             const elem = document.documentElement;
             if (elem.requestFullscreen) { elem.requestFullscreen(); }
@@ -433,7 +427,7 @@
             loadQuiz();
         }
 
-        // 4. LÀM MỜ TỨC THÌ KHI RỜI CỬA SỔ
+        // 3. TỰ ĐỘNG LÀM MỜ MÀN HÌNH KHI RỜI CHUỘT / MỞ TAB SONG SONG
         function triggerBlurProtection(enable) {
             const grid = document.getElementById('mainTestGrid');
             if (enable) {
@@ -447,7 +441,7 @@
             if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
             if (e.clientY <= 0 || e.clientX <= 0 || e.clientX >= window.innerWidth || e.clientY >= window.innerHeight) {
                 triggerBlurProtection(true);
-                startCheatWarning("Rời con trỏ chuột khỏi giao diện làm bài");
+                startCheatWarning("Đưa con trỏ chuột ra ngoài khu vực bài thi");
             }
         });
 
@@ -457,27 +451,6 @@
                 stopCheatWarning();
             }
         });
-
-        // 5. BẮT CỬA SỔ NỔI & CHIA ĐÔI MÀN HÌNH TRÊN DI ĐỘNG
-        function checkMobileAntiCheat() {
-            if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
-
-            // Kiểm tra sai lệch Viewport (Phát hiện Split Screen / Cửa sổ nổi chiếm màn hình)
-            const screenHeight = window.screen.height;
-            const innerHeight = window.innerHeight;
-            if (window.innerWidth <= 900 && Math.abs(screenHeight - innerHeight) > 220) {
-                triggerBlurProtection(true);
-                startCheatWarning("Phát hiện Cửa sổ nổi / Chia đôi màn hình trên di động!");
-            }
-
-            // Kiểm tra khoảng lặng tương tác (Học sinh thao tác trên app nổi mà không chạm bài thi)
-            const idleTime = (Date.now() - lastTouchTimestamp) / 1000;
-            if (idleTime > 15 && !isCheating) {
-                triggerBlurProtection(true);
-                startCheatWarning("Không tương tác bài thi quá lâu (Nghi vấn dùng ứng dụng nổi)");
-            }
-        }
-        setInterval(checkMobileAntiCheat, 2000);
 
         const testForm = document.getElementById('testForm');
         const loadingDiv = document.getElementById('loading');
@@ -774,6 +747,7 @@
         }
 
         function setupAntiCheat() {
+            // Theo dõi Fullscreen
             document.addEventListener('fullscreenchange', () => {
                 if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
                 if (!document.fullscreenElement) {
@@ -783,6 +757,7 @@
                 }
             });
 
+            // Theo dõi chuyển tab/chuyển ứng dụng
             document.addEventListener('visibilitychange', () => {
                 if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
                 if (document.hidden) {
