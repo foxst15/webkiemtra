@@ -97,6 +97,7 @@
                     <tr>
                         <th>Họ Tên</th>
                         <th>Lớp</th>
+                        <th>Môn Học</th>
                         <th>Bài làm (Tên Đề Thi)</th>
                         <th>Điểm</th>
                         <th>Chi tiết</th>
@@ -142,15 +143,19 @@
 
             try {
                 // Truy vấn này đã được Index và Rules (v10) hỗ trợ
-                const querySnapshot = await db.collection("ketqua")
+                function escHtml(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+                const studentCode = localStorage.getItem('studentCode') || '';
+                const seen = new Set();
+                let results = [];
+                const addDoc = doc => { if (!seen.has(doc.id)) { seen.add(doc.id); results.push(doc.data()); } };
+                if (studentCode) {
+                    (await db.collection("ketqua").where("maHS", "==", studentCode).get()).forEach(addDoc);
+                }
+                // Bài cũ chưa có maHS: đối chiếu theo họ tên + lớp
+                (await db.collection("ketqua")
                     .where("hoTen", "==", studentName)
                     .where("lop", "==", studentClass)
-                    .get();
-                
-                let results = [];
-                querySnapshot.forEach(doc => {
-                    results.push(doc.data());
-                });
+                    .get()).forEach(doc => { if (!doc.data().maHS || !studentCode) addDoc(doc); });
 
                 if (results.length === 0) {
                     loadingDiv.innerText = "Bạn chưa nộp bài kiểm tra nào.";
@@ -174,11 +179,12 @@
                     const diemClass = diem >= 5 ? 'score-pass' : 'score-fail';
                     
                     tr.innerHTML = `
-                        <td>${res.hoTen || 'N/A'}</td>
-                        <td>${res.lop || 'N/A'}</td>
-                        <td>${res.tenDeThi || 'N/A'}</td>
-                        <td class="${diemClass}">${res.diemSo || 'N/A'}</td>
-                        <td>${res.soCauDung || 'N/A'} / ${res.tongSoCau || 'N/A'}</td>
+                        <td>${escHtml(res.hoTen || 'N/A')}</td>
+                        <td>${escHtml(res.lop || 'N/A')}</td>
+                        <td><strong style="color: #007bff;">${escHtml(res.monHoc || 'Khác')}</strong></td>
+                        <td>${escHtml(res.tenDeThi || 'N/A')}</td>
+                        <td class="${diemClass}">${escHtml(res.diemSo ?? 'N/A')}</td>
+                        <td>${escHtml(res.soCauDung ?? 'N/A')} / ${escHtml(res.tongSoCau ?? 'N/A')}</td>
                         <td>${nopLuc}</td>
                     `;
                     resultsTableBody.appendChild(tr);

@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kết quả bài kiểm tra</title>
+    <!-- KaTeX hiển thị công thức Toán - Lý - Hóa -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
     <style>
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
@@ -286,12 +290,25 @@
                         questionDiv.appendChild(image);
                     }
                     
+                    if (q.comprehensionText) {
+                        const passageDiv = document.createElement('div');
+                        passageDiv.style.cssText = 'background:#f8f9fa; border:1px solid #dee2e6; border-radius:8px; padding:12px; margin-bottom:10px; white-space:pre-wrap; font-size:0.95em;';
+                        passageDiv.textContent = q.comprehensionText;
+                        questionDiv.appendChild(passageDiv);
+                    }
+
+                    const cleanPrompt = (q.prompt || '').replace(/^(?:Câu|Bài|Question)\s*\d+\s*[\.\:\)\-\–]\s*/i, '').trim();
                     const promptP = document.createElement('p');
-                    promptP.innerText = `${index + 1}. ${q.prompt}`;
+                    promptP.textContent = `${index + 1}. ${cleanPrompt}`;
                     questionDiv.appendChild(promptP);
 
                     const userAnswer = userAnswers[index]; // Có thể là null
-                    const correctAnswer = decodeURIComponent(atob(q.answer)); // Giải mã đáp án
+                    let correctAnswer = '';
+                    try {
+                        correctAnswer = decodeURIComponent(atob(q.answer));
+                    } catch (e) {
+                        try { correctAnswer = atob(q.answer); } catch (err) { correctAnswer = q.answer || ''; }
+                    }
 
                     q.options.forEach(option => {
                         const optionSpan = document.createElement('span');
@@ -317,6 +334,21 @@
 
                     contentDiv.appendChild(questionDiv);
                 });
+
+                // Render công thức Toán - Lý - Hóa (KaTeX) trong phần xem lại bài
+                if (typeof renderMathInElement === 'function') {
+                    try {
+                        renderMathInElement(contentDiv, {
+                            delimiters: [
+                                { left: '$$', right: '$$', display: true },
+                                { left: '$', right: '$', display: false }
+                            ],
+                            throwOnError: false
+                        });
+                    } catch (err) {
+                        console.warn('KaTeX render warning:', err);
+                    }
+                }
 
                 // Xóa ID khỏi localStorage để tránh xem nhầm
                 localStorage.removeItem('lastSubmissionId');

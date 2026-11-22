@@ -315,10 +315,10 @@
 
 <body>
 
-    <!-- OVERLAY ÉP FULLSCREEN -->
-    <div id="startOverlay">
+    <!-- OVERLAY ÉP FULLSCREEN (Chỉ hiện khi đề bật chống gian lận) -->
+    <div id="startOverlay" style="display: none;">
         <h2>YÊU CẦU BẢO MẬT BÀI THI</h2>
-        <p>Bài thi yêu cầu chế độ **Toàn Màn Hình**. Không chuyển tab, chia đôi màn hình hoặc thoát khỏi cửa sổ làm bài!</p>
+        <p>Bài thi yêu cầu chế độ <strong>Toàn Màn Hình</strong>. Không chuyển tab, chia đôi màn hình hoặc thoát khỏi cửa sổ làm bài quá 3 giây!</p>
         <button id="startFullscreenBtn" onclick="enterFullscreenAndStart()">BẮT ĐẦU LÀM BÀI</button>
     </div>
 
@@ -347,8 +347,8 @@
                         </button>
                     </div>
 
-                    <button id="submitBtn" onclick="submitTest()" disabled>
-                        Nộp bài (Chưa hoàn thành)
+                    <button id="submitBtn" onclick="submitTest()" style="display: none;" disabled>
+                        Nộp bài (HOÀN THÀNH)
                     </button>
                 </div>
 
@@ -386,20 +386,26 @@
 
         const studentName = localStorage.getItem('studentName');
         const studentClass = localStorage.getItem('studentClass');
+        const studentCode = localStorage.getItem('studentCode') || '';
         const selectedTestId = localStorage.getItem('selectedTestId');
         const selectedTestName = localStorage.getItem('selectedTestName');
         const testTimeMinutes = parseInt(localStorage.getItem('selectedTestTime') || 15, 10);
+        let selectedTestSubject = localStorage.getItem('selectedTestSubject') || '';
 
         if (!studentName || !studentClass) { window.location.href = 'index.html'; }
         if (!selectedTestId) { window.location.href = 'select-test.html'; }
+
+        const PROGRESS_STORAGE_KEY = `quizProgress_${studentCode || studentName}_${selectedTestId}`;
 
         let correctAnswers = [];
         let fullQuestionObjects = [];
         let timerInterval = null;
         let daNopBai = false;
         let globalTimeLeft = 0;
+        let quizEndTimeMs = 0;
         let isCheating = false;
         let cheatTimeout = null;
+        let cheatDeadline = 0;
         let cheatCountDown = 0;
         let cheatTimerInterval = null;
         let globalAnsweredCount = 0;
@@ -408,6 +414,48 @@
 
         let isAntiCheatEnabled = false;
         let isQuizReady = false;
+        let quizLoaded = false;
+        let cachedTestDocData = null;
+
+        function saveQuizProgress() {
+            if (daNopBai || !fullQuestionObjects.length) return;
+            try {
+                const state = {
+                    questionIds: fullQuestionObjects.map(q => q.id),
+                    optionOrders: fullQuestionObjects.reduce((acc, q) => {
+                        acc[q.id] = q.shuffledOptions;
+                        return acc;
+                    }, {}),
+                    userSelections: userSelections,
+                    endTimeTimestamp: quizEndTimeMs,
+                    currentQuestionIndex: currentQuestionIndex
+                };
+                localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(state));
+            } catch (e) {
+                console.warn("Không thể lưu tiến trình làm bài:", e);
+            }
+        }
+
+        function loadSavedQuizProgress() {
+            try {
+                const raw = localStorage.getItem(PROGRESS_STORAGE_KEY);
+                if (!raw) return null;
+                const parsed = JSON.parse(raw);
+                if (!parsed || !parsed.endTimeTimestamp || parsed.endTimeTimestamp <= Date.now()) {
+                    localStorage.removeItem(PROGRESS_STORAGE_KEY);
+                    return null;
+                }
+                return parsed;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function clearQuizProgress() {
+            try {
+                localStorage.removeItem(PROGRESS_STORAGE_KEY);
+            } catch (e) {}
+        }
 
         // Render công thức Toán - Lý - Hóa (KaTeX) trong DOM
         function renderMathFormulas(containerEl) {
@@ -439,28 +487,35 @@
                 (e.ctrlKey && e.shiftKey && ['i', 'j', 'c'].includes(e.key.toLowerCase()))
             ) {
                 e.preventDefault();
-                if (e.key === 'PrintScreen') {
-                    navigator.clipboard.writeText('');
+                if (e.key === 'PrintScreen' && isAntiCheatEnabled && isQuizReady && !daNopBai) {
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText('').catch(() => {});
+                    }
                     triggerBlurProtection(true);
                 }
             }
         });
 
-        // 2. CHẾ ĐỘ TOÀN MÀN HÌNH (FULLSCREEN)
+        // 2. CHẾ ĐỘ TOÀN MÀN HÌNH (FULLSCREEN - CHỈ KHI BẬT CHỐNG GIAN LẬN)
         function enterFullscreenAndStart() {
             const elem = document.documentElement;
-            if (elem.requestFullscreen) { elem.requestFullscreen(); }
+            if (elem.requestFullscreen) { elem.requestFullscreen().catch(() => {}); }
             else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
             else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
-            
+
             document.getElementById('startOverlay').style.display = 'none';
-            loadQuiz();
+            if (!quizLoaded) {
+                loadQuiz();
+            } else {
+                stopCheatWarning();
+            }
         }
 
         // 3. TỰ ĐỘNG LÀM MỜ MÀN HÌNH KHI RỜI CHUỘT / MỞ TAB SONG SONG
         function triggerBlurProtection(enable) {
             const grid = document.getElementById('mainTestGrid');
-            if (enable) {
+            if (!grid) return;
+            if (enable && isAntiCheatEnabled) {
                 grid.classList.add('blur-protection');
             } else {
                 grid.classList.remove('blur-protection');
@@ -471,12 +526,13 @@
             if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
             if (e.clientY <= 0 || e.clientX <= 0 || e.clientX >= window.innerWidth || e.clientY >= window.innerHeight) {
                 triggerBlurProtection(true);
-                startCheatWarning("Đưa con trỏ chuột ra ngoài khu vực bài thi");
+                startCheatWarning("Đưa con trỏ chuột ra ngoài khu vực bài thi quá 3 giây");
             }
         });
 
         document.addEventListener('mouseenter', () => {
-            if (document.hasFocus()) {
+            if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
+            if (document.hasFocus() && !document.hidden) {
                 triggerBlurProtection(false);
                 stopCheatWarning();
             }
@@ -522,11 +578,12 @@
             questions[index].classList.add('active');
             prevBtn.disabled = (index === 0);
             nextBtn.style.display = (index === totalQuestions - 1) ? 'none' : 'block';
-            submitButton.style.display = (index === totalQuestions - 1) ? 'block' : 'none';
 
             const qBoxes = questionMapContainer.querySelectorAll('.q-box');
             qBoxes.forEach(box => box.classList.remove('current'));
-            if (qBoxes.length > 0) { qBoxes[index].classList.add('current'); }
+            if (qBoxes.length > 0 && qBoxes[index]) { qBoxes[index].classList.add('current'); }
+
+            saveQuizProgress();
         }
 
         function createQuestionMap(totalQuestions) {
@@ -563,39 +620,68 @@
             const totalQuestions = userSelections.length;
             const isCompleted = (answeredCount === totalQuestions && totalQuestions > 0);
 
+            submitButton.style.display = isCompleted ? 'block' : 'none';
             submitButton.disabled = !isCompleted;
-            submitButton.innerText = isCompleted
-                ? "Nộp bài (HOÀN THÀNH)"
-                : `Nộp bài (Còn ${totalQuestions - answeredCount} câu chưa khoanh)`;
+            submitButton.innerText = "Nộp bài (HOÀN THÀNH)";
         }
 
-        function setupAnswerTracking() {
+        function setupAnswerTracking(restoredSelections = null) {
             const totalQuestions = fullQuestionObjects.length;
-            userSelections = new Array(totalQuestions).fill(null);
+            if (Array.isArray(restoredSelections) && restoredSelections.length === totalQuestions) {
+                userSelections = [...restoredSelections];
+            } else {
+                userSelections = new Array(totalQuestions).fill(null);
+            }
 
             testForm.addEventListener('change', (e) => {
                 if (e.target.type === 'radio' && e.target.name.startsWith('question')) {
                     const index = parseInt(e.target.name.replace('question', ''), 10);
                     userSelections[index] = e.target.value;
                     updateProgress();
+                    saveQuizProgress();
                 }
             });
             updateProgress();
         }
 
-        async function loadQuiz() {
+        async function initTestPage() {
             loadingDiv.style.display = 'block';
-
-            const uniqueStudentSeed = studentName + studentClass + selectedTestId + new Date().getTime();
-            Math.seedrandom(uniqueStudentSeed);
-
             try {
                 const testDoc = await db.collection("dethi").doc(selectedTestId).get();
                 if (testDoc.exists) {
-                    const testData = testDoc.data();
-                    isAntiCheatEnabled = (testData.chongGianLan !== false);
+                    cachedTestDocData = testDoc.data();
+                    isAntiCheatEnabled = (cachedTestDocData.chongGianLan !== false);
+                    if (cachedTestDocData.monHoc) {
+                        selectedTestSubject = cachedTestDocData.monHoc;
+                    }
+                } else {
+                    isAntiCheatEnabled = true;
                 }
-            } catch (e) { console.error("Lỗi lấy cấu hình đề thi:", e); }
+            } catch (e) {
+                console.error("Lỗi lấy cấu hình đề thi:", e);
+                isAntiCheatEnabled = true;
+            }
+
+            if (isAntiCheatEnabled) {
+                // Chỉ hiện màn hình yêu cầu Fullscreen khi đề kích hoạt chống gian lận
+                loadingDiv.style.display = 'none';
+                document.getElementById('startOverlay').style.display = 'flex';
+            } else {
+                // Đề không bật chống gian lận -> vào thẳng bài làm, không ép Fullscreen
+                document.getElementById('startOverlay').style.display = 'none';
+                loadQuiz();
+            }
+        }
+
+        async function loadQuiz() {
+            if (quizLoaded) return;
+            quizLoaded = true;
+            loadingDiv.style.display = 'block';
+
+            const savedProgress = loadSavedQuizProgress();
+
+            const uniqueStudentSeed = studentName + studentClass + selectedTestId + new Date().getTime();
+            Math.seedrandom(uniqueStudentSeed);
 
             try {
                 const snapshot = await db.collection("dethi").doc(selectedTestId).collection("cauhoi").get();
@@ -622,19 +708,38 @@
                     else { return a.id.localeCompare(b.id); }
                 });
 
-                const testNameLower = selectedTestName.toLowerCase();
-                if (!testNameLower.includes("tiếng việt") && !testNameLower.includes("english")) {
-                    shuffleArray(loadedQuestions);
+                // Khôi phục thứ tự câu hỏi nếu F5 tải lại trang, ngược lại xáo trộn theo quy tắc
+                if (savedProgress && Array.isArray(savedProgress.questionIds) && savedProgress.questionIds.length === loadedQuestions.length) {
+                    const qMap = new Map(loadedQuestions.map(q => [q.id, q]));
+                    const ordered = savedProgress.questionIds.map(id => qMap.get(id)).filter(Boolean);
+                    if (ordered.length === loadedQuestions.length) {
+                        loadedQuestions = ordered;
+                    }
+                } else {
+                    const testNameLower = (selectedTestName || '').toLowerCase();
+                    if (!testNameLower.includes("tiếng việt") && !testNameLower.includes("english")) {
+                        shuffleArray(loadedQuestions);
+                    }
                 }
 
                 testForm.innerHTML = '';
                 let questionIndex = 0;
                 loadedQuestions.forEach(q => {
                     let originalOptions = [...q.options];
-                    let optionIndices = [0, 1, 2, 3];
-                    shuffleArray(optionIndices);
-                    let shuffledOptions = optionIndices.map(i => originalOptions[i]);
+                    let shuffledOptions;
+
+                    if (savedProgress && savedProgress.optionOrders && Array.isArray(savedProgress.optionOrders[q.id]) && savedProgress.optionOrders[q.id].length === originalOptions.length) {
+                        shuffledOptions = savedProgress.optionOrders[q.id];
+                    } else {
+                        let optionIndices = originalOptions.map((_, i) => i);
+                        shuffleArray(optionIndices);
+                        shuffledOptions = optionIndices.map(i => originalOptions[i]);
+                    }
                     q.shuffledOptions = shuffledOptions;
+
+                    const restoredChoice = (savedProgress && Array.isArray(savedProgress.userSelections))
+                        ? savedProgress.userSelections[questionIndex]
+                        : null;
 
                     let questionDiv = document.createElement('div');
                     questionDiv.className = 'question';
@@ -665,6 +770,9 @@
                         input.type = 'radio';
                         input.name = `question${questionIndex}`;
                         input.value = option;
+                        if (restoredChoice !== null && restoredChoice === option) {
+                            input.checked = true;
+                        }
 
                         let spanText = document.createElement('span');
                         spanText.className = 'option-text';
@@ -694,13 +802,25 @@
                 quizControls.style.display = 'block';
 
                 createQuestionMap(loadedQuestions.length);
-                setupAnswerTracking();
-                showQuestion(0);
+                setupAnswerTracking(savedProgress ? savedProgress.userSelections : null);
 
-                startTimer(testTimeMinutes * 60);
+                const initialQIndex = (savedProgress && typeof savedProgress.currentQuestionIndex === 'number' && savedProgress.currentQuestionIndex >= 0 && savedProgress.currentQuestionIndex < loadedQuestions.length)
+                    ? savedProgress.currentQuestionIndex
+                    : 0;
+
+                const remainingSeconds = (savedProgress && savedProgress.endTimeTimestamp)
+                    ? Math.max(1, Math.ceil((savedProgress.endTimeTimestamp - Date.now()) / 1000))
+                    : (testTimeMinutes * 60);
+
+                quizEndTimeMs = (savedProgress && savedProgress.endTimeTimestamp)
+                    ? savedProgress.endTimeTimestamp
+                    : (Date.now() + remainingSeconds * 1000);
+
+                showQuestion(initialQIndex);
+                startTimer(remainingSeconds);
                 setupAntiCheat();
 
-                setTimeout(() => { isQuizReady = true; }, 1500);
+                setTimeout(() => { isQuizReady = true; }, 1200);
 
             } catch (error) {
                 console.error("Lỗi khi tải câu hỏi: ", error);
@@ -713,10 +833,25 @@
             globalTimeLeft = durationInSeconds;
             const timerElement = document.getElementById('timer');
             const timerBarElement = document.getElementById('timer-bar');
+            timerElement.innerText = formatTime(globalTimeLeft);
 
             timerInterval = setInterval(() => {
                 if (daNopBai) { clearInterval(timerInterval); return; }
-                if (!isCheating) { globalTimeLeft--; }
+
+                // Kiểm tra đồng bộ hạn phạt rời tab/cửa sổ 3 giây
+                if (isCheating && cheatDeadline > 0) {
+                    const remainingCheatSec = Math.ceil((cheatDeadline - Date.now()) / 1000);
+                    if (remainingCheatSec <= 0) {
+                        submitTest(true, currentCheatReason);
+                        return;
+                    }
+                    cheatCountDown = remainingCheatSec;
+                    timerElement.innerText = `CẢNH BÁO: QUAY LẠI! (${cheatCountDown}s)`;
+                    timerBarElement.classList.add('warning');
+                    return;
+                }
+
+                globalTimeLeft = Math.max(0, Math.ceil((quizEndTimeMs - Date.now()) / 1000));
 
                 if (globalTimeLeft <= 0) {
                     globalTimeLeft = 0;
@@ -727,17 +862,14 @@
                     return;
                 }
 
-                if (isCheating) {
-                    timerElement.innerText = `CẢNH BÁO: QUAY LẠI! (${cheatCountDown}s)`;
-                    timerBarElement.classList.add('warning');
-                } else if (globalTimeLeft <= 60) {
+                if (globalTimeLeft <= 60) {
                     timerElement.innerText = formatTime(globalTimeLeft);
                     timerBarElement.classList.add('warning');
                 } else {
                     timerElement.innerText = formatTime(globalTimeLeft);
                     timerBarElement.classList.remove('warning');
                 }
-            }, 1000);
+            }, 500);
         }
 
         function autoSubmit() {
@@ -745,9 +877,15 @@
             submitTest(true, "Hết giờ");
         }
 
+        let currentCheatReason = "Rời khỏi màn hình làm bài quá 3 giây";
+
         function startCheatWarning(reason) {
-            if (daNopBai || isCheating) return;
+            if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
+            if (isCheating) return;
+
             isCheating = true;
+            currentCheatReason = reason || "Rời khỏi màn hình làm bài quá 3 giây";
+            cheatDeadline = Date.now() + 3000;
             cheatCountDown = 3;
 
             triggerBlurProtection(true);
@@ -756,24 +894,37 @@
 
             if (cheatTimerInterval) clearInterval(cheatTimerInterval);
             cheatTimerInterval = setInterval(() => {
-                cheatCountDown--;
-                if (cheatCountDown < 0) { cheatCountDown = 0; }
-                if (isCheating) {
-                    document.getElementById('timer').innerText = `CẢNH BÁO: QUAY LẠI! (${cheatCountDown}s)`;
+                if (!isCheating || daNopBai) return;
+                const left = Math.ceil((cheatDeadline - Date.now()) / 1000);
+                cheatCountDown = Math.max(0, left);
+                document.getElementById('timer').innerText = `CẢNH BÁO: QUAY LẠI! (${cheatCountDown}s)`;
+                if (left <= 0) {
+                    submitTest(true, currentCheatReason);
                 }
-            }, 1000);
+            }, 250);
 
             if (cheatTimeout) clearTimeout(cheatTimeout);
             cheatTimeout = setTimeout(() => {
                 if (daNopBai) return;
-                if (isCheating) { submitTest(true, reason); }
-            }, 3000);
+                if (isCheating) { submitTest(true, currentCheatReason); }
+            }, 3050);
         }
 
         function stopCheatWarning() {
+            if (!isCheating) {
+                triggerBlurProtection(false);
+                return;
+            }
+            // Nếu thời gian rời tab/cửa sổ đã vượt quá 3 giây (trình duyệt nền bị throttle timer) -> nộp bài ngay
+            if (cheatDeadline > 0 && Date.now() >= cheatDeadline && !daNopBai && isAntiCheatEnabled) {
+                submitTest(true, currentCheatReason);
+                return;
+            }
+
             if (cheatTimeout) { clearTimeout(cheatTimeout); cheatTimeout = null; }
             if (cheatTimerInterval) { clearInterval(cheatTimerInterval); cheatTimerInterval = null; }
             isCheating = false;
+            cheatDeadline = 0;
             cheatCountDown = 0;
             triggerBlurProtection(false);
 
@@ -789,18 +940,17 @@
             document.addEventListener('fullscreenchange', () => {
                 if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
                 if (!document.fullscreenElement) {
-                    startCheatWarning("Thoát chế độ Toàn Màn Hình (Fullscreen)");
+                    startCheatWarning("Thoát chế độ Toàn Màn Hình (Fullscreen) quá 3 giây");
                 } else {
                     stopCheatWarning();
                 }
             });
 
-            // Theo dõi chuyển tab/chuyển ứng dụng
+            // Đồng bộ đếm ngược phạt rời tab 3 giây khi chuyển tab/ứng dụng
             document.addEventListener('visibilitychange', () => {
                 if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
                 if (document.hidden) {
-                    synchronousSubmitOnUnload(true, "Chuyển tab/ứng dụng");
-                    window.location.replace('results.html');
+                    startCheatWarning("Chuyển tab/ứng dụng quá 3 giây");
                 } else {
                     stopCheatWarning();
                 }
@@ -808,12 +958,20 @@
 
             window.addEventListener('blur', () => {
                 if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
-                startCheatWarning("Mất tập trung (Mở cửa sổ khác / Nhấp ra ngoài)");
+                startCheatWarning("Mất tập trung (Mở cửa sổ khác / Nhấp ra ngoài) quá 3 giây");
             });
 
             window.addEventListener('focus', () => {
                 if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
-                stopCheatWarning();
+                if (!document.hidden) {
+                    stopCheatWarning();
+                }
+            });
+
+            // Dự phòng khi đóng hẳn tab/trình duyệt
+            window.addEventListener('pagehide', () => {
+                if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
+                synchronousSubmitOnUnload(true, "Đóng trình duyệt/rời khỏi trang");
             });
         }
 
@@ -823,6 +981,7 @@
             clearInterval(timerInterval);
             if (cheatTimeout) clearTimeout(cheatTimeout);
             if (cheatTimerInterval) clearInterval(cheatTimerInterval);
+            clearQuizProgress();
 
             let score = 0;
             correctAnswers = fullQuestionObjects.map(q => q.answer);
@@ -835,8 +994,10 @@
             const finalScore = (totalQuestions > 0) ? (score / totalQuestions) * 10 : 0;
 
             const submissionData = {
+                maHS: studentCode,
                 hoTen: studentName,
                 lop: studentClass,
+                monHoc: selectedTestSubject || '',
                 diemSo: finalScore.toFixed(2),
                 soCauDung: score,
                 tongSoCau: totalQuestions,
@@ -874,6 +1035,7 @@
             clearInterval(timerInterval);
             if (cheatTimeout) clearTimeout(cheatTimeout);
             if (cheatTimerInterval) clearInterval(cheatTimerInterval);
+            clearQuizProgress();
 
             const submitBtn = document.getElementById('submitBtn');
             submitBtn.disabled = true;
@@ -900,8 +1062,10 @@
             if (db) {
                 try {
                     const docRef = await db.collection("ketqua").add({
-                        hoTen: studentName,
+                        maHS: studentCode,
+                hoTen: studentName,
                         lop: studentClass,
+                        monHoc: selectedTestSubject || '',
                         diemSo: finalScore.toFixed(2),
                         soCauDung: score,
                         tongSoCau: totalQuestions,
@@ -917,6 +1081,18 @@
                     localStorage.setItem('lastSubmissionId', docRef.id);
                 } catch (error) {
                     console.error("Lỗi khi lưu kết quả: ", error);
+                    // Lưu dự phòng để results.html tự đồng bộ lại, tránh mất bài khi lỗi mạng
+                    try {
+                        localStorage.setItem('pendingSubmission', JSON.stringify({
+                            maHS: studentCode,
+                hoTen: studentName, lop: studentClass, monHoc: selectedTestSubject || '',
+                            diemSo: finalScore.toFixed(2), soCauDung: score, tongSoCau: totalQuestions,
+                            deThiId: selectedTestId, tenDeThi: selectedTestName,
+                            nopTuDong: isAutoSubmit, lyDoNopTuDong: autoSubmitReason,
+                            answeredCount: globalAnsweredCount, userAnswers: userSelections,
+                            quizData: fullQuestionObjects
+                        }));
+                    } catch (e2) { console.error(e2); }
                 }
             }
             window.location.replace('results.html');
@@ -924,6 +1100,9 @@
 
         prevBtn.addEventListener('click', () => showQuestion(currentQuestionIndex - 1));
         nextBtn.addEventListener('click', () => showQuestion(currentQuestionIndex + 1));
+
+        // Khởi chạy kiểm tra cấu hình chống gian lận trước khi bắt đầu
+        initTestPage();
     </script>
 </body>
 

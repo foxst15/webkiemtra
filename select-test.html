@@ -218,6 +218,12 @@
             Chào <strong id="studentName"></strong> (Lớp: <strong id="studentClass"></strong>),
             vui lòng chọn đề kiểm tra:
         </div>
+        <div id="subject-filter-bar" style="margin-bottom: 15px; display: none; align-items: center; gap: 10px; background: #f8f9fa; padding: 12px 15px; border-radius: 8px; border: 1px solid #dee2e6;">
+            <label for="subject-filter" style="font-weight: 600; color: #333; white-space: nowrap;">📚 Lọc theo Môn học:</label>
+            <select id="subject-filter" style="flex: 1; padding: 8px 12px; border-radius: 6px; border: 1px solid #ced4da; font-size: 0.95em; background: #fff;">
+                <option value="">-- Tất cả Môn học --</option>
+            </select>
+        </div>
         <div id="test-list">
             <div id="loading">Đang tải danh sách đề thi...</div>
         </div>
@@ -260,6 +266,7 @@
         let testListUpdateInterval = null;
 
         // Hàm định dạng ngày giờ (chỉ lấy giờ và ngày)
+        function escHtml(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
         function formatDateTime(date) {
             if (!date) return 'Không giới hạn';
             // Ví dụ: 10:30 20/11
@@ -308,24 +315,76 @@
                 // ==========================================
 
                 // 2. Tải danh sách BÀI ĐÃ NỘP của học sinh này
-                const submissionsSnapshot = await db.collection("ketqua")
+                completedTestIdsData.clear();
+                const studentCode = localStorage.getItem('studentCode') || '';
+                if (studentCode) {
+                    const byCode = await db.collection("ketqua").where("maHS", "==", studentCode).get();
+                    byCode.forEach(doc => completedTestIdsData.add(doc.data().deThiId));
+                }
+                // Bài cũ chưa có maHS: đối chiếu theo họ tên + lớp (chỉ lấy bản ghi không có maHS)
+                const legacy = await db.collection("ketqua")
                     .where("hoTen", "==", studentName)
                     .where("lop", "==", studentClass)
                     .get();
-                
-                // *** CẬP NHẬT: Gán vào biến toàn cục ***
-                completedTestIdsData.clear(); 
-                submissionsSnapshot.forEach(doc => {
-                    const submission = doc.data();
-                    completedTestIdsData.add(submission.deThiId);
+                legacy.forEach(doc => {
+                    const d = doc.data();
+                    if (!d.maHS || !studentCode) completedTestIdsData.add(d.deThiId);
                 });
 
                 loadingDiv.style.display = 'none';
 
-                let availableTestsCount = 0;
-                
-                // 3. Lọc và hiển thị (Render lần đầu)
-                allTestsData.forEach(test => {
+                // Xây dựng bộ lọc Môn học từ danh sách đề của lớp
+                const subjectFilterBar = document.getElementById('subject-filter-bar');
+                const subjectFilterSelect = document.getElementById('subject-filter');
+                const subjects = new Set();
+                allTestsData.forEach(t => {
+                    if (t.monHoc && t.monHoc.trim()) {
+                        subjects.add(t.monHoc.trim());
+                    }
+                });
+                if (subjects.size > 0) {
+                    subjectFilterBar.style.display = 'flex';
+                    subjectFilterSelect.innerHTML = '<option value="">-- Tất cả Môn học --</option>';
+                    [...subjects].sort().forEach(sub => {
+                        const opt = document.createElement('option');
+                        opt.value = sub;
+                        opt.text = sub;
+                        subjectFilterSelect.appendChild(opt);
+                    });
+                    subjectFilterSelect.onchange = () => renderFilteredTests();
+                } else {
+                    subjectFilterBar.style.display = 'none';
+                }
+
+                renderFilteredTests();
+
+                // *** MỚI: Khởi động bộ đếm giờ cập nhật thời gian thực ***
+                if (testListUpdateInterval) clearInterval(testListUpdateInterval);
+                testListUpdateInterval = setInterval(updateTestAvailability, 5000); 
+
+            } catch (error) {
+                console.error("Lỗi tải danh sách đề hoặc kết quả: ", error);
+                loadingDiv.innerText = "Lỗi tải đề. Vui lòng kiểm tra Rules và Index trong Firestore.";
+            }
+        }
+
+        function renderFilteredTests() {
+            const listDiv = document.getElementById('test-list');
+            const noTestMessage = document.getElementById('no-test-message');
+            const subjectFilterVal = (document.getElementById('subject-filter')?.value || '').trim().toLowerCase();
+            const currentTime = new Date();
+
+            listDiv.innerHTML = '';
+            noTestMessage.style.display = 'none';
+
+            const filteredTests = allTestsData.filter(test => {
+                if (!subjectFilterVal) return true;
+                return (test.monHoc || '').trim().toLowerCase() === subjectFilterVal;
+            });
+
+            let availableTestsCount = 0;
+
+            filteredTests.forEach(test => {
                     const testId = test.id;
                     const testName = test.tenDe; 
                     const testTime = test.thoiGianLamBai || 15; 
@@ -384,9 +443,16 @@
                     ` : '';
 
 
+                    const subjectBadge = (test.monHoc && test.monHoc.trim())
+                        ? `<span style="display:inline-block; background:rgba(255,255,255,0.22); padding:3px 9px; border-radius:12px; font-size:0.78em; margin-bottom:5px; font-weight:600;">📚 Môn: ${escHtml(test.monHoc.trim())}</span><br>`
+                        : '';
+
                     button.innerHTML = `
                         <div class="test-item-content">
-                            <span>${testName}</span>
+                            <div>
+                                ${subjectBadge}
+                                <span>${escHtml(testName)}</span>
+                            </div>
                             <span class="time">${testTime} phút</span>
                         </div>
                         ${overlayContent}
@@ -395,11 +461,11 @@
                     if (isDisabled) {
                         button.disabled = true;
                     } else {
-                        // *** THAY ĐỔI: Chuyển hướng sang rules.html ***
                         button.onclick = () => {
                             localStorage.setItem('selectedTestId', testId);
                             localStorage.setItem('selectedTestName', testName);
-                            localStorage.setItem('selectedTestTime', testTime); 
+                            localStorage.setItem('selectedTestTime', testTime);
+                            localStorage.setItem('selectedTestSubject', test.monHoc || '');
                             window.location.href = 'rules.html'; 
                         };
                     }
@@ -407,23 +473,11 @@
                     listDiv.appendChild(button);
                 });
 
-                // 4. Hiển thị thông báo nếu không còn bài nào để làm
-                if (availableTestsCount === 0 && allTestsData.length > 0) {
+                if (availableTestsCount === 0 && filteredTests.length > 0) {
                     noTestMessage.style.display = 'block';
-                } else if (allTestsData.length === 0) {
-                    listDiv.innerHTML = '<p>Chưa có đề thi nào dành cho lớp của bạn.</p>';
+                } else if (filteredTests.length === 0) {
+                    listDiv.innerHTML = '<p style="text-align:center; color:#6c757d;">Chưa có đề thi nào phù hợp.</p>';
                 }
-
-                // *** MỚI: Khởi động bộ đếm giờ cập nhật thời gian thực ***
-                if (testListUpdateInterval) clearInterval(testListUpdateInterval);
-                // Cập nhật trạng thái mỗi 5 giây
-                testListUpdateInterval = setInterval(updateTestAvailability, 5000); 
-
-
-            } catch (error) {
-                console.error("Lỗi tải danh sách đề hoặc kết quả: ", error);
-                loadingDiv.innerText = "Lỗi tải đề. Vui lòng kiểm tra Rules và Index trong Firestore.";
-            }
         }
         
         // *** MỚI: HÀM CẬP NHẬT TRẠNG THÁI (CHẠY MỖI 5 GIÂY) ***
@@ -498,14 +552,15 @@
                         }
                         
                         // *** THAY ĐỔI: Gán lại sự kiện click sang rules.html ***
-                        button.onclick = (function(testId, testName, testTime) { 
+                        button.onclick = (function(testId, testName, testTime, testSubject) { 
                             return function() {
                                 localStorage.setItem('selectedTestId', testId);
                                 localStorage.setItem('selectedTestName', testName);
                                 localStorage.setItem('selectedTestTime', testTime); 
+                                localStorage.setItem('selectedTestSubject', testSubject || '');
                                 window.location.href = 'rules.html'; 
                             };
-                        })(testId, test.tenDe, test.thoiGianLamBai || 15); 
+                        })(testId, test.tenDe, test.thoiGianLamBai || 15, test.monHoc); 
                     }
                 }
             });
