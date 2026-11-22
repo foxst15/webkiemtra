@@ -1,3 +1,6 @@
+Dạ vâng, **FoxST** chỉ việc copy toàn bộ bản code đầy đủ dưới đây dán đè vào file cũ là dùng được ngay ạ! Bé Lôi đã tích hợp sẵn bộ phân tích đề chuẩn Bộ GD&ĐT (tự lọc tiêu đề Chủ đề/Phần, tách đáp án ngang, nhận diện đáp án in đậm/gạch chân, bảng đáp án cuối file Word và khung xem trước chọn nhanh đáp án) vào đúng vị trí rồi nhé ✨
+
+```html
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -270,6 +273,54 @@
         .tag-badge-old { background-color: #e2e3e5; color: #383d41; }
         .tag-badge-level { background-color: #cce5ff; color: #004085; }
 
+        /* Giao diện xem trước câu hỏi Bulk chuẩn Bộ GD&ĐT */
+        .bulk-preview-box {
+            margin-top: 12px;
+            border: 1px solid #cce5ff;
+            background: #f8fbff;
+            border-radius: 8px;
+            padding: 10px;
+            max-height: 360px;
+            overflow-y: auto;
+            display: none;
+        }
+        .bulk-preview-item {
+            background: #fff;
+            border: 1px solid #e3e6f0;
+            border-radius: 6px;
+            padding: 8px 10px;
+            margin-bottom: 8px;
+            font-size: 0.88em;
+        }
+        .bulk-preview-item.missing-ans {
+            border-left: 4px solid #dc3545;
+            background: #fff8f8;
+        }
+        .bulk-preview-item.has-ans {
+            border-left: 4px solid #28a745;
+        }
+        .preview-opt-pills {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+        .preview-opt-btn {
+            padding: 3px 9px;
+            font-size: 0.85em;
+            border-radius: 5px;
+            border: 1px solid #ced4da;
+            background: #f1f3f5;
+            color: #333;
+            cursor: pointer;
+        }
+        .preview-opt-btn.selected {
+            background: #28a745;
+            color: #fff;
+            border-color: #28a745;
+            font-weight: bold;
+        }
+
         @media (max-width: 1200px) {
             #test-manager-view { grid-template-columns: 1fr; }
             .question-manager-grid { grid-template-columns: 1fr; }
@@ -395,22 +446,36 @@
                          </form>
                         
                          <form id="addBulkQuestionForm" style="display: none;">
-                            <h3 style="margin-top:0;">Thêm hàng loạt câu hỏi</h3>
+                            <h3 style="margin-top:0;">Thêm hàng loạt (Chuẩn Bộ GD&ĐT)</h3>
                             
                             <div style="background: #e0eaff; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px dashed #007bff;">
-                                <label style="font-weight: bold; color: #007bff; display: block; margin-bottom: 5px; font-size: 0.9em;">📄 Trích xuất file Word (.docx):</label>
-                                <input type="file" id="docxFileInput" accept=".docx" style="display: block; width: 100%; margin-bottom: 0;">
+                                <label style="font-weight: bold; color: #007bff; display: block; margin-bottom: 5px; font-size: 0.9em;">
+                                    📄 Tải file Word (.docx) đề thi:
+                                </label>
+                                <input type="file" id="docxFileInput" accept=".docx" style="display: block; width: 100%; margin-bottom: 4px;">
+                                <small style="color: #495057; display: block;">
+                                    Tự động lọc tiêu đề Chủ đề/Phần, tách đáp án ngang, nhận diện đáp án in đậm/gạch chân & bảng đáp án cuối file.
+                                </small>
                             </div>
 
-                            <p style="font-size: 0.85em; margin: 5px 0;">Định dạng từng khối câu hỏi (cách nhau 1 dòng trống):</p>
-                            <pre style="font-size: 0.8em; padding: 8px;"><code>Nội dung câu hỏi...
-A. Lựa chọn A
-B. Lựa chọn B
-C. Lựa chọn C
-D. Lựa chọn D
-Đáp án: Lựa chọn A</code></pre>
-                            <textarea id="bulkQuestionsText" rows="12" style="width: 100%; font-family: monospace;"></textarea>
-                            <button type="submit" class="add-btn" style="width: 100%;">Lưu hàng loạt</button>
+                            <label style="font-size: 0.88em; font-weight: 600; color: #333;">Nội dung đề thi (Tự điền từ Word hoặc dán trực tiếp):</label>
+                            <textarea id="bulkQuestionsText" rows="8" placeholder="Dán nội dung đề thi tại đây..." style="width: 100%; font-family: monospace; font-size: 0.85em;"></textarea>
+
+                            <div style="background: #fff3cd; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #ffeeba;">
+                                <label style="font-weight: bold; color: #856404; display: block; margin-bottom: 4px; font-size: 0.88em;">
+                                    🔑 Chuỗi đáp án nhanh (Dùng khi file đề chưa có sẵn đáp án):
+                                </label>
+                                <input type="text" id="bulkQuickAnswerKey" placeholder="VD: 1A 2B 3C 4D... hoặc nhập liền: ABCDABCD..." style="margin-bottom: 4px; font-family: monospace;">
+                                <small style="color: #6c757d; display: block;">Hỗ trợ dạng <code>1A 2B 3C</code>, <code>1.A 2.B</code>, hoặc chuỗi chữ cái liên tiếp <code>A B C D...</code></small>
+                            </div>
+
+                            <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                                <button type="button" id="previewBulkBtn" style="flex: 1; background-color: #17a2b8;">🔍 Phân tích & Xem trước</button>
+                                <button type="submit" class="add-btn" style="flex: 1;">💾 Lưu vào CSDL</button>
+                            </div>
+
+                            <div id="bulkPreviewSummary" style="font-size: 0.88em; font-weight: bold; margin-bottom: 6px; display: none;"></div>
+                            <div id="bulkPreviewContainer" class="bulk-preview-box"></div>
                          </form>
                         
                          <form id="addComprehensionForm" style="display: none;">
@@ -779,7 +844,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
 
         function cleanQuestionPrompt(prompt) {
             if (!prompt) return '';
-            return prompt.replace(/^Câu\s*\d+\s*[:\.]\s*/i, '').trim();
+            return prompt.replace(/^(?:Câu|Bài|Question)\s*\d+\s*[\.\:\)\-\–]\s*/i, '').trim();
         }
 
         // Mã hóa thẻ HTML để chống lỗi hiển thị DOM (các thẻ <video>, <option>, v.v.)
@@ -1371,6 +1436,104 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                 });
             });
 
+            // =========================================================================
+            // BỘ PHÂN TÍCH ĐỀ THI CHUẨN BỘ GD&ĐT (HỖ TRỢ DOCX, BẢNG ĐÁP ÁN, IN ĐẬM/GẠCH CHÂN)
+            // =========================================================================
+            let parsedBulkQuestionsCache = [];
+            let detectedDocxAnswerMap = {};
+
+            function isNoiseOrSectionLine(line) {
+                const trimmed = line.trim();
+                if (!trimmed) return true;
+                const noisePatterns = [
+                    /^CHỦ ĐỀ\s*\d+/i,
+                    /^PHẦN\s+(?:[IVX]+|\d+|TRẮC NGHIỆM|TỰ LUẬN)/i,
+                    /^CHƯƠNG\s+(?:[IVX]+|\d+)/i,
+                    /^(?:I|II|III|IV|V|VI)\.\s+/i,
+                    /^TRƯỜNG\s+(?:TIỂU HỌC|THCS|THPT|ĐẠI HỌC)/i,
+                    /^SỞ\s+GIÁO\s+DỤC/i,
+                    /^PHÒNG\s+GIÁO\s+DỤC/i,
+                    /^BỘ\s+ĐỀ\s+ÔN\s+TẬP/i,
+                    /^ĐỀ\s+(?:SỐ|KIỂM TRA|THI)/i,
+                    /^Họ và tên học sinh\s*:/i,
+                    /^Điểm số\s*:/i,
+                    /^Hướng dẫn làm bài\s*:/i,
+                    /^Thời gian làm bài\s*:/i,
+                    /^[-–—=*\s]*HẾT[-–—=*\s]*$/i,
+                    /^[-–—=*\s]*HƯỚNG DẪN CHẤM[-–—=*\s]*$/i,
+                    /^[-–—=*\s]*BẢNG ĐÁP ÁN[-–—=*\s]*$/i
+                ];
+                return noisePatterns.some(regex => regex.test(trimmed));
+            }
+
+            function splitInlineOptions(line) {
+                const matches = [...line.matchAll(/(?:^|\s{2,}|\t)([A-D][\.\:\)])\s+/g)];
+                if (matches.length >= 2) {
+                    return line.split(/(?=(?:^|\s{2,}|\t)[A-D][\.\:\)]\s+)/g)
+                               .map(s => s.trim())
+                               .filter(Boolean);
+                }
+                return [line];
+            }
+
+            function parseQuickAnswerString(rawStr) {
+                const map = {};
+                if (!rawStr || !rawStr.trim()) return map;
+                const cleaned = rawStr.trim();
+
+                const numberedMatches = [...cleaned.matchAll(/(?:Câu\s*)?(\d+)\s*[\.\:\-\)]?\s*([A-D])\b/gi)];
+                if (numberedMatches.length > 0) {
+                    numberedMatches.forEach(m => {
+                        map[parseInt(m[1], 10)] = m[2].toUpperCase();
+                    });
+                    return map;
+                }
+
+                const lettersOnly = cleaned.replace(/[^A-Da-d]/g, '').toUpperCase();
+                if (lettersOnly.length > 0) {
+                    for (let i = 0; i < lettersOnly.length; i++) {
+                        map[i + 1] = lettersOnly[i];
+                    }
+                }
+                return map;
+            }
+
+            function extractAnswerMapFromTables(doc) {
+                const map = {};
+                const tables = doc.querySelectorAll('table');
+                tables.forEach(table => {
+                    const rows = Array.from(table.querySelectorAll('tr')).map(tr =>
+                        Array.from(tr.querySelectorAll('td, th')).map(cell => cell.textContent.trim())
+                    );
+                    for (let r = 0; r < rows.length - 1; r++) {
+                        const topRow = rows[r];
+                        const botRow = rows[r + 1];
+                        for (let c = 0; c < Math.min(topRow.length, botRow.length); c++) {
+                            const qNumMatch = topRow[c].match(/^(?:Câu\s*)?(\d+)$/i);
+                            const ansMatch = botRow[c].match(/^([A-D])$/i);
+                            if (qNumMatch && ansMatch) {
+                                map[parseInt(qNumMatch[1], 10)] = ansMatch[1].toUpperCase();
+                            }
+                        }
+                    }
+                    rows.forEach(row => {
+                        for (let c = 0; c < row.length; c++) {
+                            const inlinePair = row[c].match(/^(?:Câu\s*)?(\d+)\s*[\.\:\-\)]?\s*([A-D])$/i);
+                            if (inlinePair) {
+                                map[parseInt(inlinePair[1], 10)] = inlinePair[2].toUpperCase();
+                            } else if (c + 1 < row.length) {
+                                const qNum = row[c].match(/^(?:Câu\s*)?(\d+)$/i);
+                                const ans = row[c + 1].match(/^([A-D])$/i);
+                                if (qNum && ans) {
+                                    map[parseInt(qNum[1], 10)] = ans[1].toUpperCase();
+                                }
+                            }
+                        }
+                    });
+                });
+                return map;
+            }
+
             const docxFileInput = document.getElementById('docxFileInput');
             if (docxFileInput) {
                 docxFileInput.addEventListener('change', function(e) {
@@ -1379,16 +1542,226 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                     const reader = new FileReader();
                     reader.onload = function(loadEvent) {
                         const arrayBuffer = loadEvent.target.result;
-                        mammoth.extractRawText({arrayBuffer: arrayBuffer})
-                            .then(function(result){
-                                document.getElementById('bulkQuestionsText').value = result.value;
-                                alert("Đã bóc tách file Word thành công!");
+                        mammoth.convertToHtml({ arrayBuffer: arrayBuffer })
+                            .then(function(result) {
+                                const parser = new DOMParser();
+                                const doc = parser.parseFromString(result.value, 'text/html');
+
+                                detectedDocxAnswerMap = extractAnswerMapFromTables(doc);
+
+                                const lines = [];
+                                let currentQNum = 0;
+                                let currentOptionsFormatting = [];
+
+                                const finalizeFormattingCheck = () => {
+                                    if (currentQNum > 0 && currentOptionsFormatting.length === 4) {
+                                        const highlighted = currentOptionsFormatting.filter(o => o.isMarked);
+                                        if (highlighted.length === 1 && !detectedDocxAnswerMap[currentQNum]) {
+                                            detectedDocxAnswerMap[currentQNum] = highlighted[0].letter;
+                                        }
+                                    }
+                                    currentOptionsFormatting = [];
+                                };
+
+                                doc.body.querySelectorAll('p, li').forEach(el => {
+                                    if (el.closest('table')) return;
+                                    const text = el.textContent.replace(/\u00A0/g, ' ').trim();
+                                    if (!text) return;
+
+                                    const qStart = text.match(/^(?:Câu|Bài|Question)\s*(\d+)\s*[\.\:\)\-\–]/i);
+                                    if (qStart) {
+                                        finalizeFormattingCheck();
+                                        currentQNum = parseInt(qStart[1], 10);
+                                    }
+
+                                    const optStart = text.match(/^([A-D])[\.\:\)]\s+/i);
+                                    if (optStart && currentQNum > 0) {
+                                        const hasHighlight = el.querySelector('strong, b, u, ins') !== null;
+                                        currentOptionsFormatting.push({
+                                            letter: optStart[1].toUpperCase(),
+                                            isMarked: hasHighlight
+                                        });
+                                    }
+
+                                    lines.push(text);
+                                });
+                                finalizeFormattingCheck();
+
+                                document.getElementById('bulkQuestionsText').value = lines.join('\n');
+
+                                const autoKeys = Object.keys(detectedDocxAnswerMap).sort((a, b) => a - b);
+                                if (autoKeys.length > 0) {
+                                    document.getElementById('bulkQuickAnswerKey').value = autoKeys
+                                        .map(k => `${k}${detectedDocxAnswerMap[k]}`)
+                                        .join(' ');
+                                }
+
+                                runBulkPreview();
                             })
-                            .catch(function(err){ alert("Lỗi đọc file Word."); });
+                            .catch(function(err) {
+                                console.error(err);
+                                alert("Lỗi đọc file Word (.docx). Vui lòng kiểm tra lại tệp!");
+                            });
                     };
                     reader.readAsArrayBuffer(file);
                 });
             }
+
+            function parseBulkQuestionsData() {
+                const rawText = document.getElementById('bulkQuestionsText').value || '';
+                const quickKeyStr = document.getElementById('bulkQuickAnswerKey').value || '';
+                const quickAnswerMap = { ...detectedDocxAnswerMap, ...parseQuickAnswerString(quickKeyStr) };
+
+                let mainExamText = rawText;
+                const answerSectionSplit = rawText.split(/\n\s*(?:BẢNG ĐÁP ÁN|HƯỚNG DẪN CHẤM|ĐÁP ÁN THAM KHẢO|---+\s*ĐÁP ÁN\s*---+)\s*\n/i);
+                if (answerSectionSplit.length > 1) {
+                    mainExamText = answerSectionSplit[0];
+                    const footerAnswerMap = parseQuickAnswerString(answerSectionSplit.slice(1).join('\n'));
+                    Object.assign(quickAnswerMap, footerAnswerMap);
+                }
+
+                const questionBlocks = mainExamText
+                    .split(/^(?=(?:Câu|Bài|Question)\s*\d+\s*[\.\:\)\-\–])/gmi)
+                    .filter(b => /^(?:Câu|Bài|Question)\s*\d+\s*[\.\:\)\-\–]/i.test(b.trim()));
+
+                const results = [];
+
+                questionBlocks.forEach((block, idx) => {
+                    const qHeaderMatch = block.trim().match(/^(?:Câu|Bài|Question)\s*(\d+)\s*[\.\:\)\-\–]/i);
+                    const qNumber = qHeaderMatch ? parseInt(qHeaderMatch[1], 10) : (idx + 1);
+
+                    let rawLines = block.split('\n').map(l => l.trim()).filter(Boolean);
+                    let expandedLines = [];
+                    rawLines.forEach(line => {
+                        if (isNoiseOrSectionLine(line)) return;
+                        expandedLines.push(...splitInlineOptions(line));
+                    });
+
+                    let promptArr = [];
+                    let options = [];
+                    let inlineAnswerText = '';
+
+                    for (let line of expandedLines) {
+                        if (/^[A-D][\.\:\)]\s*/i.test(line)) {
+                            options.push(line.replace(/^[A-D][\.\:\)]\s*/i, '').trim());
+                        } else if (/^(?:Đáp án|ĐA|Answer|Chọn)\s*[\.\:\-\s]*/i.test(line)) {
+                            inlineAnswerText = line.replace(/^(?:Đáp án|ĐA|Answer|Chọn)\s*[\.\:\-\s]*/i, '').trim();
+                        } else {
+                            if (options.length === 0) {
+                                promptArr.push(line);
+                            } else if (options.length > 0 && !inlineAnswerText) {
+                                options[options.length - 1] += ' ' + line;
+                            }
+                        }
+                    }
+
+                    const prompt = promptArr.join('\n').trim();
+                    if (!prompt || options.length < 4) return;
+
+                    const fourOptions = options.slice(0, 4);
+                    let selectedLetter = '';
+                    let finalAnswer = '';
+
+                    if (inlineAnswerText) {
+                        if (fourOptions.includes(inlineAnswerText)) {
+                            finalAnswer = inlineAnswerText;
+                            selectedLetter = ['A', 'B', 'C', 'D'][fourOptions.indexOf(inlineAnswerText)];
+                        } else {
+                            const m = inlineAnswerText.match(/^([A-D])\b/i);
+                            if (m) {
+                                selectedLetter = m[1].toUpperCase();
+                                finalAnswer = fourOptions[['A', 'B', 'C', 'D'].indexOf(selectedLetter)];
+                            }
+                        }
+                    }
+
+                    if (!finalAnswer && quickAnswerMap[qNumber]) {
+                        selectedLetter = quickAnswerMap[qNumber];
+                        finalAnswer = fourOptions[['A', 'B', 'C', 'D'].indexOf(selectedLetter)] || '';
+                    }
+
+                    results.push({
+                        qNumber,
+                        prompt,
+                        options: fourOptions,
+                        selectedLetter,
+                        answer: finalAnswer
+                    });
+                });
+
+                return results;
+            }
+
+            function runBulkPreview() {
+                parsedBulkQuestionsCache = parseBulkQuestionsData();
+                const summaryDiv = document.getElementById('bulkPreviewSummary');
+                const containerDiv = document.getElementById('bulkPreviewContainer');
+
+                if (parsedBulkQuestionsCache.length === 0) {
+                    summaryDiv.style.display = 'block';
+                    summaryDiv.style.color = '#dc3545';
+                    summaryDiv.innerText = '⚠️ Chưa nhận diện được câu hỏi nào. Kiểm tra lại định dạng "Câu 1... A. B. C. D." nhé!';
+                    containerDiv.style.display = 'none';
+                    return;
+                }
+
+                const validCount = parsedBulkQuestionsCache.filter(q => q.answer).length;
+                const missingCount = parsedBulkQuestionsCache.length - validCount;
+
+                summaryDiv.style.display = 'block';
+                summaryDiv.style.color = missingCount === 0 ? '#28a745' : '#d97706';
+                summaryDiv.innerText = `📋 Nhận diện: ${parsedBulkQuestionsCache.length} câu | Đã có đáp án: ${validCount} | Chưa có đáp án: ${missingCount}`;
+
+                containerDiv.style.display = 'block';
+                containerDiv.innerHTML = '';
+
+                parsedBulkQuestionsCache.forEach((q, idx) => {
+                    const item = document.createElement('div');
+                    item.className = `bulk-preview-item ${q.answer ? 'has-ans' : 'missing-ans'}`;
+                    
+                    const pillsHtml = ['A', 'B', 'C', 'D'].map((letter, optIdx) => {
+                        const isSel = q.selectedLetter === letter;
+                        return `<button type="button" class="preview-opt-btn ${isSel ? 'selected' : ''}" data-qidx="${idx}" data-letter="${letter}">
+                            ${letter}. ${escapeHtml(q.options[optIdx])}
+                        </button>`;
+                    }).join('');
+
+                    item.innerHTML = `
+                        <div style="font-weight: 600; color: #222;">Câu ${q.qNumber}: ${escapeHtml(cleanQuestionPrompt(q.prompt))}</div>
+                        <div class="preview-opt-pills">${pillsHtml}</div>
+                    `;
+                    containerDiv.appendChild(item);
+                });
+            }
+
+            document.getElementById('bulkPreviewContainer').addEventListener('click', (e) => {
+                const btn = e.target.closest('.preview-opt-btn');
+                if (!btn) return;
+                const qIdx = parseInt(btn.dataset.qidx, 10);
+                const letter = btn.dataset.letter;
+                const targetQ = parsedBulkQuestionsCache[qIdx];
+                if (!targetQ) return;
+
+                targetQ.selectedLetter = letter;
+                targetQ.answer = targetQ.options[['A', 'B', 'C', 'D'].indexOf(letter)];
+
+                const card = btn.closest('.bulk-preview-item');
+                card.classList.remove('missing-ans');
+                card.classList.add('has-ans');
+                card.querySelectorAll('.preview-opt-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+
+                const validCount = parsedBulkQuestionsCache.filter(q => q.answer).length;
+                const missingCount = parsedBulkQuestionsCache.length - validCount;
+                const summaryDiv = document.getElementById('bulkPreviewSummary');
+                summaryDiv.style.color = missingCount === 0 ? '#28a745' : '#d97706';
+                summaryDiv.innerText = `📋 Nhận diện: ${parsedBulkQuestionsCache.length} câu | Đã có đáp án: ${validCount} | Chưa có đáp án: ${missingCount}`;
+            });
+
+            document.getElementById('previewBulkBtn').addEventListener('click', runBulkPreview);
+            document.getElementById('bulkQuickAnswerKey').addEventListener('input', () => {
+                if (document.getElementById('bulkQuestionsText').value.trim()) runBulkPreview();
+            });
 
             const navTests = document.getElementById('nav-tests');
             const navCreateTest = document.getElementById('nav-create-test');
@@ -2141,79 +2514,52 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                 } catch (error) { alert("Lỗi khi thêm/cập nhật câu hỏi."); }
             });
 
+            // Lưu hàng loạt câu hỏi chuẩn Bộ GD&ĐT lên Firestore
             addBulkQuestionForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                if (!selectedTestId) return;
-                const text = document.getElementById('bulkQuestionsText').value;
-                
-                const questionBlocks = text.split(/(?=Câu\s*\d+[\.:]?\s*)/gi).filter(b => b.trim() !== '');
-                let questionsToAdd = [];
-
-                for (const block of questionBlocks) {
-                    let lines = block.split('\n').map(l => l.trim()).filter(l => l !== "");
-                    if(lines.length < 5) continue; 
-
-                    let promptArr = [];
-                    let options = [];
-                    let answerText = "";
-
-                    for(let i = 0; i < lines.length; i++) {
-                        let line = lines[i];
-
-                        if (/^[A-D][\.\:\/\)]\s*/i.test(line)) {
-                            options.push(line.replace(/^[A-D][\.\:\/\)]\s*/i, '').trim());
-                        } else if (/^(Đáp án|ĐA|Answer)[\.\:\s]*/i.test(line)) {
-                            answerText = line.replace(/^(Đáp án|ĐA|Answer)[\.\:\s]*/i, '').trim();
-                        } else {
-                            if (options.length === 0) {
-                                promptArr.push(line);
-                            } else if (options.length > 0 && answerText === "") {
-                                options[options.length-1] += " " + line;
-                            }
-                        }
-                    }
-
-                    const prompt = promptArr.join('\n'); 
-
-                    let finalAnswer = "";
-                    if (options.includes(answerText)) { 
-                        finalAnswer = answerText; 
-                    } else {
-                        const letterMatch = answerText.match(/^[A-D]/i);
-                        if (letterMatch) {
-                            const letter = letterMatch[0].toUpperCase();
-                            if (letter === 'A') finalAnswer = options[0];
-                            else if (letter === 'B') finalAnswer = options[1];
-                            else if (letter === 'C') finalAnswer = options[2];
-                            else if (letter === 'D') finalAnswer = options[3];
-                        }
-                    }
-
-                    if (prompt && options.length >= 4 && finalAnswer) {
-                        questionsToAdd.push({ 
-                            prompt: prompt, 
-                            options: [options[0], options[1], options[2], options[3]], 
-                            answer: finalAnswer, 
-                            imageUrl: null, 
-                            comprehensionText: null 
-                        });
-                    }
+                if (!selectedTestId) {
+                    alert("Vui lòng chọn một đề thi ở danh sách bên trái trước!");
+                    return;
                 }
 
-                if (questionsToAdd.length > 0) {
+                runBulkPreview();
+                if (parsedBulkQuestionsCache.length === 0) return;
+
+                const missingQuestions = parsedBulkQuestionsCache.filter(q => !q.answer);
+                if (missingQuestions.length > 0) {
+                    const missingNums = missingQuestions.map(q => q.qNumber).join(', ');
+                    alert(`Còn ${missingQuestions.length} câu chưa có đáp án đúng (Câu: ${missingNums}).\nVui lòng nhập vào ô "Chuỗi đáp án nhanh" hoặc bấm chọn trực tiếp A/B/C/D ở khung xem trước nhé!`);
+                    return;
+                }
+
+                try {
                     const batch = db.batch();
                     const collectionRef = db.collection("dethi").doc(selectedTestId).collection("cauhoi");
                     let nextIndex = currentQuestionCount;
-                    questionsToAdd.forEach(q => { 
-                        const docRef = collectionRef.doc(); 
+
+                    parsedBulkQuestionsCache.forEach(q => {
+                        const docRef = collectionRef.doc();
                         nextIndex++;
-                        batch.set(docRef, { ...q, index: nextIndex }); 
+                        batch.set(docRef, {
+                            prompt: q.prompt,
+                            options: q.options,
+                            answer: q.answer,
+                            imageUrl: null,
+                            comprehensionText: null,
+                            index: nextIndex
+                        });
                     });
+
                     await batch.commit();
-                    alert(`Đã thêm thành công ${questionsToAdd.length} câu hỏi.`);
+                    alert(`🎉 Đã lưu thành công ${parsedBulkQuestionsCache.length} câu hỏi chuẩn Bộ GD&ĐT vào đề thi!`);
                     addBulkQuestionForm.reset();
-                } else {
-                    alert("Không tìm thấy câu hỏi hợp lệ. Vui lòng kiểm tra lại định dạng cú pháp (Ví dụ: Câu 1... A. B. C. D. Đáp án: A).");
+                    parsedBulkQuestionsCache = [];
+                    detectedDocxAnswerMap = {};
+                    document.getElementById('bulkPreviewSummary').style.display = 'none';
+                    document.getElementById('bulkPreviewContainer').style.display = 'none';
+                } catch (err) {
+                    console.error("Lỗi lưu hàng loạt:", err);
+                    alert("Có lỗi khi lưu lên CSDL. Vui lòng thử lại!");
                 }
             });
 
@@ -2360,7 +2706,6 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                         allResultsCache.push(data); 
                     });
                     
-                    // Sắp xếp mảng kết quả theo thời gian nộp bài từ mới nhất đến cũ nhất
                     allResultsCache.sort((a, b) => {
                         const timeA = a.thoiGianNop ? a.thoiGianNop.toMillis() : 0;
                         const timeB = b.thoiGianNop ? b.thoiGianNop.toMillis() : 0;
@@ -2479,7 +2824,6 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                         const isSkipped = rawChoice === null || rawChoice === undefined || rawChoice === '' || decodedChoice === 'Không chọn';
                         const isCorrect = !isSkipped && (decodedChoice.trim().toLowerCase() === decodedAns.trim().toLowerCase());
 
-                        // Mã hóa HTML trước khi hiển thị
                         const displayAns = escapeHtml(decodedAns);
                         const displayChoice = escapeHtml(decodedChoice);
                         const displayPrompt = escapeHtml(cleanPrompt);
@@ -2544,3 +2888,5 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
     </script>
 </body>
 </html>
+
+```
