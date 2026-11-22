@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trang Quản Trị </title>
+    <title>Trang Quản Trị</title>
+    <!-- KaTeX hiển thị công thức Toán - Lý - Hóa -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+
     <style>
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
@@ -80,7 +85,7 @@
 
         .question-manager-grid {
             display: grid;
-            grid-template-columns: 360px 1fr;
+            grid-template-columns: 420px 1fr;
             gap: 20px;
             align-items: start;
             margin-top: 15px;
@@ -199,7 +204,7 @@
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         
         #question-list {
-            max-height: 550px;
+            max-height: 600px;
             overflow-y: auto;
             border: 1px solid #e3e6f0;
             border-radius: 8px;
@@ -208,8 +213,8 @@
         }
         .question-item { border-bottom: 1px solid #e0e0e0; padding: 12px 0; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
         .question-item:last-child { border-bottom: none; }
-        .question-prompt { font-weight: 600; color: #333; margin-bottom: 4px; }
-        .question-answer { font-style: italic; color: #28a745; font-size: 0.9em; }
+        .question-prompt { font-weight: 600; color: #333; margin-bottom: 4px; line-height: 1.5; }
+        .question-answer { font-style: italic; color: #28a745; font-size: 0.92em; line-height: 1.5; }
 
         #results-view { display: none; }
         #results-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
@@ -270,14 +275,14 @@
         .tag-badge-old { background-color: #e2e3e5; color: #383d41; }
         .tag-badge-level { background-color: #cce5ff; color: #004085; }
 
-        /* Giao diện xem trước câu hỏi Bulk chuẩn Bộ GD&ĐT */
+        /* Giao diện xem trước câu hỏi Bulk chuẩn Bộ GD&ĐT + Toán Lý Hóa */
         .bulk-preview-box {
             margin-top: 12px;
             border: 1px solid #cce5ff;
             background: #f8fbff;
             border-radius: 8px;
             padding: 10px;
-            max-height: 360px;
+            max-height: 380px;
             overflow-y: auto;
             display: none;
         }
@@ -287,7 +292,8 @@
             border-radius: 6px;
             padding: 8px 10px;
             margin-bottom: 8px;
-            font-size: 0.88em;
+            font-size: 0.9em;
+            line-height: 1.5;
         }
         .bulk-preview-item.missing-ans {
             border-left: 4px solid #dc3545;
@@ -303,13 +309,14 @@
             margin-top: 6px;
         }
         .preview-opt-btn {
-            padding: 3px 9px;
-            font-size: 0.85em;
+            padding: 4px 10px;
+            font-size: 0.88em;
             border-radius: 5px;
             border: 1px solid #ced4da;
             background: #f1f3f5;
             color: #333;
             cursor: pointer;
+            text-align: left;
         }
         .preview-opt-btn.selected {
             background: #28a745;
@@ -331,6 +338,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -429,8 +437,8 @@
                             <label style="margin-top: 5px;">HOẶC URL Hình ảnh:</label>
                             <input type="text" id="questionImageUrl" placeholder="Dán link ảnh tại đây...">
 
-                            <label>Nội dung câu hỏi:</label>
-                            <input type="text" id="prompt" required>
+                            <label>Nội dung câu hỏi (Hỗ trợ LaTeX <code>$...$</code>):</label>
+                            <input type="text" id="prompt" placeholder="VD: Tính giá trị của $\frac{1}{2} + \sqrt{9}$" required>
                             <div class="options-grid">
                                 <input type="text" id="opt1" placeholder="Lựa chọn A" required>
                                 <input type="text" id="opt2" placeholder="Lựa chọn B" required>
@@ -443,7 +451,7 @@
                          </form>
                         
                          <form id="addBulkQuestionForm" style="display: none;">
-                            <h3 style="margin-top:0;">Thêm hàng loạt (Chuẩn Bộ GD&ĐT)</h3>
+                            <h3 style="margin-top:0;">Thêm hàng loạt (Chuẩn Bộ GD&ĐT + Toán Lý Hóa)</h3>
                             
                             <div style="background: #e0eaff; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px dashed #007bff;">
                                 <label style="font-weight: bold; color: #007bff; display: block; margin-bottom: 5px; font-size: 0.9em;">
@@ -451,7 +459,7 @@
                                 </label>
                                 <input type="file" id="docxFileInput" accept=".docx" style="display: block; width: 100%; margin-bottom: 4px;">
                                 <small style="color: #495057; display: block;">
-                                    Tự động lọc tiêu đề Chủ đề/Phần, tách đáp án ngang, nhận diện đáp án in đậm/gạch chân & bảng đáp án cuối file.
+                                    Tự dịch công thức Word Equation (phân số, căn, mũ, tích phân, vectơ) &amp; chỉ số Hóa/Lý sang LaTeX, lọc tiêu đề Chủ đề/Phần, nhận diện đáp án in đậm/gạch chân &amp; bảng đáp án cuối file.
                                 </small>
                             </div>
 
@@ -519,11 +527,11 @@
                     <div class="form-grid-2">
                         <div>
                             <label>Tên đề thi mới (*):</label>
-                            <input type="text" id="testName" placeholder="Ví dụ: Kiểm tra Lập trình Web" required>
+                            <input type="text" id="testName" placeholder="Ví dụ: Kiểm tra Toán 12" required>
                         </div>
                         <div>
                             <label>Môn học (Phân loại):</label>
-                            <input type="text" id="testSubject" placeholder="Ví dụ: Lập trình Web, Cơ sở dữ liệu">
+                            <input type="text" id="testSubject" placeholder="Ví dụ: Toán, Vật Lý, Hóa Học">
                         </div>
                     </div>
                 </div>
@@ -844,15 +852,440 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
             return prompt.replace(/^(?:Câu|Bài|Question)\s*\d+\s*[\.\:\)\-\–]\s*/i, '').trim();
         }
 
-        // Mã hóa thẻ HTML để chống lỗi hiển thị DOM (các thẻ <video>, <option>, v.v.)
+        // Mã hóa thẻ HTML nhưng bảo vệ cú pháp LaTeX ($...$ và $$...$$) để KaTeX render chuẩn
         function escapeHtml(unsafe) {
             if (typeof unsafe !== 'string') return unsafe;
-            return unsafe
-                 .replace(/&/g, "&amp;")
-                 .replace(/</g, "&lt;")
-                 .replace(/>/g, "&gt;")
-                 .replace(/"/g, "&quot;")
-                 .replace(/'/g, "&#039;");
+            const parts = unsafe.split(/(\$\$[\s\S]*?\$\$|\$[^$\n]+?\$)/g);
+            return parts.map((part, index) => {
+                if (index % 2 === 1) {
+                    // Bên trong công thức toán: đổi < và > thành \lt và \gt để tránh vỡ DOM HTML
+                    return part.replace(/</g, ' \\lt ').replace(/>/g, ' \\gt ');
+                }
+                return part
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }).join('');
+        }
+
+        // Gọi KaTeX render công thức trong một vùng DOM bất kỳ
+        function renderMathInContainer(el) {
+            if (!el || typeof renderMathInElement !== 'function') return;
+            try {
+                renderMathInElement(el, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '$', right: '$', display: false }
+                    ],
+                    throwOnError: false
+                });
+            } catch (err) {
+                console.warn('KaTeX render warning:', err);
+            }
+        }
+
+        // =========================================================================
+        // BỘ DỊCH CÔNG THỨC TOÁN - LÝ - HÓA TỪ WORD (.DOCX XML / OMML) SANG LATEX
+        // =========================================================================
+        const UNICODE_MATH_MAP = {
+            '×': '\\times ', '÷': '\\div ', '±': '\\pm ', '∓': '\\mp ',
+            '≤': '\\le ', '≥': '\\ge ', '≠': '\\ne ', '≈': '\\approx ', '≡': '\\equiv ',
+            '∞': '\\infty ', '→': '\\rightarrow ', '←': '\\leftarrow ', '↔': '\\leftrightarrow ',
+            '⇒': '\\Rightarrow ', '⇔': '\\Leftrightarrow ', '⇌': '\\rightleftharpoons ',
+            '°': '^\\circ ', '⋅': '\\cdot ', '·': '\\cdot ', '…': '\\dots ',
+            'α': '\\alpha ', 'β': '\\beta ', 'γ': '\\gamma ', 'Γ': '\\Gamma ',
+            'δ': '\\delta ', 'Δ': '\\Delta ', 'ε': '\\varepsilon ', 'ζ': '\\zeta ',
+            'η': '\\eta ', 'θ': '\\theta ', 'Θ': '\\Theta ', 'λ': '\\lambda ', 'Λ': '\\Lambda ',
+            'μ': '\\mu ', 'ν': '\\nu ', 'ξ': '\\xi ', 'π': '\\pi ', 'Π': '\\Pi ',
+            'ρ': '\\rho ', 'σ': '\\sigma ', 'Σ': '\\Sigma ', 'τ': '\\tau ',
+            'φ': '\\varphi ', 'Φ': '\\Phi ', 'χ': '\\chi ', 'ψ': '\\psi ', 'Ψ': '\\Psi ',
+            'ω': '\\omega ', 'Ω': '\\Omega ', '∂': '\\partial ', '∇': '\\nabla ',
+            '∈': '\\in ', '∉': '\\notin ', '⊂': '\\subset ', '∪': '\\cup ', '∩': '\\cap ', '∅': '\\emptyset '
+        };
+
+        function normalizeMathSymbols(str) {
+            return str.split('').map(ch => UNICODE_MATH_MAP[ch] || ch).join('');
+        }
+
+        function getXmlChildrenByLocalName(node, localName) {
+            const res = [];
+            if (!node || !node.childNodes) return res;
+            for (let i = 0; i < node.childNodes.length; i++) {
+                const child = node.childNodes[i];
+                if (child.nodeType === 1 && child.localName === localName) {
+                    res.push(child);
+                }
+            }
+            return res;
+        }
+
+        function getFirstXmlDescendant(node, localName) {
+            if (!node || !node.childNodes) return null;
+            for (let i = 0; i < node.childNodes.length; i++) {
+                const child = node.childNodes[i];
+                if (child.nodeType === 1) {
+                    if (child.localName === localName) return child;
+                    const found = getFirstXmlDescendant(child, localName);
+                    if (found) return found;
+                }
+            }
+            return null;
+        }
+
+        function convertOmmlNodeToLatex(node) {
+            if (!node) return '';
+            if (node.nodeType === 3) return normalizeMathSymbols(node.nodeValue || '');
+            if (node.nodeType !== 1) return '';
+
+            const name = node.localName;
+
+            if (name === 'oMathPara' || name === 'oMath' || name === 'e' || name === 'num' || name === 'den' || name === 'sub' || name === 'sup' || name === 'deg' || name === 'lim') {
+                let out = '';
+                for (let i = 0; i < node.childNodes.length; i++) {
+                    out += convertOmmlNodeToLatex(node.childNodes[i]);
+                }
+                return out;
+            }
+
+            if (name === 'r') {
+                // Bỏ qua thuộc tính rPr bên trong math run, chỉ lấy text <m:t>
+                const tNodes = getXmlChildrenByLocalName(node, 't');
+                return tNodes.map(t => normalizeMathSymbols(t.textContent || '')).join('');
+            }
+
+            if (name === 't') {
+                return normalizeMathSymbols(node.textContent || '');
+            }
+
+            if (name === 'f') {
+                // Phân số: \frac{num}{den}
+                const numNode = getXmlChildrenByLocalName(node, 'num')[0];
+                const denNode = getXmlChildrenByLocalName(node, 'den')[0];
+                const num = convertOmmlNodeToLatex(numNode).trim();
+                const den = convertOmmlNodeToLatex(denNode).trim();
+                return `\\frac{${num}}{${den}}`;
+            }
+
+            if (name === 'rad') {
+                // Căn thức: \sqrt{e} hoặc \sqrt[deg]{e}
+                const degNode = getXmlChildrenByLocalName(node, 'deg')[0];
+                const eNode = getXmlChildrenByLocalName(node, 'e')[0];
+                const deg = convertOmmlNodeToLatex(degNode).trim();
+                const e = convertOmmlNodeToLatex(eNode).trim();
+                return deg ? `\\sqrt[${deg}]{${e}}` : `\\sqrt{${e}}`;
+            }
+
+            if (name === 'sSup') {
+                const e = convertOmmlNodeToLatex(getXmlChildrenByLocalName(node, 'e')[0]).trim();
+                const sup = convertOmmlNodeToLatex(getXmlChildrenByLocalName(node, 'sup')[0]).trim();
+                return `${e}^{${sup}}`;
+            }
+
+            if (name === 'sSub') {
+                const e = convertOmmlNodeToLatex(getXmlChildrenByLocalName(node, 'e')[0]).trim();
+                const sub = convertOmmlNodeToLatex(getXmlChildrenByLocalName(node, 'sub')[0]).trim();
+                return `${e}_{${sub}}`;
+            }
+
+            if (name === 'sSubSup') {
+                const e = convertOmmlNodeToLatex(getXmlChildrenByLocalName(node, 'e')[0]).trim();
+                const sub = convertOmmlNodeToLatex(getXmlChildrenByLocalName(node, 'sub')[0]).trim();
+                const sup = convertOmmlNodeToLatex(getXmlChildrenByLocalName(node, 'sup')[0]).trim();
+                return `${e}_{${sub}}^{${sup}}`;
+            }
+
+            if (name === 'nary') {
+                // Tích phân, Tổng, Tích
+                const chrNode = getFirstXmlDescendant(node, 'chr');
+                const chrVal = chrNode ? (chrNode.getAttribute('m:val') || chrNode.getAttribute('val') || '∫') : '∫';
+                let op = '\\int';
+                if (chrVal === '∑') op = '\\sum';
+                else if (chrVal === '∏') op = '\\prod';
+                else if (chrVal === '∮') op = '\\oint';
+                else if (chrVal === '∬') op = '\\iint';
+
+                const sub = convertOmmlNodeToLatex(getXmlChildrenByLocalName(node, 'sub')[0]).trim();
+                const sup = convertOmmlNodeToLatex(getXmlChildrenByLocalName(node, 'sup')[0]).trim();
+                const e = convertOmmlNodeToLatex(getXmlChildrenByLocalName(node, 'e')[0]).trim();
+                return `${op}${sub ? `_{${sub}}` : ''}${sup ? `^{${sup}}` : ''} ${e}`;
+            }
+
+            if (name === 'acc') {
+                // Dấu mũ / vectơ / gạch ngang trên đầu
+                const chrNode = getFirstXmlDescendant(node, 'chr');
+                const chrVal = chrNode ? (chrNode.getAttribute('m:val') || chrNode.getAttribute('val') || '') : '';
+                const e = convertOmmlNodeToLatex(getXmlChildrenByLocalName(node, 'e')[0]).trim();
+                if (chrVal.includes('→') || chrVal === '\u20D7') return `\\vec{${e}}`;
+                if (chrVal === '¯' || chrVal === '\u0304' || chrVal === '\u0305') return `\\overline{${e}}`;
+                if (chrVal === '^' || chrVal === 'ˆ' || chrVal === '\u0302') return `\\hat{${e}}`;
+                return `\\vec{${e}}`;
+            }
+
+            if (name === 'bar') {
+                const e = convertOmmlNodeToLatex(getXmlChildrenByLocalName(node, 'e')[0]).trim();
+                return `\\overline{${e}}`;
+            }
+
+            if (name === 'd') {
+                // Dấu ngoặc bao quanh ( ), [ ], { }, | |
+                const begNode = getFirstXmlDescendant(node, 'begChr');
+                const endNode = getFirstXmlDescendant(node, 'endChr');
+                let beg = begNode ? (begNode.getAttribute('m:val') || begNode.getAttribute('val')) : '(';
+                let end = endNode ? (endNode.getAttribute('m:val') || endNode.getAttribute('val')) : ')';
+                if (beg === null || beg === undefined) beg = '(';
+                if (end === null || end === undefined) end = ')';
+                if (beg === '{') beg = '\\{';
+                if (end === '}') end = '\\}';
+                if (beg === '') beg = '.';
+                if (end === '') end = '.';
+
+                const eNodes = getXmlChildrenByLocalName(node, 'e');
+                const inner = eNodes.map(en => convertOmmlNodeToLatex(en).trim()).join(', ');
+                return `\\left${beg}${inner}\\right${end}`;
+            }
+
+            if (name === 'func') {
+                const fName = convertOmmlNodeToLatex(getXmlChildrenByLocalName(node, 'fName')[0]).trim();
+                const e = convertOmmlNodeToLatex(getXmlChildrenByLocalName(node, 'e')[0]).trim();
+                const stdFuncs = ['sin', 'cos', 'tan', 'cot', 'log', 'ln', 'lim', 'max', 'min'];
+                const latexFn = stdFuncs.includes(fName.toLowerCase()) ? `\\${fName.toLowerCase()}` : `\\text{${fName}}`;
+                return `${latexFn}{${e}}`;
+            }
+
+            if (name === 'limLow') {
+                const e = convertOmmlNodeToLatex(getXmlChildrenByLocalName(node, 'e')[0]).trim();
+                const lim = convertOmmlNodeToLatex(getXmlChildrenByLocalName(node, 'lim')[0]).trim();
+                const prefix = e.toLowerCase() === 'lim' ? '\\lim' : e;
+                return `${prefix}_{${lim}}`;
+            }
+
+            if (name === 'limUpp') {
+                const e = convertOmmlNodeToLatex(getXmlChildrenByLocalName(node, 'e')[0]).trim();
+                const lim = convertOmmlNodeToLatex(getXmlChildrenByLocalName(node, 'lim')[0]).trim();
+                return `\\overset{${lim}}{${e}}`;
+            }
+
+            if (name === 'eqArr') {
+                const eNodes = getXmlChildrenByLocalName(node, 'e');
+                const rows = eNodes.map(en => convertOmmlNodeToLatex(en).trim());
+                return `\\begin{aligned}${rows.join(' \\\\ ')}\\end{aligned}`;
+            }
+
+            if (name === 'm') {
+                const mrNodes = getXmlChildrenByLocalName(node, 'mr');
+                const rows = mrNodes.map(mr => {
+                    const cells = getXmlChildrenByLocalName(mr, 'e');
+                    return cells.map(c => convertOmmlNodeToLatex(c).trim()).join(' & ');
+                });
+                return `\\begin{matrix}${rows.join(' \\\\ ')}\\end{matrix}`;
+            }
+
+            // Bỏ qua các thẻ thuộc tính định dạng (*Pr)
+            if (name.endsWith('Pr')) return '';
+
+            let fallback = '';
+            for (let i = 0; i < node.childNodes.length; i++) {
+                fallback += convertOmmlNodeToLatex(node.childNodes[i]);
+            }
+            return fallback;
+        }
+
+        // Trích xuất toàn bộ đoạn văn + công thức + bảng đáp án trực tiếp từ file .docx
+        async function extractDocxWithFormulas(arrayBuffer) {
+            const zip = await JSZip.loadAsync(arrayBuffer);
+            const docXmlFile = zip.file('word/document.xml');
+            if (!docXmlFile) throw new Error('Không tìm thấy word/document.xml');
+
+            const xmlText = await docXmlFile.async('string');
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlText, 'application/xml');
+
+            const body = getFirstXmlDescendant(xmlDoc, 'body');
+            const lines = [];
+            const detectedAnswerMap = {};
+
+            function parseParagraphNode(pNode) {
+                let segments = []; // { type: 'text' | 'math', val: string }
+                let hasBold = false;
+                let hasUnderline = false;
+
+                function walkInline(node) {
+                    if (!node || node.nodeType !== 1) return;
+                    const name = node.localName;
+
+                    if (name === 'oMathPara' || name === 'oMath') {
+                        const latex = convertOmmlNodeToLatex(node).trim();
+                        if (latex) {
+                            segments.push({ type: 'math', val: latex });
+                        }
+                        return;
+                    }
+
+                    if (name === 'r') {
+                        const rPr = getXmlChildrenByLocalName(node, 'rPr')[0];
+                        let vertAlign = '';
+                        if (rPr) {
+                            const vaNode = getXmlChildrenByLocalName(rPr, 'vertAlign')[0];
+                            if (vaNode) vertAlign = vaNode.getAttribute('w:val') || vaNode.getAttribute('val') || '';
+                            if (getXmlChildrenByLocalName(rPr, 'b').length > 0) hasBold = true;
+                            const uNode = getXmlChildrenByLocalName(rPr, 'u')[0];
+                            if (uNode && (uNode.getAttribute('w:val') || uNode.getAttribute('val')) !== 'none') {
+                                hasUnderline = true;
+                            }
+                        }
+
+                        let runText = '';
+                        for (let i = 0; i < node.childNodes.length; i++) {
+                            const ch = node.childNodes[i];
+                            if (ch.nodeType === 1) {
+                                if (ch.localName === 't') runText += ch.textContent || '';
+                                else if (ch.localName === 'tab') runText += '\t';
+                                else if (ch.localName === 'br') runText += '\n';
+                            }
+                        }
+
+                        if (!runText) return;
+
+                        if (vertAlign === 'superscript' || vertAlign === 'subscript') {
+                            const op = vertAlign === 'superscript' ? '^' : '_';
+                            const cleanSub = runText.trim();
+                            // Kéo ký hiệu hóa học/toán liền trước (VD: H, SO, x, 10, Fe) vào chung cụm math
+                            if (segments.length > 0 && segments[segments.length - 1].type === 'text') {
+                                const prevText = segments[segments.length - 1].val;
+                                const tokenMatch = prevText.match(/([A-Za-z0-9\(\)\[\]]+)$/);
+                                if (tokenMatch) {
+                                    const baseToken = tokenMatch[1];
+                                    segments[segments.length - 1].val = prevText.slice(0, -baseToken.length);
+                                    segments.push({ type: 'math', val: `${baseToken}${op}{${cleanSub}}` });
+                                    return;
+                                }
+                            }
+                            if (segments.length > 0 && segments[segments.length - 1].type === 'math') {
+                                segments[segments.length - 1].val += `${op}{${cleanSub}}`;
+                                return;
+                            }
+                            segments.push({ type: 'math', val: `${op}{${cleanSub}}` });
+                        } else {
+                            segments.push({ type: 'text', val: runText });
+                        }
+                        return;
+                    }
+
+                    if (name.endsWith('Pr')) return;
+
+                    for (let i = 0; i < node.childNodes.length; i++) {
+                        walkInline(node.childNodes[i]);
+                    }
+                }
+
+                walkInline(pNode);
+
+                // Gộp các cụm math liền kề thành 1 cặp $ ... $ gọn gàng
+                let merged = [];
+                segments.forEach(seg => {
+                    if (!seg.val) return;
+                    if (merged.length > 0 && merged[merged.length - 1].type === seg.type) {
+                        merged[merged.length - 1].val += seg.val;
+                    } else {
+                        merged.push({ ...seg });
+                    }
+                });
+
+                const finalStr = merged.map(seg => {
+                    if (seg.type === 'math') return `$${seg.val.trim()}$`;
+                    return seg.val;
+                }).join('').replace(/\u00A0/g, ' ').trim();
+
+                return { text: finalStr, isMarked: hasBold || hasUnderline };
+            }
+
+            let currentQNum = 0;
+            let currentOptionsFormatting = [];
+
+            const finalizeFormattingCheck = () => {
+                if (currentQNum > 0 && currentOptionsFormatting.length === 4) {
+                    const highlighted = currentOptionsFormatting.filter(o => o.isMarked);
+                    if (highlighted.length === 1 && !detectedAnswerMap[currentQNum]) {
+                        detectedAnswerMap[currentQNum] = highlighted[0].letter;
+                    }
+                }
+                currentOptionsFormatting = [];
+            };
+
+            if (body) {
+                for (let i = 0; i < body.childNodes.length; i++) {
+                    const child = body.childNodes[i];
+                    if (child.nodeType !== 1) continue;
+
+                    if (child.localName === 'p') {
+                        const parsed = parseParagraphNode(child);
+                        if (!parsed.text) continue;
+
+                        const qStart = parsed.text.match(/^(?:Câu|Bài|Question)\s*(\d+)\s*[\.\:\)\-\–]/i);
+                        if (qStart) {
+                            finalizeFormattingCheck();
+                            currentQNum = parseInt(qStart[1], 10);
+                        }
+
+                        const optStart = parsed.text.match(/^([A-D])[\.\:\)]\s+/i);
+                        if (optStart && currentQNum > 0) {
+                            currentOptionsFormatting.push({
+                                letter: optStart[1].toUpperCase(),
+                                isMarked: parsed.isMarked
+                            });
+                        }
+
+                        lines.push(parsed.text);
+                    } else if (child.localName === 'tbl') {
+                        // Đọc bảng đáp án ở cuối file Word (nếu có)
+                        const trNodes = getXmlChildrenByLocalName(child, 'tr');
+                        const rows = trNodes.map(tr => {
+                            const tcNodes = getXmlChildrenByLocalName(tr, 'tc');
+                            return tcNodes.map(tc => {
+                                const pNodes = getXmlChildrenByLocalName(tc, 'p');
+                                return pNodes.map(p => parseParagraphNode(p).text).join(' ').trim();
+                            });
+                        });
+
+                        // Bảng ngang: hàng trên số câu, hàng dưới chữ cái đáp án
+                        for (let r = 0; r < rows.length - 1; r++) {
+                            const topRow = rows[r];
+                            const botRow = rows[r + 1];
+                            for (let c = 0; c < Math.min(topRow.length, botRow.length); c++) {
+                                const qNumMatch = topRow[c].match(/^(?:Câu\s*)?(\d+)$/i);
+                                const ansMatch = botRow[c].match(/^([A-D])$/i);
+                                if (qNumMatch && ansMatch) {
+                                    detectedAnswerMap[parseInt(qNumMatch[1], 10)] = ansMatch[1].toUpperCase();
+                                }
+                            }
+                        }
+
+                        // Cặp ô liền kề: 1 | A | 2 | B hoặc 1.A
+                        rows.forEach(row => {
+                            for (let c = 0; c < row.length; c++) {
+                                const inlinePair = row[c].match(/^(?:Câu\s*)?(\d+)\s*[\.\:\-\)]?\s*([A-D])$/i);
+                                if (inlinePair) {
+                                    detectedAnswerMap[parseInt(inlinePair[1], 10)] = inlinePair[2].toUpperCase();
+                                } else if (c + 1 < row.length) {
+                                    const qNum = row[c].match(/^(?:Câu\s*)?(\d+)$/i);
+                                    const ans = row[c + 1].match(/^([A-D])$/i);
+                                    if (qNum && ans) {
+                                        detectedAnswerMap[parseInt(qNum[1], 10)] = ans[1].toUpperCase();
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+                finalizeFormattingCheck();
+            }
+
+            return {
+                text: lines.join('\n'),
+                answerMap: detectedAnswerMap
+            };
         }
 
         let db; 
@@ -1434,7 +1867,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
             });
 
             // =========================================================================
-            // BỘ PHÂN TÍCH ĐỀ THI CHUẨN BỘ GD&ĐT (HỖ TRỢ DOCX, BẢNG ĐÁP ÁN, IN ĐẬM/GẠCH CHÂN)
+            // BỘ PHÂN TÍCH ĐỀ THI CHUẨN BỘ GD&ĐT + TOÁN LÝ HÓA
             // =========================================================================
             let parsedBulkQuestionsCache = [];
             let detectedDocxAnswerMap = {};
@@ -1495,110 +1928,38 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                 return map;
             }
 
-            function extractAnswerMapFromTables(doc) {
-                const map = {};
-                const tables = doc.querySelectorAll('table');
-                tables.forEach(table => {
-                    const rows = Array.from(table.querySelectorAll('tr')).map(tr =>
-                        Array.from(tr.querySelectorAll('td, th')).map(cell => cell.textContent.trim())
-                    );
-                    for (let r = 0; r < rows.length - 1; r++) {
-                        const topRow = rows[r];
-                        const botRow = rows[r + 1];
-                        for (let c = 0; c < Math.min(topRow.length, botRow.length); c++) {
-                            const qNumMatch = topRow[c].match(/^(?:Câu\s*)?(\d+)$/i);
-                            const ansMatch = botRow[c].match(/^([A-D])$/i);
-                            if (qNumMatch && ansMatch) {
-                                map[parseInt(qNumMatch[1], 10)] = ansMatch[1].toUpperCase();
-                            }
-                        }
-                    }
-                    rows.forEach(row => {
-                        for (let c = 0; c < row.length; c++) {
-                            const inlinePair = row[c].match(/^(?:Câu\s*)?(\d+)\s*[\.\:\-\)]?\s*([A-D])$/i);
-                            if (inlinePair) {
-                                map[parseInt(inlinePair[1], 10)] = inlinePair[2].toUpperCase();
-                            } else if (c + 1 < row.length) {
-                                const qNum = row[c].match(/^(?:Câu\s*)?(\d+)$/i);
-                                const ans = row[c + 1].match(/^([A-D])$/i);
-                                if (qNum && ans) {
-                                    map[parseInt(qNum[1], 10)] = ans[1].toUpperCase();
-                                }
-                            }
-                        }
-                    });
-                });
-                return map;
-            }
-
             const docxFileInput = document.getElementById('docxFileInput');
             if (docxFileInput) {
                 docxFileInput.addEventListener('change', function(e) {
                     const file = e.target.files[0];
                     if (!file) return;
                     const reader = new FileReader();
-                    reader.onload = function(loadEvent) {
+                    reader.onload = async function(loadEvent) {
                         const arrayBuffer = loadEvent.target.result;
-                        mammoth.convertToHtml({ arrayBuffer: arrayBuffer })
-                            .then(function(result) {
-                                const parser = new DOMParser();
-                                const doc = parser.parseFromString(result.value, 'text/html');
+                        try {
+                            const extracted = await extractDocxWithFormulas(arrayBuffer);
+                            detectedDocxAnswerMap = extracted.answerMap || {};
+                            document.getElementById('bulkQuestionsText').value = extracted.text;
 
-                                detectedDocxAnswerMap = extractAnswerMapFromTables(doc);
+                            const autoKeys = Object.keys(detectedDocxAnswerMap).sort((a, b) => a - b);
+                            if (autoKeys.length > 0) {
+                                document.getElementById('bulkQuickAnswerKey').value = autoKeys
+                                    .map(k => `${k}${detectedDocxAnswerMap[k]}`)
+                                    .join(' ');
+                            }
 
-                                const lines = [];
-                                let currentQNum = 0;
-                                let currentOptionsFormatting = [];
-
-                                const finalizeFormattingCheck = () => {
-                                    if (currentQNum > 0 && currentOptionsFormatting.length === 4) {
-                                        const highlighted = currentOptionsFormatting.filter(o => o.isMarked);
-                                        if (highlighted.length === 1 && !detectedDocxAnswerMap[currentQNum]) {
-                                            detectedDocxAnswerMap[currentQNum] = highlighted[0].letter;
-                                        }
-                                    }
-                                    currentOptionsFormatting = [];
-                                };
-
-                                doc.body.querySelectorAll('p, li').forEach(el => {
-                                    if (el.closest('table')) return;
-                                    const text = el.textContent.replace(/\u00A0/g, ' ').trim();
-                                    if (!text) return;
-
-                                    const qStart = text.match(/^(?:Câu|Bài|Question)\s*(\d+)\s*[\.\:\)\-\–]/i);
-                                    if (qStart) {
-                                        finalizeFormattingCheck();
-                                        currentQNum = parseInt(qStart[1], 10);
-                                    }
-
-                                    const optStart = text.match(/^([A-D])[\.\:\)]\s+/i);
-                                    if (optStart && currentQNum > 0) {
-                                        const hasHighlight = el.querySelector('strong, b, u, ins') !== null;
-                                        currentOptionsFormatting.push({
-                                            letter: optStart[1].toUpperCase(),
-                                            isMarked: hasHighlight
-                                        });
-                                    }
-
-                                    lines.push(text);
+                            runBulkPreview();
+                        } catch (err) {
+                            console.warn("Chuyển sang chế độ đọc dự phòng Mammoth:", err);
+                            mammoth.extractRawText({ arrayBuffer: arrayBuffer })
+                                .then(function(result) {
+                                    document.getElementById('bulkQuestionsText').value = result.value;
+                                    runBulkPreview();
+                                })
+                                .catch(function() {
+                                    alert("Lỗi đọc file Word (.docx). Vui lòng kiểm tra lại tệp!");
                                 });
-                                finalizeFormattingCheck();
-
-                                document.getElementById('bulkQuestionsText').value = lines.join('\n');
-
-                                const autoKeys = Object.keys(detectedDocxAnswerMap).sort((a, b) => a - b);
-                                if (autoKeys.length > 0) {
-                                    document.getElementById('bulkQuickAnswerKey').value = autoKeys
-                                        .map(k => `${k}${detectedDocxAnswerMap[k]}`)
-                                        .join(' ');
-                                }
-
-                                runBulkPreview();
-                            })
-                            .catch(function(err) {
-                                console.error(err);
-                                alert("Lỗi đọc file Word (.docx). Vui lòng kiểm tra lại tệp!");
-                            });
+                        }
                     };
                     reader.readAsArrayBuffer(file);
                 });
@@ -1729,6 +2090,9 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                     `;
                     containerDiv.appendChild(item);
                 });
+
+                // Render công thức KaTeX trong khung xem trước
+                renderMathInContainer(containerDiv);
             }
 
             document.getElementById('bulkPreviewContainer').addEventListener('click', (e) => {
@@ -1906,12 +2270,12 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                         <div class="test-item-info" style="flex-grow: 1;">
                             <div>
                                 ${badgeHtml}
-                                <span style="font-size: 1em; color: #007bff; font-weight: bold; display: inline;">${test.tenDe}</span>
+                                <span style="font-size: 1em; color: #007bff; font-weight: bold; display: inline;">${escapeHtml(test.tenDe)}</span>
                             </div>
                             ${timeInfo}
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 4px; flex-shrink:0;"> 
-                            <button class="detail-btn edit-test-btn" data-id="${testId}" data-name="${test.tenDe}">Sửa</button>
+                            <button class="detail-btn edit-test-btn" data-id="${testId}" data-name="${escapeHtml(test.tenDe)}">Sửa</button>
                             <button class="delete-btn single-del-test-btn" data-id="${testId}">Xóa</button>
                         </div>
                     `;
@@ -2016,7 +2380,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                             item.className = 'question-item';
                             
                             const passageHtml = q.comprehensionText 
-                                ? `<pre style="font-size: 0.85em; color: #555; max-height: 80px; overflow-y: auto; margin-bottom: 5px;">${q.comprehensionText}</pre>`
+                                ? `<pre style="font-size: 0.85em; color: #555; max-height: 80px; overflow-y: auto; margin-bottom: 5px;">${escapeHtml(q.comprehensionText)}</pre>`
                                 : (q.imageUrl ? `<img src="${q.imageUrl}" style="max-width: 80px; max-height: 80px; margin-bottom: 5px; border-radius: 4px;">` : '');
                             
                             item.innerHTML = `
@@ -2040,6 +2404,9 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
 
                             qListDiv.appendChild(item);
                         });
+
+                        // Render công thức KaTeX trong danh sách câu hỏi
+                        renderMathInContainer(qListDiv);
                     }, error => { qListDiv.innerHTML = '<p>Lỗi tải câu hỏi.</p>'; });
             }
 
@@ -2511,7 +2878,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                 } catch (error) { alert("Lỗi khi thêm/cập nhật câu hỏi."); }
             });
 
-            // Lưu hàng loạt câu hỏi chuẩn Bộ GD&ĐT lên Firestore
+            // Lưu hàng loạt câu hỏi chuẩn Bộ GD&ĐT + Toán Lý Hóa lên Firestore
             addBulkQuestionForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 if (!selectedTestId) {
@@ -2548,7 +2915,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                     });
 
                     await batch.commit();
-                    alert(`🎉 Đã lưu thành công ${parsedBulkQuestionsCache.length} câu hỏi chuẩn Bộ GD&ĐT vào đề thi!`);
+                    alert(`🎉 Đã lưu thành công ${parsedBulkQuestionsCache.length} câu hỏi vào đề thi!`);
                     addBulkQuestionForm.reset();
                     parsedBulkQuestionsCache = [];
                     detectedDocxAnswerMap = {};
@@ -2732,13 +3099,13 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                 modalBody.innerHTML = `
                     <form id="editTestForm" data-id="${testId}">
                         <label>Tên đề thi:</label>
-                        <input type="text" id="editTestName" value="${data.tenDe}" required>
+                        <input type="text" id="editTestName" value="${escapeHtml(data.tenDe)}" required>
                         <label>Thời gian làm bài (phút):</label>
                         <input type="number" id="editTestTime" value="${data.thoiGianLamBai}" required min="1">
                         <label>Môn học:</label>
-                        <input type="text" id="editTestSubject" value="${data.monHoc || ''}">
+                        <input type="text" id="editTestSubject" value="${escapeHtml(data.monHoc || '')}">
                         <label>Lớp áp dụng (phân cách bằng dấu phẩy):</label>
-                        <input type="text" id="editTestTargetClass" value="${data.lopApDung || ''}">
+                        <input type="text" id="editTestTargetClass" value="${escapeHtml(data.lopApDung || '')}">
                         <button type="submit" class="add-btn" style="width: 100%; margin-top: 20px;">Lưu Thay Đổi</button>
                     </form>
                 `;
@@ -2763,9 +3130,9 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
             modalBody.innerHTML = `
                 <form id="editStudentModalForm">
                     <label>Họ và Tên:</label>
-                    <input type="text" id="editStudentFullName" value="${hoTen}" required>
+                    <input type="text" id="editStudentFullName" value="${escapeHtml(hoTen)}" required>
                     <label>Lớp:</label>
-                    <input type="text" id="editStudentClass" value="${lop}" required>
+                    <input type="text" id="editStudentClass" value="${escapeHtml(lop)}" required>
                     <button type="submit" class="add-btn" style="width: 100%; margin-top: 15px;">Cập Nhật Thông Tin</button>
                 </form>
             `;
@@ -2871,6 +3238,9 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
 
                     modalBody.appendChild(summaryDiv);
                     modalBody.appendChild(questionsContainer);
+
+                    // Render công thức KaTeX trong cửa sổ chi tiết bài làm
+                    renderMathInContainer(modalBody);
                 } else {
                     modalBody.innerHTML = '<p style="text-align: center; color: #6c757d;">Không tìm thấy thông tin chi tiết câu hỏi của bài làm này.</p>';
                 }

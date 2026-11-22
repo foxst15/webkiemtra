@@ -5,6 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bài kiểm tra</title>
+    <!-- KaTeX hiển thị công thức Toán - Lý - Hóa -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+
     <style>
         /* CHỐNG SAO CHÉP & IN ẤN TOÀN TRANG */
         *, *::before, *::after {
@@ -131,6 +136,7 @@
         .question p {
             font-weight: 600;
             font-size: 1.1rem;
+            line-height: 1.65;
             margin-bottom: 1rem;
         }
 
@@ -139,9 +145,12 @@
         }
 
         .options label {
-            display: block;
+            display: flex;
+            align-items: center;
+            gap: .75rem;
             margin-bottom: .75rem;
             font-size: 1rem;
+            line-height: 1.6;
             cursor: pointer;
             padding: .75rem;
             border-radius: 8px;
@@ -153,7 +162,12 @@
         }
 
         .options input[type=radio] {
-            margin-right: .75rem;
+            margin: 0;
+            flex-shrink: 0;
+        }
+
+        .option-text {
+            flex-grow: 1;
         }
 
         #submitBtn {
@@ -395,6 +409,22 @@
         let isAntiCheatEnabled = false;
         let isQuizReady = false;
 
+        // Render công thức Toán - Lý - Hóa (KaTeX) trong DOM
+        function renderMathFormulas(containerEl) {
+            if (!containerEl || typeof renderMathInElement !== 'function') return;
+            try {
+                renderMathInElement(containerEl, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '$', right: '$', display: false }
+                    ],
+                    throwOnError: false
+                });
+            } catch (err) {
+                console.warn('KaTeX render warning:', err);
+            }
+        }
+
         // 1. CHỐNG SAO CHÉP & CHỤP MÀN HÌNH BẰNG PHÍM TẮT
         ['copy', 'cut', 'paste', 'selectstart', 'dragstart', 'contextmenu'].forEach(eventType => {
             document.addEventListener(eventType, e => e.preventDefault());
@@ -613,7 +643,7 @@
                     if (q.comprehensionText) {
                         const textPassage = document.createElement('div');
                         textPassage.className = 'comprehension-text';
-                        textPassage.innerText = q.comprehensionText;
+                        textPassage.textContent = q.comprehensionText;
                         questionDiv.appendChild(textPassage);
                     } else if (q.imageUrl) {
                         const image = document.createElement('img');
@@ -623,7 +653,7 @@
                     }
 
                     let promptP = document.createElement('p');
-                    promptP.innerText = `${questionIndex + 1}. ${q.prompt}`;
+                    promptP.textContent = `${questionIndex + 1}. ${q.prompt}`;
                     questionDiv.appendChild(promptP);
 
                     let optionsDiv = document.createElement('div');
@@ -635,8 +665,13 @@
                         input.type = 'radio';
                         input.name = `question${questionIndex}`;
                         input.value = option;
+
+                        let spanText = document.createElement('span');
+                        spanText.className = 'option-text';
+                        spanText.textContent = option;
+
                         label.appendChild(input);
-                        label.append(` ${option}`);
+                        label.appendChild(spanText);
                         optionsDiv.appendChild(label);
                     });
 
@@ -644,6 +679,9 @@
                     testForm.appendChild(questionDiv);
                     questionIndex++;
                 });
+
+                // Render toàn bộ công thức Toán - Lý - Hóa (KaTeX) sau khi dựng DOM
+                renderMathFormulas(testForm);
 
                 fullQuestionObjects = loadedQuestions.map(q => {
                     let safeQuestion = { ...q };
