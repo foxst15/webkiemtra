@@ -30,6 +30,7 @@
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
         }
+        /* Nút chung */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -48,6 +49,7 @@
         .btn-secondary { background-color: var(--secondary-color); }
         .btn-secondary:hover { background-color: var(--secondary-hover); }
 
+        /* Header trang */
         .page-header {
             display: flex;
             justify-content: space-between;
@@ -66,6 +68,7 @@
             margin-bottom: 20px;
         }
         
+        /* Danh sách đề thi */
         #test-list {
             margin-top: 20px;
         }
@@ -88,6 +91,7 @@
             overflow: hidden;
         }
         
+        /* Div nội dung để giữ padding và flex */
         .test-item-content {
             display: flex;
             justify-content: space-between;
@@ -165,9 +169,9 @@
             background-color: rgba(255, 255, 255, 0.9);
         }
         .test-item.completed .full-status-text {
-             color: #28a745;
-             font-weight: bold;
-             font-size: 1.2em;
+            color: #28a745;
+            font-weight: bold;
+            font-size: 1.2em;
         }
 
         .test-item .time {
@@ -176,6 +180,18 @@
             background-color: rgba(255,255,255,0.2);
             padding: 5px 10px;
             border-radius: 5px;
+            white-space: nowrap;
+        }
+        .test-code-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.25);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.78em;
+            font-weight: 700;
+            margin-left: 6px;
+            vertical-align: middle;
         }
         #loading { text-align: center; font-weight: bold; font-size: 1.1em; }
     </style>
@@ -242,6 +258,17 @@
         let testListUpdateInterval = null;
 
         function escHtml(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+        function getExamCode(test) {
+            return String((test && (test.maDe ?? test.ma_de ?? test.maCode)) || '').trim();
+        }
+        function shouldShowExamCode(test, pool) {
+            const code = getExamCode(test);
+            if (!code) return false;
+            const subj = (test.monHoc || '').trim().toLowerCase();
+            if (!subj) return true;
+            const sameSubjectTests = (pool || allTestsData).filter(t => (t.monHoc || '').trim().toLowerCase() === subj);
+            return sameSubjectTests.length > 1;
+        }
         function formatDateTime(date) {
             if (!date) return 'Không giới hạn';
             return `${date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} ${date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}`;
@@ -255,6 +282,7 @@
             loadingDiv.style.display = 'block';
 
             try {
+                // 1. TẢI VÀ LỌC DANH SÁCH ĐỀ THEO LỚP
                 const testsSnapshot = await db.collection("dethi").get();
                 allTestsData = []; 
                 
@@ -274,6 +302,7 @@
                     }
                 });
 
+                // 2. Tải danh sách BÀI ĐÃ NỘP của học sinh này
                 completedTestIdsData.clear();
                 const studentCode = localStorage.getItem('studentCode') || '';
                 if (studentCode) {
@@ -291,6 +320,7 @@
 
                 loadingDiv.style.display = 'none';
 
+                // Xây dựng bộ lọc Môn học từ danh sách đề của lớp
                 const subjectFilterBar = document.getElementById('subject-filter-bar');
                 const subjectFilterSelect = document.getElementById('subject-filter');
                 const subjects = new Set();
@@ -344,34 +374,44 @@
                 const testId = test.id;
                 const testName = test.tenDe; 
                 const testTime = test.thoiGianLamBai || 15; 
+                const examCode = getExamCode(test);
+                const showExamCode = shouldShowExamCode(test, allTestsData);
                 const isCompleted = completedTestIdsData.has(testId);
-                const allowRetake = (test.choPhepLamLai === true);
                 
-                let isDisabled = isCompleted && !allowRetake;
+                let isDisabled = isCompleted;
                 let statusText = '';
                 let statusClass = '';
 
                 const startTime = test.thoiGianMo ? new Date(test.thoiGianMo) : null; 
                 const endTime = test.thoiGianDong ? new Date(test.thoiGianDong) : null; 
                 
-                if (startTime && currentTime < startTime) {
-                    isDisabled = true;
-                    statusClass = 'disabled';
-                    const startStr = formatDateTime(startTime);
-                    const endStr = endTime ? formatDateTime(endTime) : 'Không giới hạn';
-                    statusText = `CHƯA MỞ (Bắt đầu: ${startStr} | Kết thúc: ${endStr})`;
-                } else if (endTime && currentTime > endTime) {
-                    isDisabled = true;
-                    statusClass = 'disabled closed';
-                    const endStr = formatDateTime(endTime);
-                    statusText = `ĐÃ ĐÓNG (Kết thúc: ${endStr})`;
-                } else if (isCompleted && !allowRetake) {
-                    isDisabled = true;
-                    statusClass = 'disabled completed';
-                    statusText = 'ĐÃ HOÀN THÀNH';
+                if (startTime || endTime || isCompleted) {
+                    if (startTime && currentTime < startTime) {
+                        isDisabled = true;
+                        statusClass = 'disabled';
+                        const startStr = startTime ? formatDateTime(startTime) : 'Không giới hạn';
+                        const endStr = endTime ? formatDateTime(endTime) : 'Không giới hạn';
+                        statusText = `CHƯA MỞ (Bắt đầu: ${startStr} | Kết thúc: ${endStr})`;
+                    } else if (endTime && currentTime > endTime) {
+                        isDisabled = true;
+                        statusClass = 'disabled closed';
+                        const endStr = endTime ? formatDateTime(endTime) : 'Không giới hạn';
+                        statusText = `ĐÃ ĐÓNG (Kết thúc: ${endStr})`;
+                    } else if (isCompleted) {
+                        isDisabled = true;
+                        statusClass = 'disabled completed';
+                        statusText = 'ĐÃ HOÀN THÀNH';
+                    } else {
+                        availableTestsCount++;
+                    }
                 } else {
-                    isDisabled = false;
-                    availableTestsCount++;
+                    if (!isCompleted) {
+                        availableTestsCount++;
+                    } else {
+                        isDisabled = true;
+                        statusClass = 'disabled completed';
+                        statusText = 'ĐÃ HOÀN THÀNH';
+                    }
                 }
                 
                 const button = document.createElement('button');
@@ -385,18 +425,19 @@
                 ` : '';
 
                 const subjectBadge = (test.monHoc && test.monHoc.trim())
-                    ? `<span style="display:inline-block; background:rgba(255,255,255,0.22); padding:3px 9px; border-radius:12px; font-size:0.78em; margin-bottom:5px; margin-right:5px; font-weight:600;">📚 Môn: ${escHtml(test.monHoc.trim())}</span>`
+                    ? `<span style="display:inline-block; background:rgba(255,255,255,0.22); padding:3px 9px; border-radius:12px; font-size:0.78em; margin-bottom:5px; font-weight:600;">📚 Môn: ${escHtml(test.monHoc.trim())}</span><br>`
                     : '';
-                const retakeInfoBadge = (isCompleted && allowRetake && !isDisabled)
-                    ? `<span style="display:inline-block; background:rgba(255,255,255,0.28); padding:3px 9px; border-radius:12px; font-size:0.78em; margin-bottom:5px; font-weight:600;">🔁 Đã làm (Cho phép làm lại)</span>`
+
+                const codeBadge = showExamCode
+                    ? `<span class="test-code-badge">Mã đề: ${escHtml(examCode)}</span>`
                     : '';
-                const topBadges = (subjectBadge || retakeInfoBadge) ? `${subjectBadge}${retakeInfoBadge}<br>` : '';
 
                 button.innerHTML = `
                     <div class="test-item-content">
                         <div>
-                            ${topBadges}
+                            ${subjectBadge}
                             <span>${escHtml(testName)}</span>
+                            ${codeBadge}
                         </div>
                         <span class="time">${testTime} phút</span>
                     </div>
@@ -411,6 +452,7 @@
                         localStorage.setItem('selectedTestName', testName);
                         localStorage.setItem('selectedTestTime', testTime);
                         localStorage.setItem('selectedTestSubject', test.monHoc || '');
+                        localStorage.setItem('selectedTestCode', examCode);
                         window.location.href = 'rules.html'; 
                     };
                 }
@@ -433,13 +475,11 @@
                 const testId = button.dataset.testId;
                 if (!testId) return;
 
-                const test = allTestsData.find(function(t) { return t.id === testId; }); 
+                const test = allTestsData.find(t => t.id === testId); 
                 if (!test) return;
 
                 const isCompleted = completedTestIdsData.has(testId);
-                const allowRetake = (test.choPhepLamLai === true);
-                
-                if (isCompleted && !allowRetake) {
+                if (isCompleted) {
                     return; 
                 }
 
@@ -453,13 +493,13 @@
                 if (startTime && currentTime < startTime) {
                     isDisabled = true;
                     statusClass = 'disabled';
-                    const startStr = formatDateTime(startTime);
+                    const startStr = startTime ? formatDateTime(startTime) : 'Không giới hạn';
                     const endStr = endTime ? formatDateTime(endTime) : 'Không giới hạn';
                     statusText = `CHƯA MỞ (Bắt đầu: ${startStr} | Kết thúc: ${endStr})`;
                 } else if (endTime && currentTime > endTime) {
                     isDisabled = true;
                     statusClass = 'disabled closed';
-                    const endStr = formatDateTime(endTime);
+                    const endStr = endTime ? formatDateTime(endTime) : 'Không giới hạn';
                     statusText = `ĐÃ ĐÓNG (Kết thúc: ${endStr})`;
                 }
                 
@@ -476,7 +516,7 @@
                         button.appendChild(overlayElement);
                     } else {
                         if (overlay) {
-                             overlay.querySelector('.full-status-text').innerText = statusText;
+                            overlay.querySelector('.full-status-text').innerText = statusText;
                         }
                     }
                 } else {
@@ -488,15 +528,17 @@
                             overlay.remove();
                         }
                         
-                        button.onclick = (function(testId, testName, testTime, testSubject) { 
+                        const examCode = getExamCode(test);
+                        button.onclick = (function(tId, tName, tTime, tSubject, tCode) { 
                             return function() {
-                                localStorage.setItem('selectedTestId', testId);
-                                localStorage.setItem('selectedTestName', testName);
-                                localStorage.setItem('selectedTestTime', testTime); 
-                                localStorage.setItem('selectedTestSubject', testSubject || '');
+                                localStorage.setItem('selectedTestId', tId);
+                                localStorage.setItem('selectedTestName', tName);
+                                localStorage.setItem('selectedTestTime', tTime); 
+                                localStorage.setItem('selectedTestSubject', tSubject || '');
+                                localStorage.setItem('selectedTestCode', tCode || '');
                                 window.location.href = 'rules.html'; 
                             };
-                        })(testId, test.tenDe, test.thoiGianLamBai || 15, test.monHoc); 
+                        })(testId, test.tenDe, test.thoiGianLamBai || 15, test.monHoc, examCode); 
                     }
                 }
             });

@@ -3,157 +3,252 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kết quả bài kiểm tra</title>
-    <!-- KaTeX hiển thị công thức Toán - Lý - Hóa -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+    <title>Kết Quả Kiểm Tra</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --secondary-color: #6c757d;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --border-color: #dee2e6;
+            --shadow: 0 4px 12px rgba(0,0,0,0.05);
+            --border-radius: 12px;
+        }
+        
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            display: grid; 
-            place-items: center; 
-            min-height: 90vh; 
-            background-color: #f0f2f5; 
-            text-align: center; 
-            padding: 10px;
-            box-sizing: border-box;
+            background-color: var(--bg-color); 
+            margin: 0; 
+            padding: 20px;
         }
-        .result-container { 
-            background: #fff; 
-            border: 1px solid #ccc; 
-            padding: 30px; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
-            width: 90%;
-            max-width: 800px; /* Tăng chiều rộng */
+        
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 30px;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            text-align: center;
         }
-        h1 { color: #007bff; }
-        #score { 
-            font-size: 3.5em; 
-            font-weight: bold; 
-            color: #dc3545; 
-            margin: 10px 0; 
+
+        /* Tiêu đề */
+        h1 { 
+            color: var(--primary-color); 
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 2em;
         }
-        #details { font-size: 1.2em; color: #333; }
-        .student-info { 
-            text-align: left; 
-            margin-top: 20px; 
-            border-top: 1px dashed #ccc; 
-            padding-top: 15px; 
-        }
-        /* *** MỚI: CSS Thông báo số câu đã chọn *** */
-        #answered-count-details {
+        .test-subtitle {
+            color: var(--secondary-color);
             font-size: 1.1em;
-            font-weight: bold;
-            color: #ffc107; /* Màu vàng */
-            background-color: #fff3cd;
-            padding: 10px;
+            margin-bottom: 25px;
+        }
+
+        /* Hộp Điểm Số */
+        .score-box { 
+            background-color: #e9ecef; 
+            padding: 30px 20px; 
+            border-radius: var(--border-radius); 
+            margin: 20px 0;
+            border: 2px solid #ced4da;
+            transition: transform 0.2s;
+        }
+        .score-label {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #495057;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        .score-value { 
+            font-size: 4em; 
+            font-weight: 800; 
+            color: var(--primary-color); 
+            line-height: 1.1;
+            margin: 10px 0;
+        }
+        .score-pass { color: var(--success-color); }
+        .score-fail { color: var(--danger-color); }
+
+        /* Chi tiết */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 25px;
+            text-align: center;
+        }
+        .stat-item {
+            background-color: #f8f9fa;
+            padding: 15px;
             border-radius: 8px;
-            border: 1px solid #ffeeba;
-            margin-top: 15px;
+            border: 1px solid var(--border-color);
         }
-
-
-        .nav-link { 
-            display: inline-block; 
-            margin-top: 20px; 
-            background-color: #007bff; 
-            color: white; 
-            padding: 10px 15px; 
-            border: none; 
-            border-radius: 8px; 
-            text-decoration: none; 
-            font-size: 1em;
-        }
-        .nav-link:hover { background-color: #0056b3; }
-
-        /* *** MỚI: CSS cho xem lại bài *** */
-        #review-container {
-            margin-top: 20px;
-            text-align: left;
-            border-top: 2px solid #007bff;
-            padding-top: 20px;
-        }
-        .review-question {
-            margin-bottom: 20px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 15px;
-        }
-        .review-question p {
+        .stat-value {
+            font-size: 1.5em;
             font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
         }
-        .review-option {
-            display: block;
-            padding: 8px;
-            border-radius: 5px;
+        .stat-label {
+            font-size: 0.9em;
+            color: var(--secondary-color);
+        }
+        
+        /* Thông báo nộp tự động */
+        #auto-submit-notice {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: 600;
+            display: none;
+            text-align: left;
+        }
+        #auto-submit-notice.cheat {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+
+        /* Nút bấm */
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            text-decoration: none;
+            color: white;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        .btn-home { background-color: var(--primary-color); }
+        .btn-home:hover { background-color: var(--primary-hover); transform: translateY(-2px); }
+        .btn-history { background-color: var(--success-color); }
+        .btn-history:hover { background-color: #218838; transform: translateY(-2px); }
+
+        /* *** MEDIA QUERIES (RESPONSIVE) *** */
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .container { padding: 20px; margin: 10px auto; }
+            h1 { font-size: 1.6em; }
+            .score-value { font-size: 3em; }
+            .stats-grid { grid-template-columns: 1fr; gap: 10px; }
+            .btn-group { flex-direction: column; }
+            .btn { width: 100%; box-sizing: border-box; }
+        }
+        .katex { font-size: 1.05em; }
+        
+        /* Chi tiết câu hỏi (nếu cần hiển thị) */
+        #review-section {
+            margin-top: 35px;
+            text-align: left;
+            border-top: 2px solid var(--border-color);
+            padding-top: 25px;
+            display: none;
+        }
+        #review-section h2 {
+            font-size: 1.4em;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .review-item {
+            background-color: #f8f9fa;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+        }
+        .review-q {
+            font-weight: bold;
+            color: #212529;
+            margin-bottom: 10px;
+            font-size: 1.05em;
+        }
+        .review-ans {
+            font-size: 0.95em;
             margin: 5px 0;
         }
-        .review-option.correct {
-            background-color: #d4edda; /* Màu xanh lá (đáp án đúng) */
-            border: 1px solid #c3e6cb;
+        .correct-text { color: var(--success-color); font-weight: 600; }
+        .wrong-text { color: var(--danger-color); font-weight: 600; }
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
             font-weight: bold;
+            color: white;
+            margin-left: 10px;
         }
-        .review-option.wrong {
-            background-color: #f8d7da; /* Màu đỏ (HS chọn sai) */
-            border: 1px solid #f5c6cb;
-            text-decoration: line-through;
-        }
-        /* *** MỚI: CSS cho câu bỏ trống *** */
-        .review-option.unanswered {
-            background-color: #f8f9fa; /* Màu xám nhạt */
-            border: 1px solid #dee2e6;
-            color: #6c757d;
-            font-style: italic;
-            margin-top: 10px;
-            text-decoration: none; /* Đảm bảo không bị gạch ngang */
-        }
-
-
-        @media (max-width: 600px) {
-            .result-container {
-                min-width: 90%;
-                padding: 20px;
-            }
-            h1 h4 { font-size: 1.5em; }
-            #score { font-size: 3em; }
-        }
+        .badge-correct { background-color: var(--success-color); }
+        .badge-wrong { background-color: var(--danger-color); }
     </style>
-    <!-- *** MỚI: Thêm SDK Firebase *** -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 </head>
 <body>
+    <div class="container">
+        <h1>🎉 KẾT QUẢ BÀI KIỂM TRA</h1>
+        <div class="test-subtitle" id="test-info">Đang tải thông tin...</div>
 
-    <div class="result-container">
-        <h1>Bài kiểm tra </h1>
-        <h4> bản quyền thuộc về THẦY HẢI </h4>
-        <h2>Nộp bài thành công!</h2>
-        
-        <div id="score">...</div>
-        <div id="details">...</div>
-        
-        <!-- *** MỚI: Khu vực hiển thị số câu đã chọn (nếu nộp tự động) *** -->
-        <div id="answered-count-details" style="display: none;"></div>
+        <div id="auto-submit-notice"></div>
 
-        <div class="student-info">
-            <h3>Thông tin thí sinh</h3>
-            <p><strong>Họ tên:</strong> <span id="studentName"></span></p>
-            <p><strong>Lớp:</strong> <span id="studentClass"></span></p>
+        <div class="score-box">
+            <div class="score-label">Điểm số của bạn</div>
+            <div class="score-value" id="score-display">--</div>
+            <div id="student-name-display" style="font-size: 1.1em; color: #333; margin-top: 10px;"></div>
         </div>
-        
-        <a href="home.html" class="nav-link">Quay về Trang chủ</a>
 
-        <!-- *** MỚI: Khu vực xem lại bài *** -->
-        <div id="review-container">
-            <h2 style="text-align: center;">Xem lại bài làm</h2>
-            <div id="review-loading">Đang tải chi tiết bài làm...</div>
-            <div id="review-content"></div>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-value" id="correct-count-display">0 / 0</div>
+                <div class="stat-label">Số câu đúng</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="answered-count-display">0</div>
+                <div class="stat-label">Số câu đã làm</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="status-display">Hoàn thành</div>
+                <div class="stat-label">Trạng thái</div>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <a href="my-results.html" class="btn btn-history">📋 Xem Lịch Sử Làm Bài</a>
+            <a href="home.html" class="btn btn-home">🏠 Về Trang Chủ</a>
+        </div>
+
+        <div id="review-section">
+            <h2>📝 Chi tiết bài làm</h2>
+            <div id="review-list"></div>
         </div>
     </div>
 
     <script>
-        // *** MỚI: Dán firebaseConfig ***
         const firebaseConfig = {
           apiKey: "AIzaSyDmRq3djRZHElhC2T_EYsU7v5vrzwRyybY",
           authDomain: "webkiemtra-66cdc.firebaseapp.com",
@@ -167,205 +262,128 @@
         try {
             firebase.initializeApp(firebaseConfig);
             db = firebase.firestore();
-        } catch (e) { console.error("Lỗi cấu hình Firebase!"); }
+        } catch (e) { console.error("Lỗi cấu hình Firebase:", e); }
 
-        // *** NEW: Chặn nút quay lại của trình duyệt ***
-        history.pushState(null, null, location.href);
-        window.onpopstate = function() {
-            window.location.replace('home.html'); 
-        };
-
-
-        // --- Hiển thị thông tin cơ bản (Từ localStorage) ---
         const studentName = localStorage.getItem('studentName');
         const studentClass = localStorage.getItem('studentClass');
+        const testName = localStorage.getItem('selectedTestName');
+        const testCode = localStorage.getItem('selectedTestCode') || '';
         const score = localStorage.getItem('score');
         const totalQuestions = localStorage.getItem('totalQuestions');
         const correctCount = localStorage.getItem('correctCount');
-        
-        let lastSubmissionId = localStorage.getItem('lastSubmissionId'); // *** THAY ĐỔI: Chuyển từ const sang let ***
+        const answeredCount = localStorage.getItem('answeredCount');
+        const isAutoSubmit = localStorage.getItem('isAutoSubmit') === 'true';
+        const submitReason = localStorage.getItem('submitReason') || 'Tự động';
+        const lastSubmissionId = localStorage.getItem('lastSubmissionId');
 
-        if (!studentName || !score) {
-            window.location.href = 'index.html';
+        function escHtml(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+        function renderMathInContainer(el) {
+            if (!el || typeof renderMathInElement !== 'function') return;
+            renderMathInElement(el, {
+                delimiters: [
+                    { left: '$$', right: '$$', display: true },
+                    { left: '$', right: '$', display: false }
+                ],
+                throwOnError: false
+            });
         }
 
-        document.getElementById('studentName').innerText = studentName;
-        document.getElementById('studentClass').innerText = studentClass;
-        
-        const scoreNum = parseFloat(score);
-        document.getElementById('score').innerText = score;
-        if (scoreNum >= 5) {
-            document.getElementById('score').style.color = "#28a745"; // Màu xanh
+        if (!studentName || score === null) {
+            window.location.href = 'home.html';
         }
 
-        document.getElementById('details').innerText = `Bạn đã trả lời đúng ${correctCount} / ${totalQuestions} câu.`;
+        const codePart = testCode ? ` — Mã đề: <strong>${escHtml(testCode)}</strong>` : '';
+        document.getElementById('test-info').innerHTML = `Đề thi: <strong>${escHtml(testName || 'Bài kiểm tra')}</strong>${codePart}`;
+        document.getElementById('student-name-display').innerHTML = `Thí sinh: <strong>${escHtml(studentName)}</strong> - Lớp: <strong>${escHtml(studentClass)}</strong>`;
 
-        // *** MỚI: HÀM XỬ LÝ BÀI NỘP CHỜ (TỪ LOCALSTORAGE) ***
-        async function handlePendingSubmission() {
-            const pendingDataString = localStorage.getItem('pendingSubmission');
-            if (pendingDataString && db) {
-                console.log("Phát hiện bài nộp đang chờ xử lý...");
-                document.getElementById('details').innerText = "Đang đồng bộ kết quả nộp tự động, vui lòng chờ...";
-                
+        const scoreEl = document.getElementById('score-display');
+        const numericScore = parseFloat(score);
+        scoreEl.innerText = numericScore.toFixed(2);
+        
+        if (numericScore >= 5) {
+            scoreEl.classList.add('score-pass');
+        } else {
+            scoreEl.classList.add('score-fail');
+        }
+
+        document.getElementById('correct-count-display').innerText = `${correctCount} / ${totalQuestions}`;
+        document.getElementById('answered-count-display').innerText = answeredCount;
+
+        const noticeEl = document.getElementById('auto-submit-notice');
+        const statusEl = document.getElementById('status-display');
+
+        if (isAutoSubmit) {
+            noticeEl.style.display = 'block';
+            if (submitReason.includes("gian lận")) {
+                noticeEl.classList.add('cheat');
+                noticeEl.innerHTML = `⚠️ <strong>Bài làm đã bị thu tự động!</strong> Lý do: <strong>${escHtml(submitReason)}</strong>.`;
+                statusEl.innerText = "Vi phạm";
+                statusEl.style.color = "var(--danger-color)";
+            } else {
+                noticeEl.innerHTML = `⏰ <strong>Hết thời gian làm bài!</strong> Hệ thống đã tự động nộp bài làm của bạn.`;
+                statusEl.innerText = "Hết giờ";
+                statusEl.style.color = "#856404";
+            }
+        }
+
+        async function loadDetailedReview() {
+            const reviewSection = document.getElementById('review-section');
+            const reviewList = document.getElementById('review-list');
+            
+            let details = null;
+
+            if (lastSubmissionId) {
                 try {
-                    const pendingData = JSON.parse(pendingDataString);
-                    
-                    // Thêm thời gian nộp thực tế
-                    const submissionData = {
-                        ...pendingData,
-                        thoiGianNop: firebase.firestore.FieldValue.serverTimestamp()
-                    };
-
-                    // Gửi lên Firebase
-                    const docRef = await db.collection("ketqua").add(submissionData);
-                    
-                    // Lưu ID mới để loadReview
-                    lastSubmissionId = docRef.id;
-                    localStorage.setItem('lastSubmissionId', docRef.id);
-                    
-                    // Xóa khỏi localStorage
-                    localStorage.removeItem('pendingSubmission');
-                    console.log("Đã đồng bộ bài nộp thành công!", docRef.id);
-                    document.getElementById('details').innerText = `Bạn đã trả lời đúng ${correctCount} / ${totalQuestions} câu. (Đã đồng bộ)`;
-
-                } catch (error) {
-                    console.error("Lỗi khi đồng bộ bài nộp chờ: ", error);
-                    document.getElementById('details').innerText = "Lỗi khi đồng bộ kết quả. Vui lòng báo cho admin.";
+                    const doc = await db.collection("ketqua").doc(lastSubmissionId).get();
+                    if (doc.exists && doc.data().chiTietBaiLam) {
+                        details = doc.data().chiTietBaiLam;
+                    }
+                } catch (e) {
+                    console.error("Không thể tải chi tiết từ CSDL:", e);
                 }
             }
-        }
 
-
-        // --- *** MỚI: Tải chi tiết bài làm từ Firebase (ĐÃ CẬP NHẬT) *** ---
-        async function loadReview() {
-            const loadingDiv = document.getElementById('review-loading');
-            const contentDiv = document.getElementById('review-content');
-            const answeredCountDiv = document.getElementById('answered-count-details');
-
-            // *** THAY ĐỔI: Kiểm tra lastSubmissionId sau khi hàm handlePendingSubmission chạy ***
-            if (!lastSubmissionId || !db) {
-                loadingDiv.innerText = "Không tìm thấy chi tiết bài làm (ID bài nộp không có).";
-                return;
-            }
-
-            try {
-                const docRef = await db.collection("ketqua").doc(lastSubmissionId).get();
-                if (!docRef.exists) {
-                    loadingDiv.innerText = "Lỗi: Không tìm thấy bài nộp.";
-                    return;
-                }
-
-                const data = docRef.data();
-                const questions = data.quizData; // Mảng câu hỏi
-                const userAnswers = data.userAnswers; // Mảng câu trả lời của HS
-
-                if (!questions || !userAnswers) {
-                     loadingDiv.innerText = "Bài nộp này không có dữ liệu chi tiết.";
-                    return;
-                }
-
-                // *** MỚI: Hiển thị số câu đã chọn (nếu nộp tự động) ***
-                if (data.nopTuDong && data.answeredCount !== undefined) {
-                    answeredCountDiv.innerText = `Lý do nộp: ${data.lyDoNopTuDong}. Bạn đã chọn ${data.answeredCount} / ${data.tongSoCau} câu.`;
-                    answeredCountDiv.style.display = 'block';
-                }
-
-                // Bắt đầu hiển thị
-                loadingDiv.style.display = 'none';
-                contentDiv.innerHTML = ''; // Xóa
-
-                questions.forEach((q, index) => {
-                    const questionDiv = document.createElement('div');
-                    questionDiv.className = 'review-question';
-                    
-                    // Thêm hình ảnh nếu có
-                    if (q.imageUrl) {
-                        const image = document.createElement('img');
-                        image.src = q.imageUrl;
-                        image.style.maxWidth = '100%';
-                        image.style.maxHeight = '300px';
-                        image.style.marginBottom = '10px';
-                        image.style.borderRadius = '8px';
-                        image.style.border = '1px solid #ddd';
-                        questionDiv.appendChild(image);
-                    }
-                    
-                    if (q.comprehensionText) {
-                        const passageDiv = document.createElement('div');
-                        passageDiv.style.cssText = 'background:#f8f9fa; border:1px solid #dee2e6; border-radius:8px; padding:12px; margin-bottom:10px; white-space:pre-wrap; font-size:0.95em;';
-                        passageDiv.textContent = q.comprehensionText;
-                        questionDiv.appendChild(passageDiv);
-                    }
-
-                    const cleanPrompt = (q.prompt || '').replace(/^(?:Câu|Bài|Question)\s*\d+\s*[\.\:\)\-\–]\s*/i, '').trim();
-                    const promptP = document.createElement('p');
-                    promptP.textContent = `${index + 1}. ${cleanPrompt}`;
-                    questionDiv.appendChild(promptP);
-
-                    const userAnswer = userAnswers[index]; // Có thể là null
-                    let correctAnswer = '';
+            if (!details) {
+                const pendingRaw = localStorage.getItem('pendingSubmission');
+                if (pendingRaw) {
                     try {
-                        correctAnswer = decodeURIComponent(atob(q.answer));
-                    } catch (e) {
-                        try { correctAnswer = atob(q.answer); } catch (err) { correctAnswer = q.answer || ''; }
-                    }
-
-                    q.options.forEach(option => {
-                        const optionSpan = document.createElement('span');
-                        optionSpan.className = 'review-option';
-                        optionSpan.innerText = option;
-
-                        if (option === correctAnswer) {
-                            optionSpan.classList.add('correct');
-                        } else if (option === userAnswer) { // userAnswer không null và sai
-                            optionSpan.classList.add('wrong');
+                        const pendingObj = JSON.parse(pendingRaw);
+                        if (pendingObj && Array.isArray(pendingObj.chiTietBaiLam)) {
+                            details = pendingObj.chiTietBaiLam;
                         }
-                        
-                        questionDiv.appendChild(optionSpan);
-                    });
-
-                    // *** MỚI: Hiển thị thông báo nếu câu này bị bỏ trống ***
-                    if (userAnswer === null) {
-                        const unansweredSpan = document.createElement('span');
-                        unansweredSpan.className = 'review-option unanswered';
-                        unansweredSpan.innerText = "Học sinh đã bỏ trống câu này.";
-                        questionDiv.appendChild(unansweredSpan);
+                    } catch (e) {
+                        console.error("Không thể đọc dữ liệu chi tiết tạm:", e);
                     }
+                }
+            }
 
-                    contentDiv.appendChild(questionDiv);
+            if (details && details.length > 0) {
+                reviewSection.style.display = 'block';
+                reviewList.innerHTML = '';
+
+                details.forEach((item, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'review-item';
+
+                    const badge = item.dungHaySai 
+                        ? '<span class="badge badge-correct">Đúng</span>' 
+                        : '<span class="badge badge-wrong">Sai</span>';
+
+                    const userAnsClass = item.dungHaySai ? 'correct-text' : 'wrong-text';
+
+                    div.innerHTML = `
+                        <div class="review-q">Câu ${index + 1}: ${escHtml(item.cauHoi)} ${badge}</div>
+                        <div class="review-ans">Bạn chọn: <span class="${userAnsClass}">${escHtml(item.luaChonCuaHS || 'Chưa trả lời')}</span></div>
+                        <div class="review-ans">Đáp án đúng: <span class="correct-text">${escHtml(item.dapAnDung)}</span></div>
+                    `;
+                    reviewList.appendChild(div);
                 });
 
-                // Render công thức Toán - Lý - Hóa (KaTeX) trong phần xem lại bài
-                if (typeof renderMathInElement === 'function') {
-                    try {
-                        renderMathInElement(contentDiv, {
-                            delimiters: [
-                                { left: '$$', right: '$$', display: true },
-                                { left: '$', right: '$', display: false }
-                            ],
-                            throwOnError: false
-                        });
-                    } catch (err) {
-                        console.warn('KaTeX render warning:', err);
-                    }
-                }
-
-                // Xóa ID khỏi localStorage để tránh xem nhầm
-                localStorage.removeItem('lastSubmissionId');
-
-            } catch (error) {
-                console.error("Lỗi tải review: ", error);
-                loadingDiv.innerText = "Lỗi tải chi tiết. Vui lòng kiểm tra Quy tắc Firestore.";
+                renderMathInContainer(reviewList);
             }
         }
 
-        // *** THAY ĐỔI: Chạy hàm đồng bộ trước, sau đó mới tải review ***
-        (async () => {
-            await handlePendingSubmission(); // Chờ xử lý bài nộp chờ (nếu có)
-            loadReview(); // Tải review (với lastSubmissionId đúng)
-        })();
-
+        loadDetailedReview();
     </script>
-
 </body>
 </html>

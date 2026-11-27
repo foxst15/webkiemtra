@@ -21,18 +21,18 @@
             padding: 0;
             min-height: 100vh;
             display: flex;
-            flex-direction: column; /* Cho footer ở cuối trang */
+            flex-direction: column;
         }
         
         /* *** CẤU TRÚC GRID CHÍNH *** */
         .grid-container {
-            flex-grow: 1; /* Cho phép container chiếm hết không gian còn lại */
+            flex-grow: 1;
             display: grid;
             grid-template-areas:
                 "header header"
                 "sidebar main"
                 "footer footer";
-            grid-template-columns: 300px 1fr; /* Sidebar width: 300px */
+            grid-template-columns: 300px 1fr;
             gap: 20px;
             max-width: 1200px;
             margin: 20px auto;
@@ -65,7 +65,7 @@
             padding: 15px 30px;
             text-align: center;
             font-size: 0.9em;
-            margin-top: 20px; /* Thêm margin-top để tách biệt */
+            margin-top: 20px;
         }
         footer a { color: #fff; text-decoration: none; font-weight: 600; }
 
@@ -176,7 +176,7 @@
                 padding: 15px;
             }
             #welcome-message { font-size: 1.5em; }
-            aside { order: -1; } /* Đưa sidebar lên đầu trên mobile */
+            aside { order: -1; }
             .info-box { text-align: center; }
         }
     </style>
@@ -227,7 +227,6 @@
 
     <script>
         const AVATAR_KEY = 'studentAvatar';
-        // *** ĐÃ CẬP NHẬT: URL ảnh đại diện API mới, xịn xò và bảo mật HTTPS 100% ***
         const DEFAULT_AVATAR = 'https://ui-avatars.com/api/?name=HS&background=007bff&color=fff&size=150';
 
         // --- LOGIC TẢI THÔNG TIN VÀ CHÀO MỪNG ---
@@ -236,7 +235,6 @@
 
         function loadStudentInfo() {
             if (!studentName || !studentClass) {
-                // Nếu chưa đăng nhập, đá về trang index
                 window.location.href = 'index.html';
                 return false;
             }
@@ -249,17 +247,14 @@
         // --- LOGIC AVATAR ---
         function loadAvatar() {
             const avatarData = localStorage.getItem(AVATAR_KEY);
-            // Ưu tiên ảnh người dùng đã chọn, nếu không có thì dùng ảnh mặc định URL
             document.getElementById('avatar-img').src = avatarData || DEFAULT_AVATAR;
             
-            // Xử lý lỗi tải ảnh (chỉ áp dụng nếu đó là ảnh URL, Base64 thì không cần)
             if (!avatarData) {
                 document.getElementById('avatar-img').onerror = function() {
                     console.error("Lỗi tải ảnh mặc định từ URL. Dùng placeholder màu.");
-                    // Fallback nếu URL bị lỗi: dùng placeholder màu đơn giản
                     this.src = "https://placehold.co/150x150/007bff/ffffff?text=AVATAR";
-                    this.onerror = null; // Ngăn ngừa vòng lặp vô tận
-                }
+                    this.onerror = null;
+                };
             }
         }
 
@@ -267,19 +262,16 @@
         document.getElementById('avatar-input').addEventListener('change', function() {
             const file = this.files[0];
             if (file) {
-                // Kiểm tra kích thước file (ví dụ: tối đa 1MB)
                 if (file.size > 1024 * 1024 * 1) { 
-                    // Sử dụng div thông báo thay vì alert()
                     const statusDiv = document.getElementById('upload-status');
                     statusDiv.innerText = 'Lỗi: Kích thước ảnh quá lớn (tối đa 1MB).';
                     statusDiv.style.color = '#dc3545';
-                    this.value = ''; // Reset input
+                    this.value = '';
                     setTimeout(() => statusDiv.innerText = '', 5000);
                     return;
                 }
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    // Lưu ảnh dưới dạng Base64 vào localStorage (Tốt nhất cho ảnh người dùng)
                     localStorage.setItem(AVATAR_KEY, e.target.result);
                     document.getElementById('avatar-img').src = e.target.result;
                     
@@ -292,24 +284,28 @@
             }
         });
 
-
         // --- LOGIC ĐĂNG XUẤT ---
         document.getElementById('logout-btn').addEventListener('click', () => {
             if (window.confirm('Bạn có chắc chắn muốn đăng xuất?')) {
-                // Xóa tất cả thông tin liên quan đến phiên và học sinh
                 localStorage.removeItem('studentName');
                 localStorage.removeItem('studentClass');
                 localStorage.removeItem('studentCode');
-                localStorage.removeItem(AVATAR_KEY); // Xóa ảnh đại diện
+                localStorage.removeItem(AVATAR_KEY);
                 
                 localStorage.removeItem('selectedTestId');
                 localStorage.removeItem('selectedTestName');
                 localStorage.removeItem('selectedTestTime');
                 localStorage.removeItem('selectedTestSubject');
+                localStorage.removeItem('selectedTestCode');
                 localStorage.removeItem('score');
+                localStorage.removeItem('totalQuestions');
+                localStorage.removeItem('correctCount');
+                localStorage.removeItem('answeredCount');
+                localStorage.removeItem('isAutoSubmit');
                 localStorage.removeItem('lastSubmissionId');
+                localStorage.removeItem('pendingSubmission');
                 
-                window.location.href = 'index.html'; // Quay về trang đăng nhập
+                window.location.href = 'index.html';
             }
         });
 

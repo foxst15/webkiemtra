@@ -3,31 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch sử kết quả</title>
+    <title>Lịch Sử Kết Quả Của Tôi</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <style>
         :root {
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
             --secondary-color: #6c757d;
-            --secondary-hover: #5a6268;
-            --light-bg: #f0f2f5;
-            --white-bg: #ffffff;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
             --border-color: #dee2e6;
             --shadow: 0 4px 12px rgba(0,0,0,0.05);
             --border-radius: 12px;
         }
+        
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            background-color: var(--light-bg); 
+            background-color: var(--bg-color); 
             margin: 0; 
             padding: 20px;
         }
+        
         .container {
-            max-width: 1100px; 
+            max-width: 900px;
             margin: 20px auto;
             padding: 30px;
-            background: var(--white-bg);
+            background: var(--card-bg);
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
         }
+
+        /* Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        .page-header h1 { 
+            margin: 0; 
+            color: var(--primary-color); 
+            font-size: 1.8em;
+        }
+
         /* Nút chung */
         .btn {
             display: inline-flex;
@@ -40,81 +63,189 @@
             font-size: 0.9em;
             font-weight: 600;
             text-decoration: none;
-            color: var(--white-bg);
+            color: white;
             transition: background-color 0.2s;
         }
         .btn svg { width: 16px; height: 16px; fill: currentColor; }
         .btn-secondary { background-color: var(--secondary-color); }
-        .btn-secondary:hover { background-color: var(--secondary-hover); }
+        .btn-secondary:hover { background-color: #5a6268; }
+        .btn-primary { background-color: var(--primary-color); padding: 6px 12px; font-size: 0.85em; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
 
-        /* Header trang */
-        .page-header {
+        /* Thông tin học sinh */
+        .student-banner {
+            background-color: #e9ecef;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            font-size: 1.1em;
+            color: #333;
+        }
+
+        /* Bảng kết quả */
+        .table-responsive {
+            overflow-x: auto;
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 10px;
+            background-color: white;
+        }
+        th, td { 
+            border: 1px solid var(--border-color); 
+            padding: 12px 15px; 
+            text-align: left; 
+        }
+        th { 
+            background-color: var(--primary-color); 
+            color: white; 
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        tr:nth-child(even) { background-color: #f8f9fa; }
+        tr:hover { background-color: #e9ecef; }
+
+        /* Điểm số và trạng thái */
+        .score-pass { color: var(--success-color); font-weight: bold; font-size: 1.1em; }
+        .score-fail { color: var(--danger-color); font-weight: bold; font-size: 1.1em; }
+        .code-pill {
+            display: inline-block;
+            background: #e9ecef;
+            color: #333;
+            border-radius: 5px;
+            padding: 2px 7px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        .status-manual { background-color: #d4edda; color: #155724; }
+        .status-time { background-color: #fff3cd; color: #856404; }
+        .status-cheat { background-color: #f8d7da; color: #721c24; }
+
+        #loading-msg { text-align: center; padding: 30px; font-size: 1.2em; color: var(--secondary-color); }
+        #empty-msg { text-align: center; padding: 40px; font-size: 1.1em; color: var(--secondary-color); display: none; }
+
+        /* Modal Xem Chi Tiết */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            overflow-y: auto;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 2% auto;
+            padding: 25px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 750px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 2px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
             padding-bottom: 15px;
             margin-bottom: 20px;
         }
-        .page-header h1 { margin: 0; color: #333; }
-
-        /* Bảng */
-        #results-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
+        .modal-header h2 { margin: 0; color: var(--primary-color); font-size: 1.4em; }
+        .close-btn {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
         }
-        #results-table th, #results-table td {
-            border: 1px solid var(--border-color);
-            padding: 12px;
-            text-align: left;
-        }
-        #results-table th { background-color: #f8f9fa; }
-        #results-table tbody tr:nth-child(even) { background-color: #f8f9fa; }
-        #loading { font-style: italic; color: #555; margin-top: 15px; }
-        .score-pass { color: green; font-weight: bold; }
-        .score-fail { color: red; font-weight: bold; }
+        .close-btn:hover { color: black; }
         
+        .q-detail-item {
+            background-color: #f8f9fa;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .q-title { font-weight: bold; margin-bottom: 8px; color: #212529; }
+        .q-ans { font-size: 0.95em; margin: 4px 0; }
+        .text-success { color: var(--success-color); font-weight: 600; }
+        .text-danger { color: var(--danger-color); font-weight: 600; }
+
+        /* *** MEDIA QUERIES (RESPONSIVE) *** */
+        @media (max-width: 650px) {
+            body { padding: 10px; }
+            .container { padding: 15px; margin: 10px auto; }
+            .page-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+            th, td { padding: 8px 10px; font-size: 0.9em; }
+        }
+        .katex { font-size: 1.05em; }
     </style>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 </head>
 <body>
-
     <div class="container">
         <div class="page-header">
-            <h1>Lịch sử kết quả</h1>
-            <a href="./home.html" class="btn btn-secondary">
+            <h1>📋 Lịch Sử Làm Bài</h1>
+            <a href="home.html" class="btn btn-secondary">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 288 416 288c17.7 0 32-14.3 32-32s-14.3-32-32-32l-306.7 0L214.6 69.4c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg>
                 Quay lại
             </a>
         </div>
-        <p>Dưới đây là tất cả các bài kiểm tra bạn (<strong id="studentName"></strong> - Lớp: <strong id="studentClass"></strong>) đã nộp.</p>
 
-        <div style="overflow-x: auto;">
+        <div class="student-banner">
+            Học sinh: <strong id="student-name"></strong> | Lớp: <strong id="student-class"></strong>
+        </div>
+
+        <div id="loading-msg">⏳ Đang tải lịch sử kết quả...</div>
+        <div id="empty-msg">Bạn chưa hoàn thành bài kiểm tra nào.</div>
+
+        <div class="table-responsive" id="table-container" style="display: none;">
             <table id="results-table">
                 <thead>
                     <tr>
-                        <th>Họ Tên</th>
-                        <th>Lớp</th>
-                        <th>Môn Học</th>
-                        <th>Bài làm (Tên Đề Thi)</th>
-                        <th>Điểm</th>
-                        <th>Chi tiết</th>
+                        <th>Tên Đề Thi</th>
+                        <th>Mã Đề</th>
+                        <th>Điểm Số</th>
+                        <th>Số Câu Đúng</th>
                         <th>Thời Gian Nộp</th>
+                        <th>Trạng Thái</th>
+                        <th>Chi Tiết</th>
                     </tr>
                 </thead>
-                <tbody id="results-table-body">
-                </tbody>
+                <tbody id="results-tbody"></tbody>
             </table>
         </div>
-        <div id="loading">Đang tải kết quả...</div>
-        
+    </div>
+
+    <!-- Modal Xem Chi Tiết -->
+    <div id="detail-modal" class="modal-backdrop">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Chi Tiết Bài Làm</h2>
+                <span class="close-btn" id="close-modal">&times;</span>
+            </div>
+            <div id="modal-body"></div>
+        </div>
     </div>
 
     <script>
-        // *** ĐÂY LÀ BƯỚC QUAN TRỌNG NHẤT ***
-        // *** Đảm bảo firebaseConfig của bạn giống hệt như thế này ***
         const firebaseConfig = {
           apiKey: "AIzaSyDmRq3djRZHElhC2T_EYsU7v5vrzwRyybY",
           authDomain: "webkiemtra-66cdc.firebaseapp.com",
@@ -124,77 +255,215 @@
           appId: "1:181113887829:web:49535ee20d85b7395948dc"
         };
         
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        let db;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+        } catch (e) { console.error("Lỗi cấu hình Firebase:", e); }
 
         const studentName = localStorage.getItem('studentName');
         const studentClass = localStorage.getItem('studentClass');
-        const loadingDiv = document.getElementById('loading');
-        const resultsTableBody = document.getElementById('results-table-body');
+
+        if (!studentName || !studentClass) {
+            window.location.href = 'index.html';
+        }
+
+        document.getElementById('student-name').innerText = studentName;
+        document.getElementById('student-class').innerText = studentClass;
+
+        const loadingMsg = document.getElementById('loading-msg');
+        const emptyMsg = document.getElementById('empty-msg');
+        const tableContainer = document.getElementById('table-container');
+        const tbody = document.getElementById('results-tbody');
+
+        const modal = document.getElementById('detail-modal');
+        const closeModal = document.getElementById('close-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalBody = document.getElementById('modal-body');
+
+        let resultsList = [];
+        let examCodeMap = new Map();
+
+        function escHtml(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+        function getResultExamCode(res) {
+            const direct = String((res && (res.maDe ?? res.ma_de ?? res.maCode)) || '').trim();
+            if (direct) return direct;
+            if (res && res.deThiId && examCodeMap.has(res.deThiId)) {
+                return examCodeMap.get(res.deThiId);
+            }
+            return '';
+        }
+        function renderMathInContainer(el) {
+            if (!el || typeof renderMathInElement !== 'function') return;
+            renderMathInElement(el, {
+                delimiters: [
+                    { left: '$$', right: '$$', display: true },
+                    { left: '$', right: '$', display: false }
+                ],
+                throwOnError: false
+            });
+        }
+
+        async function loadExamCodesMap() {
+            try {
+                const snap = await db.collection("dethi").get();
+                examCodeMap.clear();
+                snap.forEach(doc => {
+                    const d = doc.data() || {};
+                    const code = String((d.maDe ?? d.ma_de ?? d.maCode) || '').trim();
+                    if (code) examCodeMap.set(doc.id, code);
+                });
+            } catch (e) {
+                console.warn("Không thể tải bảng mã đề tham chiếu:", e);
+            }
+        }
 
         async function loadMyResults() {
-            if (!studentName || !studentClass) {
-                console.log("Bạn cần đăng nhập trước!"); 
-                window.location.href = './index.html'; // Sửa lỗi chuyển hướng
-                return;
-            }
-            document.getElementById('studentName').innerText = studentName;
-            document.getElementById('studentClass').innerText = studentClass; // *** ĐÃ SỬA LỖI: Hiển thị tên lớp ***
-
             try {
-                // Truy vấn này đã được Index và Rules (v10) hỗ trợ
-                function escHtml(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+                await loadExamCodesMap();
+
                 const studentCode = localStorage.getItem('studentCode') || '';
-                const seen = new Set();
-                let results = [];
-                const addDoc = doc => { if (!seen.has(doc.id)) { seen.add(doc.id); results.push(doc.data()); } };
+                const map = new Map();
+
                 if (studentCode) {
-                    (await db.collection("ketqua").where("maHS", "==", studentCode).get()).forEach(addDoc);
+                    const snapByCode = await db.collection("ketqua")
+                        .where("maHS", "==", studentCode)
+                        .get();
+                    snapByCode.forEach(doc => {
+                        map.set(doc.id, Object.assign({ id: doc.id }, doc.data()));
+                    });
                 }
-                // Bài cũ chưa có maHS: đối chiếu theo họ tên + lớp
-                (await db.collection("ketqua")
+
+                const snapByName = await db.collection("ketqua")
                     .where("hoTen", "==", studentName)
                     .where("lop", "==", studentClass)
-                    .get()).forEach(doc => { if (!doc.data().maHS || !studentCode) addDoc(doc); });
+                    .get();
+                snapByName.forEach(doc => {
+                    const d = doc.data();
+                    if (!d.maHS || !studentCode || d.maHS === studentCode) {
+                        if (!map.has(doc.id)) {
+                            map.set(doc.id, Object.assign({ id: doc.id }, d));
+                        }
+                    }
+                });
 
-                if (results.length === 0) {
-                    loadingDiv.innerText = "Bạn chưa nộp bài kiểm tra nào.";
+                resultsList = Array.from(map.values());
+
+                const pendingRaw = localStorage.getItem('pendingSubmission');
+                if (pendingRaw) {
+                    try {
+                        const pendingObj = JSON.parse(pendingRaw);
+                        if (pendingObj && pendingObj.hoTen === studentName && pendingObj.lop === studentClass) {
+                            resultsList.unshift(Object.assign({ id: '__pending__' }, pendingObj));
+                        }
+                    } catch (e) {}
+                }
+
+                loadingMsg.style.display = 'none';
+
+                if (resultsList.length === 0) {
+                    emptyMsg.style.display = 'block';
                     return;
                 }
 
-                results.sort((a, b) => {
-                    const timeA = a.thoiGianNop ? a.thoiGianNop.toMillis() : 0;
-                    const timeB = b.thoiGianNop ? b.thoiGianNop.toMillis() : 0;
+                resultsList.sort((a, b) => {
+                    const timeA = a.thoiGianNop ? (a.thoiGianNop.toMillis ? a.thoiGianNop.toMillis() : new Date(a.thoiGianNop).getTime()) : (a.thoiGianNopClient ? new Date(a.thoiGianNopClient).getTime() : 0);
+                    const timeB = b.thoiGianNop ? (b.thoiGianNop.toMillis ? b.thoiGianNop.toMillis() : new Date(b.thoiGianNop).getTime()) : (b.thoiGianNopClient ? new Date(b.thoiGianNopClient).getTime() : 0);
                     return timeB - timeA;
                 });
-                
-                resultsTableBody.innerHTML = ''; 
-                results.forEach(res => {
-                    const tr = document.createElement('tr');
-                    let nopLuc = "Không rõ";
-                    if (res.thoiGianNop) {
-                        nopLuc = new Date(res.thoiGianNop.toMillis()).toLocaleString('vi-VN');
-                    }
-                    const diem = parseFloat(res.diemSo);
-                    const diemClass = diem >= 5 ? 'score-pass' : 'score-fail';
-                    
-                    tr.innerHTML = `
-                        <td>${escHtml(res.hoTen || 'N/A')}</td>
-                        <td>${escHtml(res.lop || 'N/A')}</td>
-                        <td><strong style="color: #007bff;">${escHtml(res.monHoc || 'Khác')}</strong></td>
-                        <td>${escHtml(res.tenDeThi || 'N/A')}</td>
-                        <td class="${diemClass}">${escHtml(res.diemSo ?? 'N/A')}</td>
-                        <td>${escHtml(res.soCauDung ?? 'N/A')} / ${escHtml(res.tongSoCau ?? 'N/A')}</td>
-                        <td>${nopLuc}</td>
-                    `;
-                    resultsTableBody.appendChild(tr);
-                });
-                loadingDiv.style.display = 'none'; 
+
+                tableContainer.style.display = 'block';
+                renderTable();
+
             } catch (error) {
-                console.error("Lỗi khi tải kết quả: ", error);
-                loadingDiv.innerText = "Lỗi khi tải kết quả. Vui lòng thử lại.";
+                console.error("Lỗi khi tải lịch sử làm bài:", error);
+                loadingMsg.innerText = "Có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại sau.";
             }
         }
+
+        function renderTable() {
+            tbody.innerHTML = '';
+
+            resultsList.forEach((res, idx) => {
+                const tr = document.createElement('tr');
+
+                let timeStr = "Không rõ";
+                if (res.thoiGianNop && res.thoiGianNop.toMillis) {
+                    timeStr = new Date(res.thoiGianNop.toMillis()).toLocaleString('vi-VN');
+                } else if (res.thoiGianNopClient) {
+                    timeStr = new Date(res.thoiGianNopClient).toLocaleString('vi-VN') + " (Tạm)";
+                }
+
+                const score = parseFloat(res.diemSo || 0).toFixed(2);
+                const scoreClass = parseFloat(score) >= 5 ? 'score-pass' : 'score-fail';
+
+                let statusHtml = '<span class="status-badge status-manual">Thủ công</span>';
+                if (res.nopTuDong) {
+                    const reason = res.lyDoNopTuDong || 'Tự động';
+                    if (reason.includes("gian lận")) {
+                        statusHtml = `<span class="status-badge status-cheat">${escHtml(reason)}</span>`;
+                    } else if (reason === "Hết giờ") {
+                        statusHtml = `<span class="status-badge status-time">Hết giờ</span>`;
+                    } else {
+                        statusHtml = `<span class="status-badge status-time">${escHtml(reason)}</span>`;
+                    }
+                }
+
+                const examCode = getResultExamCode(res);
+                const codeHtml = examCode ? `<span class="code-pill">${escHtml(examCode)}</span>` : '<span style="color:#adb5bd;">—</span>';
+
+                tr.innerHTML = `
+                    <td><strong>${escHtml(res.tenDeThi || 'N/A')}</strong></td>
+                    <td>${codeHtml}</td>
+                    <td class="${scoreClass}">${score}</td>
+                    <td>${res.soCauDung || 0} / ${res.tongSoCau || 0}</td>
+                    <td>${escHtml(timeStr)}</td>
+                    <td>${statusHtml}</td>
+                    <td><button class="btn btn-primary" onclick="showDetail(${idx})">Xem</button></td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        function showDetail(index) {
+            const res = resultsList[index];
+            if (!res) return;
+
+            const examCode = getResultExamCode(res);
+            modalTitle.innerHTML = `Chi Tiết: ${escHtml(res.tenDeThi || 'Bài kiểm tra')}${examCode ? ` <span class="code-pill">${escHtml(examCode)}</span>` : ''}`;
+            modalBody.innerHTML = '';
+
+            if (Array.isArray(res.chiTietBaiLam) && res.chiTietBaiLam.length > 0) {
+                res.chiTietBaiLam.forEach((item, i) => {
+                    const qDiv = document.createElement('div');
+                    qDiv.className = 'q-detail-item';
+
+                    const badgeColor = item.dungHaySai ? 'var(--success-color)' : 'var(--danger-color)';
+                    const badgeText = item.dungHaySai ? 'Đúng' : 'Sai';
+                    const ansClass = item.dungHaySai ? 'text-success' : 'text-danger';
+
+                    qDiv.innerHTML = `
+                        <div class="q-title">Câu ${i + 1}: ${escHtml(item.cauHoi)} <span style="color:${badgeColor}; font-size:0.9em;">[${badgeText}]</span></div>
+                        <div class="q-ans">Bạn chọn: <span class="${ansClass}">${escHtml(item.luaChonCuaHS || 'Chưa trả lời')}</span></div>
+                        <div class="q-ans">Đáp án đúng: <span class="text-success">${escHtml(item.dapAnDung)}</span></div>
+                    `;
+                    modalBody.appendChild(qDiv);
+                });
+
+                renderMathInContainer(modalBody);
+            } else {
+                modalBody.innerHTML = '<p style="text-align:center; color:#6c757d;">Không có dữ liệu chi tiết từng câu hỏi cho bài làm này.</p>';
+            }
+
+            modal.style.display = 'block';
+        }
+
+        closeModal.addEventListener('click', () => { modal.style.display = 'none'; });
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) modal.style.display = 'none';
+        });
+
         loadMyResults();
     </script>
 </body>

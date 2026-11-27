@@ -244,11 +244,9 @@
     </div>
 
     <script>
-        // Lấy thông tin học sinh từ localStorage
         const studentName = localStorage.getItem('studentName');
         const studentClass = localStorage.getItem('studentClass');
 
-        // Nếu chưa đăng nhập thì tự động đẩy về trang đăng nhập
         if (!studentName || !studentClass) {
             window.location.href = 'index.html';
         } else {
