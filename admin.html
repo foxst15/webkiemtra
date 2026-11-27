@@ -2316,6 +2316,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                             ${timeInfo}
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 4px; flex-shrink:0;"> 
+                            <button class="detail-btn add-variant-btn" data-id="${testId}" style="background:#198754; color:#fff;" title="Thêm một mã đề khác cho cùng môn này">➕ Mã đề</button>
                             <button class="detail-btn edit-test-btn" data-id="${testId}" data-name="${escapeHtml(test.tenDe)}">Sửa</button>
                             <button class="delete-btn single-del-test-btn" data-id="${testId}">Xóa</button>
                         </div>
@@ -2324,6 +2325,10 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
           item.querySelector('.single-del-test-btn').addEventListener('click', (e) => {
             e.stopPropagation(); 
             deleteTest(testId, test.tenDe);
+          });
+          item.querySelector('.add-variant-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            addVariantToTest(testId);
           });
           item.querySelector('.edit-test-btn').addEventListener('click', (e) => {
             e.stopPropagation();
@@ -2352,6 +2357,57 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
           });
           testListDiv.appendChild(item);
         });
+      }
+
+      // Thêm 1 mã đề mới cho cùng môn: sao chép cấu hình của đề hiện tại, câu hỏi up riêng cho mã mới
+      async function addVariantToTest(testId) {
+        const src = allTestsCache.find(t => t.id === testId);
+        if (!src) return;
+        const subject = (src.monHoc || '').trim();
+        if (!subject) {
+          alert('Đề này chưa có Môn học. Bấm "Sửa" để nhập Môn học trước, rồi mới thêm mã đề được.');
+          return;
+        }
+        const baseName = (src.tenDe || '').replace(/\s*\(Mã [^)]*\)\s*$/, '');
+        const sameSubject = allTestsCache.filter(t => (t.monHoc || '').trim().toLowerCase() === subject.toLowerCase());
+        const usedCodes = new Set(sameSubject.map(t => (t.maDe || '').trim().toLowerCase()).filter(Boolean));
+
+        try {
+          let srcCode = (src.maDe || '').trim();
+          if (!srcCode) {
+            const c1 = prompt(`Đề "${src.tenDe}" chưa có mã đề.\nNhập mã cho đề này (VD: 101):`, '101');
+            if (!c1 || !c1.trim()) return;
+            srcCode = c1.trim();
+            if (usedCodes.has(srcCode.toLowerCase())) { alert('Mã này đã tồn tại trong môn.'); return; }
+            usedCodes.add(srcCode.toLowerCase());
+            await db.collection("dethi").doc(testId).update({ maDe: srcCode, tenDe: `${baseName} (Mã ${srcCode})` });
+          }
+
+          const c2 = prompt(`Thêm mã đề mới cho môn "${subject}".\nNhập mã đề mới (VD: 102):`);
+          if (!c2 || !c2.trim()) return;
+          const newCode = c2.trim();
+          if (usedCodes.has(newCode.toLowerCase())) { alert('Mã đề này đã tồn tại trong môn.'); return; }
+
+          const newName = `${baseName} (Mã ${newCode})`;
+          const ref = await db.collection("dethi").add({
+            tenDe: newName,
+            maDe: newCode,
+            thoiGianLamBai: src.thoiGianLamBai || 15,
+            nguoiTao: currentUser.email,
+            thoiGianMo: src.thoiGianMo || null,
+            thoiGianDong: src.thoiGianDong || null,
+            monHoc: subject,
+            capHoc: src.capHoc || '',
+            lopApDung: src.lopApDung || '',
+            chongGianLan: src.chongGianLan !== false,
+            choPhepLamLai: src.choPhepLamLai === true
+          });
+          alert(`Đã tạo mã đề ${newCode}. Hãy up câu hỏi cho mã đề này ở khung bên dưới.`);
+          setTimeout(() => selectTest(ref.id, newName), 700);
+        } catch (err) {
+          console.error('Lỗi thêm mã đề:', err);
+          alert('Không thêm được mã đề, vui lòng thử lại.');
+        }
       }
 
       async function deleteTest(testId, testName) {
