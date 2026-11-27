@@ -930,6 +930,13 @@
                     } catch (e2) { console.error(e2); }
                 }
             }
+            Object.keys(localStorage)
+                .filter(k => k.startsWith('assignedTest_') && localStorage.getItem(k) === selectedTestId)
+                .forEach(k => {
+                    const lastKey = k.replace(/^assignedTest_/, 'lastSubmitted_');
+                    localStorage.setItem(lastKey, selectedTestId);
+                    localStorage.removeItem(k);
+                });
             window.location.replace('results.html');
         }
 

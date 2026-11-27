@@ -353,14 +353,19 @@
             return [...map.values()];
         }
 
-        // Chọn ngẫu nhiên 1 mã đề cho học sinh, lưu lại để tải lại trang vẫn giữ nguyên mã đã gán
+        // Chọn ngẫu nhiên 1 mã đề cho học sinh, lưu lại để tải lại trang vẫn giữ nguyên mã đã gán cho tới khi nộp bài
         function pickVariant(group, candidates) {
             const who = localStorage.getItem('studentCode') || studentName + '|' + studentClass;
             const storeKey = `assignedTest_${who}_${group.key}`;
+            const lastKey = `lastSubmitted_${who}_${group.key}`;
             const savedId = localStorage.getItem(storeKey);
             const saved = candidates.find(t => t.id === savedId);
             if (saved) return saved;
-            const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+            const lastId = localStorage.getItem(lastKey);
+            const pool = (lastId && candidates.length > 1)
+                ? candidates.filter(t => t.id !== lastId)
+                : candidates;
+            const chosen = pool[Math.floor(Math.random() * pool.length)];
             localStorage.setItem(storeKey, chosen.id);
             return chosen;
         }
@@ -372,7 +377,8 @@
 
             return groups.map(group => {
                 const statuses = group.tests.map(t => ({ test: t, st: getTestStatus(t, now) }));
-                const showCode = group.tests.length > 1;   // từ 2 mã đề trở lên mới hiện mã đề
+                const hasAnyCode = group.tests.some(t => (t.maDe || '').trim() !== '');
+                const showCode = group.tests.length > 1 || hasAnyCode;
                 const done = statuses.find(x => x.st.state === 'completed');
                 const open = statuses.filter(x => x.st.state === 'open').map(x => x.test);
 
@@ -380,12 +386,12 @@
                 if (done) {
                     shown = done.test; status = done.st;
                 } else if (open.length > 0) {
-                    shown = open[0]; status = { state: 'open', cls: '', text: '' };
+                    shown = pickVariant(group, open); status = { state: 'open', cls: '', text: '' };
                 } else {
                     const pref = statuses.find(x => x.st.state === 'notopen') || statuses[0];
                     shown = pref.test; status = pref.st;
                 }
-                return { group, test: shown, status, showCode, open };
+                return { group, test: shown, status, showCode };
             });
         }
 
@@ -396,11 +402,12 @@
             noTestMessage.style.display = 'none';
 
             const cards = computeCards();
-            lastSignature = cards.map(c => c.group.key + ':' + c.status.state + ':' + c.open.length).join('|');
+            lastSignature = cards.map(c => c.test.id + ':' + c.status.state).join('|');
             let availableTestsCount = 0;
 
-            cards.forEach(({ group, test, status, showCode, open }) => {
+            cards.forEach(({ group, test, status, showCode }) => {
                 const testTime = test.thoiGianLamBai || 15;
+                const antiCheat = (test.chongGianLan !== false);
                 const allowRetake = (test.choPhepLamLai === true);
                 const isCompleted = completedTestIdsData.has(test.id);
                 const isDisabled = status.state !== 'open';
@@ -417,18 +424,27 @@
                         <span class="full-status-text">${status.text}</span>
                     </div>` : '';
 
-                const badge = (css, txt) => `<span style="display:inline-block; background:rgba(255,255,255,0.22); padding:3px 9px; border-radius:12px; font-size:0.78em; margin-bottom:5px; margin-right:5px; font-weight:600;">${txt}</span>`;
+                const badge = (extraStyle, txt) => `<span style="display:inline-block; background:rgba(255,255,255,0.22); ${extraStyle} padding:3px 9px; border-radius:12px; font-size:0.76em; margin-bottom:4px; margin-right:5px; font-weight:600;">${txt}</span>`;
                 const subjectBadge = group.subject ? badge('', '📚 Môn học') : '';
-                const retakeBadge = (isCompleted && allowRetake && !isDisabled) ? badge('', '🔁 Đã làm (Cho phép làm lại)') : '';
-                const topBadges = (subjectBadge || retakeBadge) ? `${subjectBadge}${retakeBadge}<br>` : '';
+                const codeBadge = showCode ? badge('', `🔖 Mã đề: ${escHtml(test.maDe || test.tenDe)}`) : '';
+                const topBadges = (subjectBadge || codeBadge) ? `<div>${subjectBadge}${codeBadge}</div>` : '';
+
+                const antiCheatBadge = antiCheat
+                    ? badge('background:rgba(255,214,219,0.28);', '🛡️ Chống gian lận')
+                    : badge('', '🔓 Tắt chống gian lận');
+                const retakeBadge = allowRetake
+                    ? badge('', (isCompleted && !isDisabled) ? '🔁 Làm lại nhiều lần (Đã làm)' : '🔁 Làm lại nhiều lần')
+                    : badge('', '1️⃣ Làm 1 lần');
+                const metaBadges = `<div style="margin-top:6px;">${antiCheatBadge}${retakeBadge}</div>`;
 
                 button.innerHTML = `
                     <div class="test-item-content">
                         <div>
                             ${topBadges}
                             <span>${escHtml(title)}</span>
+                            ${metaBadges}
                         </div>
-                        <span class="time">${testTime} phút</span>
+                        <span class="time" style="white-space:nowrap; margin-left:12px;">${testTime} phút</span>
                     </div>
                     ${overlayContent}
                 `;
@@ -437,15 +453,12 @@
                     button.disabled = true;
                 } else {
                     button.onclick = () => {
-                        // Bốc ngẫu nhiên mã đề ngay lúc vào thi (nhóm chỉ có 1 đề thì dùng luôn đề đó)
-                        const chosen = open.length > 1 ? pickVariant(group, open) : open[0];
-                        const chosenTime = chosen.thoiGianLamBai || 15;
-                        localStorage.setItem('selectedTestId', chosen.id);
-                        localStorage.setItem('selectedTestName', chosen.tenDe);
-                        localStorage.setItem('selectedTestTime', chosenTime);
-                        localStorage.setItem('selectedTestSubject', chosen.monHoc || '');
-                        localStorage.setItem('selectedTestCode', chosen.maDe || chosen.tenDe);
-                        localStorage.setItem('selectedTestShowCode', (group.subject && showCode) ? '1' : '0');
+                        localStorage.setItem('selectedTestId', test.id);
+                        localStorage.setItem('selectedTestName', test.tenDe);
+                        localStorage.setItem('selectedTestTime', testTime);
+                        localStorage.setItem('selectedTestSubject', test.monHoc || '');
+                        localStorage.setItem('selectedTestCode', test.maDe || test.tenDe);
+                        localStorage.setItem('selectedTestShowCode', showCode ? '1' : '0');
                         window.location.href = 'rules.html';
                     };
                 }
@@ -462,7 +475,7 @@
         let lastSignature = '';
         // Cập nhật trạng thái mở/đóng theo thời gian, chỉ vẽ lại khi có thay đổi
         function updateTestAvailability() {
-            const sig = computeCards().map(c => c.group.key + ':' + c.status.state + ':' + c.open.length).join('|');
+            const sig = computeCards().map(c => c.test.id + ':' + c.status.state).join('|');
             if (sig !== lastSignature) renderFilteredTests();
         }
 

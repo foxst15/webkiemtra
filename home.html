@@ -308,6 +308,9 @@
                 localStorage.removeItem('selectedTestSubject');
                 localStorage.removeItem('score');
                 localStorage.removeItem('lastSubmissionId');
+                Object.keys(localStorage)
+                    .filter(k => k.startsWith('assignedTest_') || k.startsWith('lastSubmitted_'))
+                    .forEach(k => localStorage.removeItem(k));
                 
                 window.location.href = 'index.html'; // Quay về trang đăng nhập
             }
