@@ -380,12 +380,12 @@
                 if (done) {
                     shown = done.test; status = done.st;
                 } else if (open.length > 0) {
-                    shown = pickVariant(group, open); status = { state: 'open', cls: '', text: '' };
+                    shown = open[0]; status = { state: 'open', cls: '', text: '' };
                 } else {
                     const pref = statuses.find(x => x.st.state === 'notopen') || statuses[0];
                     shown = pref.test; status = pref.st;
                 }
-                return { group, test: shown, status, showCode };
+                return { group, test: shown, status, showCode, open };
             });
         }
 
@@ -396,10 +396,10 @@
             noTestMessage.style.display = 'none';
 
             const cards = computeCards();
-            lastSignature = cards.map(c => c.test.id + ':' + c.status.state).join('|');
+            lastSignature = cards.map(c => c.group.key + ':' + c.status.state + ':' + c.open.length).join('|');
             let availableTestsCount = 0;
 
-            cards.forEach(({ group, test, status, showCode }) => {
+            cards.forEach(({ group, test, status, showCode, open }) => {
                 const testTime = test.thoiGianLamBai || 15;
                 const allowRetake = (test.choPhepLamLai === true);
                 const isCompleted = completedTestIdsData.has(test.id);
@@ -419,9 +419,8 @@
 
                 const badge = (css, txt) => `<span style="display:inline-block; background:rgba(255,255,255,0.22); padding:3px 9px; border-radius:12px; font-size:0.78em; margin-bottom:5px; margin-right:5px; font-weight:600;">${txt}</span>`;
                 const subjectBadge = group.subject ? badge('', '📚 Môn học') : '';
-                const codeBadge = (group.subject && showCode) ? badge('', `🔖 Mã đề: ${escHtml(test.maDe || test.tenDe)}`) : '';
                 const retakeBadge = (isCompleted && allowRetake && !isDisabled) ? badge('', '🔁 Đã làm (Cho phép làm lại)') : '';
-                const topBadges = (subjectBadge || codeBadge || retakeBadge) ? `${subjectBadge}${codeBadge}${retakeBadge}<br>` : '';
+                const topBadges = (subjectBadge || retakeBadge) ? `${subjectBadge}${retakeBadge}<br>` : '';
 
                 button.innerHTML = `
                     <div class="test-item-content">
@@ -438,11 +437,14 @@
                     button.disabled = true;
                 } else {
                     button.onclick = () => {
-                        localStorage.setItem('selectedTestId', test.id);
-                        localStorage.setItem('selectedTestName', test.tenDe);
-                        localStorage.setItem('selectedTestTime', testTime);
-                        localStorage.setItem('selectedTestSubject', test.monHoc || '');
-                        localStorage.setItem('selectedTestCode', test.maDe || test.tenDe);
+                        // Bốc ngẫu nhiên mã đề ngay lúc vào thi (nhóm chỉ có 1 đề thì dùng luôn đề đó)
+                        const chosen = open.length > 1 ? pickVariant(group, open) : open[0];
+                        const chosenTime = chosen.thoiGianLamBai || 15;
+                        localStorage.setItem('selectedTestId', chosen.id);
+                        localStorage.setItem('selectedTestName', chosen.tenDe);
+                        localStorage.setItem('selectedTestTime', chosenTime);
+                        localStorage.setItem('selectedTestSubject', chosen.monHoc || '');
+                        localStorage.setItem('selectedTestCode', chosen.maDe || chosen.tenDe);
                         localStorage.setItem('selectedTestShowCode', (group.subject && showCode) ? '1' : '0');
                         window.location.href = 'rules.html';
                     };
@@ -460,7 +462,7 @@
         let lastSignature = '';
         // Cập nhật trạng thái mở/đóng theo thời gian, chỉ vẽ lại khi có thay đổi
         function updateTestAvailability() {
-            const sig = computeCards().map(c => c.test.id + ':' + c.status.state).join('|');
+            const sig = computeCards().map(c => c.group.key + ':' + c.status.state + ':' + c.open.length).join('|');
             if (sig !== lastSignature) renderFilteredTests();
         }
 
