@@ -3540,7 +3540,8 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
             choPhepLamLai: updatedAllowRetake
           });
           if (selectedTestId === testId) {
-            qManagerTitle.innerText = `Đề thi: ${updatedName}`;
+            const qTitleEl = document.getElementById('question-manager-title');
+            if (qTitleEl) qTitleEl.innerText = `Đề thi: ${updatedName}`;
             const qa = document.getElementById('quickEditAntiCheat');
             const qr = document.getElementById('quickEditAllowRetake');
             if (qa) qa.checked = updatedAntiCheat;
