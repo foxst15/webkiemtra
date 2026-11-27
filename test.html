@@ -858,53 +858,17 @@
             submitTest(true, "Hết giờ");
         }
 
-        function showTabSwitchWarning(msg) {
-            let toast = document.getElementById('anti-cheat-toast');
-            if (!toast) {
-                toast = document.createElement('div');
-                toast.id = 'anti-cheat-toast';
-                toast.style.cssText = 'position:fixed; top:68px; left:50%; transform:translateX(-50%); background:#dc3545; color:#fff; padding:10px 18px; border-radius:8px; font-size:0.95rem; font-weight:600; z-index:2000; box-shadow:0 4px 12px rgba(0,0,0,0.25); text-align:center; max-width:92%;';
-                document.body.appendChild(toast);
-            }
-            toast.innerText = msg;
-            toast.style.display = 'block';
-            clearTimeout(toast._hideTimer);
-            toast._hideTimer = setTimeout(() => {
-                toast.style.display = 'none';
-            }, 3500);
-        }
-
-        // 2. CHỐNG GIAN LẬN: Cho phép quay lại ngay trong 3 giây; ở tab khác quá 3 giây mới tự động nộp bài
+        // 2. CHỐNG GIAN LẬN: Tự động nộp bài ngay khi chuyển sang tab khác
         function setupAntiCheat() {
-            const TAB_LEAVE_LIMIT_MS = 3000;
-            let tabLeaveTimer = null;
-            let tabLeftAt = null;
-
             document.addEventListener('visibilitychange', () => {
                 if (!isAntiCheatEnabled || !isQuizReady || daNopBai || isPageUnloading) return;
-
                 if (document.hidden) {
-                    if (!tabLeftAt) tabLeftAt = Date.now();
-                    clearTimeout(tabLeaveTimer);
-                    tabLeaveTimer = setTimeout(() => {
+                    // Đợi 100ms để phân biệt thao tác F5/tải lại trang (beforeunload) với chuyển sang tab khác
+                    setTimeout(() => {
                         if (!isPageUnloading && document.hidden && !daNopBai) {
-                            submitTest(true, "Rời khỏi màn hình làm bài quá 3 giây");
+                            submitTest(true, "Chuyển sang tab khác");
                         }
-                    }, TAB_LEAVE_LIMIT_MS);
-                } else {
-                    clearTimeout(tabLeaveTimer);
-                    tabLeaveTimer = null;
-                    if (tabLeftAt) {
-                        const awayDuration = Date.now() - tabLeftAt;
-                        tabLeftAt = null;
-                        if (!isPageUnloading && !daNopBai) {
-                            if (awayDuration >= TAB_LEAVE_LIMIT_MS) {
-                                submitTest(true, "Rời khỏi màn hình làm bài quá 3 giây");
-                            } else {
-                                showTabSwitchWarning("⚠️ Cảnh báo: Không chuyển tab hoặc rời màn hình làm bài quá 3 giây!");
-                            }
-                        }
-                    }
+                    }, 100);
                 }
             });
         }
