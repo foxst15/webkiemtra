@@ -17,7 +17,7 @@
             --border-radius: 8px; 
         }
         body { 
-            font-family: -apple-system, BlinkMacMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
             background-color: var(--light-bg); 
             margin: 0; 
             padding: 20px;
@@ -30,7 +30,6 @@
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
         }
-        /* Nút chung */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -49,7 +48,6 @@
         .btn-secondary { background-color: var(--secondary-color); }
         .btn-secondary:hover { background-color: var(--secondary-hover); }
 
-        /* Header trang */
         .page-header {
             display: flex;
             justify-content: space-between;
@@ -68,7 +66,6 @@
             margin-bottom: 20px;
         }
         
-        /* Danh sách đề thi */
         #test-list {
             margin-top: 20px;
         }
@@ -87,13 +84,10 @@
             transition: background-color 0.2s, transform 0.2s;
             box-sizing: border-box;
             position: relative; 
-            
             padding: 0; 
-            /* Bổ sung overflow: hidden để lớp phủ không bị tràn ra ngoài viền bo tròn */
             overflow: hidden;
         }
         
-        /* Div nội dung để giữ padding và flex */
         .test-item-content {
             display: flex;
             justify-content: space-between;
@@ -111,56 +105,43 @@
         .test-item.disabled { 
             background-color: #adb5bd;
             cursor: not-allowed;
-            opacity: 1; /* Đảm bảo opacity là 1 để nền đen rõ nét */
+            opacity: 1;
             transform: none;
         }
         
-        /* --- CSS SỬA LỖI CHÍNH: TẬP TRUNG HIỂN THỊ OVERLAY GỌN GÀNG HƠN --- */
         .test-item .overlay-status {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            /* Màu nền bôi đen full */
             background-color: rgba(0, 0, 0, 0.75);
             border-radius: 8px; 
-            
-            /* Dùng Flexbox để căn giữa */
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 10;
             text-align: center;
-            
             flex-direction: column; 
             padding: 10px;
-            box-sizing: border-box; /* Quan trọng: Đảm bảo padding không làm tràn lớp phủ */
+            box-sizing: border-box;
         }
         
         .full-status-text {
-            /* Giới hạn chiều rộng để không đè lên lề */
             max-width: 90%; 
             display: block;
             padding: 8px 15px;
             border-radius: 8px;
-            
-            /* Tinh chỉnh font chữ */
             font-size: 1em; 
             font-weight: 600; 
-            color: #ffc107; /* Màu vàng cam nổi bật */
-            
-            /* Để thông báo nằm gọn trong 1 dòng (trừ khi quá dài) */
+            color: #ffc107;
             white-space: nowrap; 
             overflow: hidden;
             text-overflow: ellipsis;
-            
-            /* Đảm bảo không bị dính vào viền nút */
             margin: 0; 
-            background-color: transparent; /* Loại bỏ nền trắng mờ */
+            background-color: transparent;
         }
 
-        /* NEW: Khi thông báo quá dài, cho phép xuống dòng và căn giữa */
         @media (max-width: 400px) {
             .full-status-text {
                 white-space: normal;
@@ -170,7 +151,6 @@
             }
         }
         
-        /* Loại bỏ nền cho các trạng thái */
         .test-item.disabled .full-status-text,
         .test-item.closed .full-status-text,
         .test-item.completed .full-status-text {
@@ -178,19 +158,17 @@
         }
         
         .test-item.closed .full-status-text {
-            color: #dc3545; /* Đã đóng màu đỏ */
+            color: #dc3545;
         }
         
         .test-item.completed .overlay-status {
             background-color: rgba(255, 255, 255, 0.9);
         }
         .test-item.completed .full-status-text {
-             color: #28a745; /* Đã hoàn thành màu xanh lá */
+             color: #28a745;
              font-weight: bold;
              font-size: 1.2em;
         }
-        /* --- KẾT THÚC CSS SỬA LỖI CHÍNH --- */
-
 
         .test-item .time {
             font-size: 0.9em;
@@ -234,7 +212,6 @@
     </div>
 
     <script>
-        // *** Dán firebaseConfig của bạn vào đây ***
         const firebaseConfig = {
           apiKey: "AIzaSyDmRq3djRZHElhC2T_EYsU7v5vrzwRyybY",
           authDomain: "webkiemtra-66cdc.firebaseapp.com",
@@ -260,21 +237,16 @@
         document.getElementById('studentName').innerText = studentName;
         document.getElementById('studentClass').innerText = studentClass;
         
-        // *** MỚI: Biến toàn cục để lưu trạng thái và bộ đếm giờ ***
         let allTestsData = [];
         let completedTestIdsData = new Set();
         let testListUpdateInterval = null;
 
-        // Hàm định dạng ngày giờ (chỉ lấy giờ và ngày)
         function escHtml(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
         function formatDateTime(date) {
             if (!date) return 'Không giới hạn';
-            // Ví dụ: 10:30 20/11
             return `${date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} ${date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}`;
         }
 
-
-        // --- HÀM TẢI DANH SÁCH ĐỀ THI (ĐÃ SỬA LỖI HIỂN THỊ) ---
         async function loadTestList() {
             const listDiv = document.getElementById('test-list');
             const loadingDiv = document.getElementById('loading');
@@ -283,45 +255,31 @@
             loadingDiv.style.display = 'block';
 
             try {
-                // Lấy thời gian hiện tại
-                const currentTime = new Date();
-                
-                // ==========================================
-                // 🔐 1. TẢI VÀ LỌC DANH SÁCH ĐỀ THEO LỚP 🔐
-                // ==========================================
                 const testsSnapshot = await db.collection("dethi").get();
                 allTestsData = []; 
                 
                 testsSnapshot.forEach(doc => {
                     const testData = doc.data();
-                    // Chuẩn hóa chuỗi để so sánh dễ dàng hơn
                     const lopApDung = (testData.lopApDung || '').trim().toLowerCase();
                     const myClass = (studentClass || '').trim().toLowerCase();
                     
                     let isAllowed = true;
-                    // Nếu đề có thiết lập lớp áp dụng (ví dụ: "10A1, 10A2")
                     if (lopApDung !== '') {
-                        // Tách các lớp bằng dấu phẩy, xóa khoảng trắng thừa
                         const allowedClasses = lopApDung.split(',').map(c => c.trim());
-                        // Kiểm tra xem lớp của học sinh có nằm trong danh sách không
                         isAllowed = allowedClasses.includes(myClass);
                     }
 
-                    // Nếu được phép làm (đúng lớp hoặc đề áp dụng cho mọi lớp)
                     if (isAllowed) {
                         allTestsData.push(Object.assign({ id: doc.id }, testData));
                     }
                 });
-                // ==========================================
 
-                // 2. Tải danh sách BÀI ĐÃ NỘP của học sinh này
                 completedTestIdsData.clear();
                 const studentCode = localStorage.getItem('studentCode') || '';
                 if (studentCode) {
                     const byCode = await db.collection("ketqua").where("maHS", "==", studentCode).get();
                     byCode.forEach(doc => completedTestIdsData.add(doc.data().deThiId));
                 }
-                // Bài cũ chưa có maHS: đối chiếu theo họ tên + lớp (chỉ lấy bản ghi không có maHS)
                 const legacy = await db.collection("ketqua")
                     .where("hoTen", "==", studentName)
                     .where("lop", "==", studentClass)
@@ -333,7 +291,6 @@
 
                 loadingDiv.style.display = 'none';
 
-                // Xây dựng bộ lọc Môn học từ danh sách đề của lớp
                 const subjectFilterBar = document.getElementById('subject-filter-bar');
                 const subjectFilterSelect = document.getElementById('subject-filter');
                 const subjects = new Set();
@@ -358,7 +315,6 @@
 
                 renderFilteredTests();
 
-                // *** MỚI: Khởi động bộ đếm giờ cập nhật thời gian thực ***
                 if (testListUpdateInterval) clearInterval(testListUpdateInterval);
                 testListUpdateInterval = setInterval(updateTestAvailability, 5000); 
 
@@ -385,102 +341,90 @@
             let availableTestsCount = 0;
 
             filteredTests.forEach(test => {
-                    const testId = test.id;
-                    const testName = test.tenDe; 
-                    const testTime = test.thoiGianLamBai || 15; 
-                    const isCompleted = completedTestIdsData.has(testId);
-                    
-                    let isDisabled = isCompleted;
-                    let statusText = '';
-                    let statusClass = '';
+                const testId = test.id;
+                const testName = test.tenDe; 
+                const testTime = test.thoiGianLamBai || 15; 
+                const isCompleted = completedTestIdsData.has(testId);
+                const allowRetake = (test.choPhepLamLai === true);
+                
+                let isDisabled = isCompleted && !allowRetake;
+                let statusText = '';
+                let statusClass = '';
 
-                    const startTime = test.thoiGianMo ? new Date(test.thoiGianMo) : null; 
-                    const endTime = test.thoiGianDong ? new Date(test.thoiGianDong) : null; 
-                    
-                    if (startTime || endTime || isCompleted) {
-                        
-                        if (startTime && currentTime < startTime) {
-                            isDisabled = true;
-                            statusClass = 'disabled';
-                            const startStr = startTime ? formatDateTime(startTime) : 'Không giới hạn';
-                            const endStr = endTime ? formatDateTime(endTime) : 'Không giới hạn';
-                            
-                            statusText = `CHƯA MỞ (Bắt đầu: ${startStr} | Kết thúc: ${endStr})`;
-                            
-                        } else if (endTime && currentTime > endTime) {
-                            isDisabled = true;
-                            statusClass = 'disabled closed';
-                            const endStr = endTime ? formatDateTime(endTime) : 'Không giới hạn';
-                            statusText = `ĐÃ ĐÓNG (Kết thúc: ${endStr})`;
-                            
-                        } else if (isCompleted) {
-                            isDisabled = true;
-                            statusClass = 'disabled completed';
-                            statusText = 'ĐÃ HOÀN THÀNH';
-                        } else {
-                            availableTestsCount++;
-                        }
-                    } else {
-                         if (!isCompleted) {
-                            availableTestsCount++;
-                        } else {
-                            isDisabled = true;
-                            statusClass = 'disabled completed';
-                            statusText = 'ĐÃ HOÀN THÀNH';
-                        }
-                    }
-                    
-                    const button = document.createElement('button');
-                    button.className = `test-item ${statusClass}`;
-                    // *** MỚI: Thêm data-test-id để bộ đếm giờ nhận diện ***
-                    button.dataset.testId = testId; 
-                    
-                    // Hiển thị trạng thái gộp nếu bị disabled
-                    const overlayContent = isDisabled ? `
-                        <div class="overlay-status">
-                            <span class="full-status-text">${statusText}</span>
-                        </div>
-                    ` : '';
-
-
-                    const subjectBadge = (test.monHoc && test.monHoc.trim())
-                        ? `<span style="display:inline-block; background:rgba(255,255,255,0.22); padding:3px 9px; border-radius:12px; font-size:0.78em; margin-bottom:5px; font-weight:600;">📚 Môn: ${escHtml(test.monHoc.trim())}</span><br>`
-                        : '';
-
-                    button.innerHTML = `
-                        <div class="test-item-content">
-                            <div>
-                                ${subjectBadge}
-                                <span>${escHtml(testName)}</span>
-                            </div>
-                            <span class="time">${testTime} phút</span>
-                        </div>
-                        ${overlayContent}
-                    `;
-                    
-                    if (isDisabled) {
-                        button.disabled = true;
-                    } else {
-                        button.onclick = () => {
-                            localStorage.setItem('selectedTestId', testId);
-                            localStorage.setItem('selectedTestName', testName);
-                            localStorage.setItem('selectedTestTime', testTime);
-                            localStorage.setItem('selectedTestSubject', test.monHoc || '');
-                            window.location.href = 'rules.html'; 
-                        };
-                    }
-                    
-                    listDiv.appendChild(button);
-                });
-
-                if (availableTestsCount === 0 && filteredTests.length > 0) {
-                    noTestMessage.style.display = 'block';
-                } else if (filteredTests.length === 0) {
-                    listDiv.innerHTML = '<p style="text-align:center; color:#6c757d;">Chưa có đề thi nào phù hợp.</p>';
+                const startTime = test.thoiGianMo ? new Date(test.thoiGianMo) : null; 
+                const endTime = test.thoiGianDong ? new Date(test.thoiGianDong) : null; 
+                
+                if (startTime && currentTime < startTime) {
+                    isDisabled = true;
+                    statusClass = 'disabled';
+                    const startStr = formatDateTime(startTime);
+                    const endStr = endTime ? formatDateTime(endTime) : 'Không giới hạn';
+                    statusText = `CHƯA MỞ (Bắt đầu: ${startStr} | Kết thúc: ${endStr})`;
+                } else if (endTime && currentTime > endTime) {
+                    isDisabled = true;
+                    statusClass = 'disabled closed';
+                    const endStr = formatDateTime(endTime);
+                    statusText = `ĐÃ ĐÓNG (Kết thúc: ${endStr})`;
+                } else if (isCompleted && !allowRetake) {
+                    isDisabled = true;
+                    statusClass = 'disabled completed';
+                    statusText = 'ĐÃ HOÀN THÀNH';
+                } else {
+                    isDisabled = false;
+                    availableTestsCount++;
                 }
+                
+                const button = document.createElement('button');
+                button.className = `test-item ${statusClass}`;
+                button.dataset.testId = testId; 
+                
+                const overlayContent = isDisabled ? `
+                    <div class="overlay-status">
+                        <span class="full-status-text">${statusText}</span>
+                    </div>
+                ` : '';
+
+                const subjectBadge = (test.monHoc && test.monHoc.trim())
+                    ? `<span style="display:inline-block; background:rgba(255,255,255,0.22); padding:3px 9px; border-radius:12px; font-size:0.78em; margin-bottom:5px; margin-right:5px; font-weight:600;">📚 Môn: ${escHtml(test.monHoc.trim())}</span>`
+                    : '';
+                const retakeInfoBadge = (isCompleted && allowRetake && !isDisabled)
+                    ? `<span style="display:inline-block; background:rgba(255,255,255,0.28); padding:3px 9px; border-radius:12px; font-size:0.78em; margin-bottom:5px; font-weight:600;">🔁 Đã làm (Cho phép làm lại)</span>`
+                    : '';
+                const topBadges = (subjectBadge || retakeInfoBadge) ? `${subjectBadge}${retakeInfoBadge}<br>` : '';
+
+                button.innerHTML = `
+                    <div class="test-item-content">
+                        <div>
+                            ${topBadges}
+                            <span>${escHtml(testName)}</span>
+                        </div>
+                        <span class="time">${testTime} phút</span>
+                    </div>
+                    ${overlayContent}
+                `;
+                
+                if (isDisabled) {
+                    button.disabled = true;
+                } else {
+                    button.onclick = () => {
+                        localStorage.setItem('selectedTestId', testId);
+                        localStorage.setItem('selectedTestName', testName);
+                        localStorage.setItem('selectedTestTime', testTime);
+                        localStorage.setItem('selectedTestSubject', test.monHoc || '');
+                        window.location.href = 'rules.html'; 
+                    };
+                }
+                
+                listDiv.appendChild(button);
+            });
+
+            if (availableTestsCount === 0 && filteredTests.length > 0) {
+                noTestMessage.style.display = 'block';
+            } else if (filteredTests.length === 0) {
+                listDiv.innerHTML = '<p style="text-align:center; color:#6c757d;">Chưa có đề thi nào phù hợp.</p>';
+            }
         }
         
-        // *** MỚI: HÀM CẬP NHẬT TRẠNG THÁI (CHẠY MỖI 5 GIÂY) ***
         function updateTestAvailability() {
             const currentTime = new Date();
             const testItems = document.querySelectorAll('.test-item');
@@ -493,13 +437,12 @@
                 if (!test) return;
 
                 const isCompleted = completedTestIdsData.has(testId);
+                const allowRetake = (test.choPhepLamLai === true);
                 
-                // Nếu đã hoàn thành, trạng thái sẽ không bao giờ thay đổi
-                if (isCompleted) {
+                if (isCompleted && !allowRetake) {
                     return; 
                 }
 
-                // Nếu chưa hoàn thành, kiểm tra thời gian
                 let isDisabled = false;
                 let statusText = '';
                 let statusClass = '';
@@ -513,7 +456,6 @@
                     const startStr = formatDateTime(startTime);
                     const endStr = endTime ? formatDateTime(endTime) : 'Không giới hạn';
                     statusText = `CHƯA MỞ (Bắt đầu: ${startStr} | Kết thúc: ${endStr})`;
-                    
                 } else if (endTime && currentTime > endTime) {
                     isDisabled = true;
                     statusClass = 'disabled closed';
@@ -521,37 +463,31 @@
                     statusText = `ĐÃ ĐÓNG (Kết thúc: ${endStr})`;
                 }
                 
-                // Bây giờ, so sánh và cập nhật DOM nếu cần thiết
                 const overlay = button.querySelector('.overlay-status');
 
                 if (isDisabled) {
-                    // Trạng thái mới: Bị khóa (Chưa mở hoặc Đã đóng)
-                    if (button.disabled === false) { // Chỉ cập nhật nếu trước đó nó đang mở
+                    if (button.disabled === false) {
                         button.disabled = true;
-                        button.className = `test-item ${statusClass}`; // Cập nhật class
+                        button.className = `test-item ${statusClass}`;
                         
-                        // Thêm overlay
                         const overlayElement = document.createElement('div');
                         overlayElement.className = 'overlay-status';
                         overlayElement.innerHTML = `<span class="full-status-text">${statusText}</span>`;
                         button.appendChild(overlayElement);
                     } else {
-                        // Nếu đã bị khóa, chỉ cập nhật lại text cho đúng
-                        if(overlay) {
+                        if (overlay) {
                              overlay.querySelector('.full-status-text').innerText = statusText;
                         }
                     }
                 } else {
-                    // Trạng thái mới: Đang mở
-                    if (button.disabled === true) { // Chỉ cập nhật nếu trước đó nó đang bị khóa
+                    if (button.disabled === true) {
                         button.disabled = false;
-                        button.className = 'test-item'; // Xóa các class disabled
+                        button.className = 'test-item';
                         
                         if (overlay) {
                             overlay.remove();
                         }
                         
-                        // *** THAY ĐỔI: Gán lại sự kiện click sang rules.html ***
                         button.onclick = (function(testId, testName, testTime, testSubject) { 
                             return function() {
                                 localStorage.setItem('selectedTestId', testId);

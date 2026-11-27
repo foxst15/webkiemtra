@@ -25,14 +25,6 @@
             body { display: none !important; }
         }
 
-        /* LỚP LÀM MỜ TỨC THÌ KHI RỜI CHUỘT / MẤT FOCUS */
-        .blur-protection {
-            filter: blur(25px) !important;
-            opacity: 0.05 !important;
-            pointer-events: none !important;
-            transition: filter 0.1s ease, opacity 0.1s ease;
-        }
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
@@ -122,6 +114,9 @@
             transition: background-color 0.2s;
             flex-grow: 1;
             min-width: 150px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
         }
 
         .nav-btn:hover:not(:disabled) {
@@ -197,33 +192,6 @@
             font-size: 1.2em;
             text-align: center;
             font-weight: bold;
-        }
-
-        #startOverlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(15, 23, 42, 0.95);
-            z-index: 2000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            text-align: center;
-            padding: 20px;
-        }
-
-        #startFullscreenBtn {
-            background: #2563eb;
-            color: white;
-            font-size: 1.2rem;
-            font-weight: bold;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            margin-top: 20px;
-            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
         }
 
         .progress-tracker {
@@ -315,13 +283,6 @@
 
 <body>
 
-    <!-- OVERLAY ÉP FULLSCREEN (Chỉ hiện khi đề bật chống gian lận) -->
-    <div id="startOverlay" style="display: none;">
-        <h2>YÊU CẦU BẢO MẬT BÀI THI</h2>
-        <p>Bài thi yêu cầu chế độ <strong>Toàn Màn Hình</strong>. Không chuyển tab, chia đôi màn hình hoặc thoát khỏi cửa sổ làm bài quá 3 giây!</p>
-        <button id="startFullscreenBtn" onclick="enterFullscreenAndStart()">BẮT ĐẦU LÀM BÀI</button>
-    </div>
-
     <div id="timer-bar">
         Thời gian: <span id="timer">--:--</span>
     </div>
@@ -339,20 +300,20 @@
 
                 <div id="quiz-controls" style="display: none;">
                     <div class="question-navigation">
-                        <button id="prevBtn" class="nav-btn" disabled>
+                        <button type="button" id="prevBtn" class="nav-btn" disabled>
                             <span style="font-size: 1.2em;">&larr;</span> Câu trước
                         </button>
-                        <button id="nextBtn" class="nav-btn">
+                        <button type="button" id="nextBtn" class="nav-btn">
                             Câu kế tiếp <span style="font-size: 1.2em;">&rarr;</span>
                         </button>
                     </div>
 
-                    <button id="submitBtn" onclick="submitTest()" style="display: none;" disabled>
+                    <button type="button" id="submitBtn" onclick="submitTest()" style="display: none;" disabled>
                         Nộp bài (HOÀN THÀNH)
                     </button>
                 </div>
 
-                <div id="error-actions" style="text-align: center; display: none;">
+                <div id="error-actions" style="text-align: center; display: none; margin-top: 15px;">
                     <a href="select-test.html" id="back-button" class="nav-btn">Quay lại trang Chọn đề</a>
                 </div>
             </div>
@@ -403,11 +364,6 @@
         let daNopBai = false;
         let globalTimeLeft = 0;
         let quizEndTimeMs = 0;
-        let isCheating = false;
-        let cheatTimeout = null;
-        let cheatDeadline = 0;
-        let cheatCountDown = 0;
-        let cheatTimerInterval = null;
         let globalAnsweredCount = 0;
         let userSelections = [];
         let currentQuestionIndex = 0;
@@ -415,12 +371,20 @@
         let isAntiCheatEnabled = false;
         let isQuizReady = false;
         let quizLoaded = false;
+        let isPageUnloading = false;
         let cachedTestDocData = null;
+
+        // Loại bỏ tiền tố "Câu 1.", "Câu 12:", "Bài 3.", "Question 4." khi hiển thị đề đã xáo câu
+        function cleanQuestionPrompt(prompt) {
+            if (!prompt) return '';
+            return String(prompt).replace(/^\s*(?:Câu|Bài|Question)\s*\d+\s*[\.\:\)\-\–]\s*/i, '').trim();
+        }
 
         function saveQuizProgress() {
             if (daNopBai || !fullQuestionObjects.length) return;
             try {
                 const state = {
+                    testId: selectedTestId,
                     questionIds: fullQuestionObjects.map(q => q.id),
                     optionOrders: fullQuestionObjects.reduce((acc, q) => {
                         acc[q.id] = q.shuffledOptions;
@@ -430,7 +394,9 @@
                     endTimeTimestamp: quizEndTimeMs,
                     currentQuestionIndex: currentQuestionIndex
                 };
-                localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(state));
+                const serialized = JSON.stringify(state);
+                localStorage.setItem(PROGRESS_STORAGE_KEY, serialized);
+                sessionStorage.setItem(PROGRESS_STORAGE_KEY, serialized);
             } catch (e) {
                 console.warn("Không thể lưu tiến trình làm bài:", e);
             }
@@ -438,11 +404,11 @@
 
         function loadSavedQuizProgress() {
             try {
-                const raw = localStorage.getItem(PROGRESS_STORAGE_KEY);
+                const raw = localStorage.getItem(PROGRESS_STORAGE_KEY) || sessionStorage.getItem(PROGRESS_STORAGE_KEY);
                 if (!raw) return null;
                 const parsed = JSON.parse(raw);
-                if (!parsed || !parsed.endTimeTimestamp || parsed.endTimeTimestamp <= Date.now()) {
-                    localStorage.removeItem(PROGRESS_STORAGE_KEY);
+                if (!parsed || parsed.testId !== selectedTestId || !parsed.endTimeTimestamp) {
+                    clearQuizProgress();
                     return null;
                 }
                 return parsed;
@@ -454,6 +420,7 @@
         function clearQuizProgress() {
             try {
                 localStorage.removeItem(PROGRESS_STORAGE_KEY);
+                sessionStorage.removeItem(PROGRESS_STORAGE_KEY);
             } catch (e) {}
         }
 
@@ -473,7 +440,7 @@
             }
         }
 
-        // 1. CHỐNG SAO CHÉP & CHỤP MÀN HÌNH BẰNG PHÍM TẮT
+        // 1. CHỐNG SAO CHÉP & CHỤP MÀN HÌNH BẰNG PHÍM TẮT (Không chặn F5 / Ctrl+R)
         ['copy', 'cut', 'paste', 'selectstart', 'dragstart', 'contextmenu'].forEach(eventType => {
             document.addEventListener(eventType, e => e.preventDefault());
         });
@@ -487,55 +454,16 @@
                 (e.ctrlKey && e.shiftKey && ['i', 'j', 'c'].includes(e.key.toLowerCase()))
             ) {
                 e.preventDefault();
-                if (e.key === 'PrintScreen' && isAntiCheatEnabled && isQuizReady && !daNopBai) {
-                    if (navigator.clipboard && navigator.clipboard.writeText) {
-                        navigator.clipboard.writeText('').catch(() => {});
-                    }
-                    triggerBlurProtection(true);
+                if (e.key === 'PrintScreen' && navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText('').catch(() => {});
                 }
             }
         });
 
-        // 2. CHẾ ĐỘ TOÀN MÀN HÌNH (FULLSCREEN - CHỈ KHI BẬT CHỐNG GIAN LẬN)
-        function enterFullscreenAndStart() {
-            const elem = document.documentElement;
-            if (elem.requestFullscreen) { elem.requestFullscreen().catch(() => {}); }
-            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
-            else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
-
-            document.getElementById('startOverlay').style.display = 'none';
-            if (!quizLoaded) {
-                loadQuiz();
-            } else {
-                stopCheatWarning();
-            }
-        }
-
-        // 3. TỰ ĐỘNG LÀM MỜ MÀN HÌNH KHI RỜI CHUỘT / MỞ TAB SONG SONG
-        function triggerBlurProtection(enable) {
-            const grid = document.getElementById('mainTestGrid');
-            if (!grid) return;
-            if (enable && isAntiCheatEnabled) {
-                grid.classList.add('blur-protection');
-            } else {
-                grid.classList.remove('blur-protection');
-            }
-        }
-
-        document.addEventListener('mouseleave', (e) => {
-            if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
-            if (e.clientY <= 0 || e.clientX <= 0 || e.clientX >= window.innerWidth || e.clientY >= window.innerHeight) {
-                triggerBlurProtection(true);
-                startCheatWarning("Đưa con trỏ chuột ra ngoài khu vực bài thi quá 3 giây");
-            }
-        });
-
-        document.addEventListener('mouseenter', () => {
-            if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
-            if (document.hasFocus() && !document.hidden) {
-                triggerBlurProtection(false);
-                stopCheatWarning();
-            }
+        // Đánh dấu khi tải lại trang (F5) để giữ nguyên bài làm & thời gian, không nộp nhầm
+        window.addEventListener('beforeunload', () => {
+            isPageUnloading = true;
+            saveQuizProgress();
         });
 
         const testForm = document.getElementById('testForm');
@@ -644,6 +572,29 @@
             updateProgress();
         }
 
+        async function hasAlreadySubmittedTest() {
+            try {
+                if (studentCode) {
+                    const byCode = await db.collection("ketqua")
+                        .where("maHS", "==", studentCode)
+                        .where("deThiId", "==", selectedTestId)
+                        .limit(1)
+                        .get();
+                    if (!byCode.empty) return true;
+                }
+                const byName = await db.collection("ketqua")
+                    .where("hoTen", "==", studentName)
+                    .where("lop", "==", studentClass)
+                    .where("deThiId", "==", selectedTestId)
+                    .limit(1)
+                    .get();
+                return !byName.empty;
+            } catch (e) {
+                console.warn("Không kiểm tra được lịch sử nộp bài:", e);
+                return false;
+            }
+        }
+
         async function initTestPage() {
             loadingDiv.style.display = 'block';
             try {
@@ -654,6 +605,9 @@
                     if (cachedTestDocData.monHoc) {
                         selectedTestSubject = cachedTestDocData.monHoc;
                     }
+                    if (cachedTestDocData.tenDe) {
+                        document.getElementById('testTitle').innerText = cachedTestDocData.tenDe;
+                    }
                 } else {
                     isAntiCheatEnabled = true;
                 }
@@ -662,15 +616,20 @@
                 isAntiCheatEnabled = true;
             }
 
-            if (isAntiCheatEnabled) {
-                // Chỉ hiện màn hình yêu cầu Fullscreen khi đề kích hoạt chống gian lận
-                loadingDiv.style.display = 'none';
-                document.getElementById('startOverlay').style.display = 'flex';
-            } else {
-                // Đề không bật chống gian lận -> vào thẳng bài làm, không ép Fullscreen
-                document.getElementById('startOverlay').style.display = 'none';
-                loadQuiz();
+            // Nếu bắt đầu lượt làm mới (không phải F5 tiếp tục bài đang làm) và đề không cho làm lại nhiều lần
+            const existingProgress = loadSavedQuizProgress();
+            const allowRetake = cachedTestDocData && cachedTestDocData.choPhepLamLai === true;
+            if (!existingProgress && !allowRetake) {
+                const alreadyDone = await hasAlreadySubmittedTest();
+                if (alreadyDone) {
+                    loadingDiv.innerText = "Bạn đã hoàn thành bài kiểm tra này. Đề thi không cho phép làm lại nhiều lần.";
+                    errorActionsDiv.style.display = 'block';
+                    return;
+                }
             }
+
+            // Vào thẳng trang làm bài, không ép Fullscreen
+            loadQuiz();
         }
 
         async function loadQuiz() {
@@ -708,7 +667,7 @@
                     else { return a.id.localeCompare(b.id); }
                 });
 
-                // Khôi phục thứ tự câu hỏi nếu F5 tải lại trang, ngược lại xáo trộn theo quy tắc
+                // Khôi phục đúng thứ tự câu hỏi nếu F5 tải lại trang, ngược lại xáo trộn theo quy tắc
                 if (savedProgress && Array.isArray(savedProgress.questionIds) && savedProgress.questionIds.length === loadedQuestions.length) {
                     const qMap = new Map(loadedQuestions.map(q => [q.id, q]));
                     const ordered = savedProgress.questionIds.map(id => qMap.get(id)).filter(Boolean);
@@ -758,7 +717,7 @@
                     }
 
                     let promptP = document.createElement('p');
-                    promptP.textContent = `${questionIndex + 1}. ${q.prompt}`;
+                    promptP.textContent = `${questionIndex + 1}. ${cleanQuestionPrompt(q.prompt)}`;
                     questionDiv.appendChild(promptP);
 
                     let optionsDiv = document.createElement('div');
@@ -808,19 +767,30 @@
                     ? savedProgress.currentQuestionIndex
                     : 0;
 
-                const remainingSeconds = (savedProgress && savedProgress.endTimeTimestamp)
-                    ? Math.max(1, Math.ceil((savedProgress.endTimeTimestamp - Date.now()) / 1000))
-                    : (testTimeMinutes * 60);
+                const effectiveMinutes = (cachedTestDocData && cachedTestDocData.thoiGianLamBai)
+                    ? parseInt(cachedTestDocData.thoiGianLamBai, 10)
+                    : testTimeMinutes;
 
                 quizEndTimeMs = (savedProgress && savedProgress.endTimeTimestamp)
                     ? savedProgress.endTimeTimestamp
-                    : (Date.now() + remainingSeconds * 1000);
+                    : (Date.now() + effectiveMinutes * 60 * 1000);
+
+                const remainingSeconds = Math.max(0, Math.ceil((quizEndTimeMs - Date.now()) / 1000));
 
                 showQuestion(initialQIndex);
+                saveQuizProgress();
+
+                if (remainingSeconds <= 0) {
+                    document.getElementById('timer').innerText = "HẾT GIỜ";
+                    document.getElementById('timer-bar').classList.add('warning');
+                    autoSubmit();
+                    return;
+                }
+
                 startTimer(remainingSeconds);
                 setupAntiCheat();
 
-                setTimeout(() => { isQuizReady = true; }, 1200);
+                setTimeout(() => { isQuizReady = true; }, 800);
 
             } catch (error) {
                 console.error("Lỗi khi tải câu hỏi: ", error);
@@ -837,19 +807,6 @@
 
             timerInterval = setInterval(() => {
                 if (daNopBai) { clearInterval(timerInterval); return; }
-
-                // Kiểm tra đồng bộ hạn phạt rời tab/cửa sổ 3 giây
-                if (isCheating && cheatDeadline > 0) {
-                    const remainingCheatSec = Math.ceil((cheatDeadline - Date.now()) / 1000);
-                    if (remainingCheatSec <= 0) {
-                        submitTest(true, currentCheatReason);
-                        return;
-                    }
-                    cheatCountDown = remainingCheatSec;
-                    timerElement.innerText = `CẢNH BÁO: QUAY LẠI! (${cheatCountDown}s)`;
-                    timerBarElement.classList.add('warning');
-                    return;
-                }
 
                 globalTimeLeft = Math.max(0, Math.ceil((quizEndTimeMs - Date.now()) / 1000));
 
@@ -877,151 +834,19 @@
             submitTest(true, "Hết giờ");
         }
 
-        let currentCheatReason = "Rời khỏi màn hình làm bài quá 3 giây";
-
-        function startCheatWarning(reason) {
-            if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
-            if (isCheating) return;
-
-            isCheating = true;
-            currentCheatReason = reason || "Rời khỏi màn hình làm bài quá 3 giây";
-            cheatDeadline = Date.now() + 3000;
-            cheatCountDown = 3;
-
-            triggerBlurProtection(true);
-            document.getElementById('timer').innerText = `CẢNH BÁO: QUAY LẠI! (${cheatCountDown}s)`;
-            document.getElementById('timer-bar').classList.add('warning');
-
-            if (cheatTimerInterval) clearInterval(cheatTimerInterval);
-            cheatTimerInterval = setInterval(() => {
-                if (!isCheating || daNopBai) return;
-                const left = Math.ceil((cheatDeadline - Date.now()) / 1000);
-                cheatCountDown = Math.max(0, left);
-                document.getElementById('timer').innerText = `CẢNH BÁO: QUAY LẠI! (${cheatCountDown}s)`;
-                if (left <= 0) {
-                    submitTest(true, currentCheatReason);
-                }
-            }, 250);
-
-            if (cheatTimeout) clearTimeout(cheatTimeout);
-            cheatTimeout = setTimeout(() => {
-                if (daNopBai) return;
-                if (isCheating) { submitTest(true, currentCheatReason); }
-            }, 3050);
-        }
-
-        function stopCheatWarning() {
-            if (!isCheating) {
-                triggerBlurProtection(false);
-                return;
-            }
-            // Nếu thời gian rời tab/cửa sổ đã vượt quá 3 giây (trình duyệt nền bị throttle timer) -> nộp bài ngay
-            if (cheatDeadline > 0 && Date.now() >= cheatDeadline && !daNopBai && isAntiCheatEnabled) {
-                submitTest(true, currentCheatReason);
-                return;
-            }
-
-            if (cheatTimeout) { clearTimeout(cheatTimeout); cheatTimeout = null; }
-            if (cheatTimerInterval) { clearInterval(cheatTimerInterval); cheatTimerInterval = null; }
-            isCheating = false;
-            cheatDeadline = 0;
-            cheatCountDown = 0;
-            triggerBlurProtection(false);
-
-            if (!daNopBai) {
-                const timerBarElement = document.getElementById('timer-bar');
-                if (globalTimeLeft > 60) { timerBarElement.classList.remove('warning'); }
-                document.getElementById('timer').innerText = formatTime(globalTimeLeft);
-            }
-        }
-
+        // 2. CHỐNG GIAN LẬN: Chỉ tự động nộp bài khi chuyển sang tab khác (không cảnh báo khi rê chuột ra ngoài)
         function setupAntiCheat() {
-            // Theo dõi Fullscreen
-            document.addEventListener('fullscreenchange', () => {
-                if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
-                if (!document.fullscreenElement) {
-                    startCheatWarning("Thoát chế độ Toàn Màn Hình (Fullscreen) quá 3 giây");
-                } else {
-                    stopCheatWarning();
-                }
-            });
-
-            // Đồng bộ đếm ngược phạt rời tab 3 giây khi chuyển tab/ứng dụng
             document.addEventListener('visibilitychange', () => {
-                if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
+                if (!isAntiCheatEnabled || !isQuizReady || daNopBai || isPageUnloading) return;
                 if (document.hidden) {
-                    startCheatWarning("Chuyển tab/ứng dụng quá 3 giây");
-                } else {
-                    stopCheatWarning();
+                    // Đợi 100ms để phân biệt thao tác F5/tải lại trang (beforeunload) với chuyển sang tab khác
+                    setTimeout(() => {
+                        if (!isPageUnloading && document.hidden && !daNopBai) {
+                            submitTest(true, "Chuyển sang tab khác");
+                        }
+                    }, 100);
                 }
             });
-
-            window.addEventListener('blur', () => {
-                if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
-                startCheatWarning("Mất tập trung (Mở cửa sổ khác / Nhấp ra ngoài) quá 3 giây");
-            });
-
-            window.addEventListener('focus', () => {
-                if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
-                if (!document.hidden) {
-                    stopCheatWarning();
-                }
-            });
-
-            // Dự phòng khi đóng hẳn tab/trình duyệt
-            window.addEventListener('pagehide', () => {
-                if (!isAntiCheatEnabled || !isQuizReady || daNopBai) return;
-                synchronousSubmitOnUnload(true, "Đóng trình duyệt/rời khỏi trang");
-            });
-        }
-
-        function synchronousSubmitOnUnload(isAutoSubmit = true, autoSubmitReason = "Rời khỏi trang") {
-            if (daNopBai) return;
-            daNopBai = true;
-            clearInterval(timerInterval);
-            if (cheatTimeout) clearTimeout(cheatTimeout);
-            if (cheatTimerInterval) clearInterval(cheatTimerInterval);
-            clearQuizProgress();
-
-            let score = 0;
-            correctAnswers = fullQuestionObjects.map(q => q.answer);
-            correctAnswers.forEach((encodedAnswer, index) => {
-                const userAnswer = userSelections[index];
-                if (userAnswer && btoa(encodeURIComponent(userAnswer)) === encodedAnswer) { score++; }
-            });
-
-            const totalQuestions = correctAnswers.length;
-            const finalScore = (totalQuestions > 0) ? (score / totalQuestions) * 10 : 0;
-
-            const submissionData = {
-                maHS: studentCode,
-                hoTen: studentName,
-                lop: studentClass,
-                monHoc: selectedTestSubject || '',
-                diemSo: finalScore.toFixed(2),
-                soCauDung: score,
-                tongSoCau: totalQuestions,
-                deThiId: selectedTestId,
-                tenDeThi: selectedTestName,
-                nopTuDong: isAutoSubmit,
-                lyDoNopTuDong: autoSubmitReason,
-                answeredCount: globalAnsweredCount,
-                userAnswers: userSelections,
-                quizData: fullQuestionObjects
-            };
-
-            localStorage.setItem('score', finalScore.toFixed(2));
-            localStorage.setItem('totalQuestions', totalQuestions);
-            localStorage.setItem('correctCount', score);
-            localStorage.setItem('answeredCount', globalAnsweredCount);
-            localStorage.setItem('isAutoSubmit', isAutoSubmit);
-
-            try {
-                localStorage.setItem('pendingSubmission', JSON.stringify(submissionData));
-            } catch (error) {
-                submissionData.quizData = [];
-                localStorage.setItem('pendingSubmission', JSON.stringify(submissionData));
-            }
         }
 
         async function submitTest(isAutoSubmit = false, autoSubmitReason = null) {
@@ -1033,8 +858,6 @@
 
             daNopBai = true;
             clearInterval(timerInterval);
-            if (cheatTimeout) clearTimeout(cheatTimeout);
-            if (cheatTimerInterval) clearInterval(cheatTimerInterval);
             clearQuizProgress();
 
             const submitBtn = document.getElementById('submitBtn');
@@ -1063,7 +886,7 @@
                 try {
                     const docRef = await db.collection("ketqua").add({
                         maHS: studentCode,
-                hoTen: studentName,
+                        hoTen: studentName,
                         lop: studentClass,
                         monHoc: selectedTestSubject || '',
                         diemSo: finalScore.toFixed(2),
@@ -1081,15 +904,21 @@
                     localStorage.setItem('lastSubmissionId', docRef.id);
                 } catch (error) {
                     console.error("Lỗi khi lưu kết quả: ", error);
-                    // Lưu dự phòng để results.html tự đồng bộ lại, tránh mất bài khi lỗi mạng
                     try {
                         localStorage.setItem('pendingSubmission', JSON.stringify({
                             maHS: studentCode,
-                hoTen: studentName, lop: studentClass, monHoc: selectedTestSubject || '',
-                            diemSo: finalScore.toFixed(2), soCauDung: score, tongSoCau: totalQuestions,
-                            deThiId: selectedTestId, tenDeThi: selectedTestName,
-                            nopTuDong: isAutoSubmit, lyDoNopTuDong: autoSubmitReason,
-                            answeredCount: globalAnsweredCount, userAnswers: userSelections,
+                            hoTen: studentName,
+                            lop: studentClass,
+                            monHoc: selectedTestSubject || '',
+                            diemSo: finalScore.toFixed(2),
+                            soCauDung: score,
+                            tongSoCau: totalQuestions,
+                            deThiId: selectedTestId,
+                            tenDeThi: selectedTestName,
+                            nopTuDong: isAutoSubmit,
+                            lyDoNopTuDong: autoSubmitReason,
+                            answeredCount: globalAnsweredCount,
+                            userAnswers: userSelections,
                             quizData: fullQuestionObjects
                         }));
                     } catch (e2) { console.error(e2); }
@@ -1101,7 +930,7 @@
         prevBtn.addEventListener('click', () => showQuestion(currentQuestionIndex - 1));
         nextBtn.addEventListener('click', () => showQuestion(currentQuestionIndex + 1));
 
-        // Khởi chạy kiểm tra cấu hình chống gian lận trước khi bắt đầu
+        // Khởi chạy bài kiểm tra
         initTestPage();
     </script>
 </body>
