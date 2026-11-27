@@ -324,182 +324,144 @@
             }
         }
 
+        function getTestStatus(test, now) {
+            const isCompleted = completedTestIdsData.has(test.id);
+            const allowRetake = (test.choPhepLamLai === true);
+            const startTime = test.thoiGianMo ? new Date(test.thoiGianMo) : null;
+            const endTime = test.thoiGianDong ? new Date(test.thoiGianDong) : null;
+            if (startTime && now < startTime) {
+                return { state: 'notopen', cls: 'disabled', text: `CHƯA MỞ (Bắt đầu: ${formatDateTime(startTime)} | Kết thúc: ${endTime ? formatDateTime(endTime) : 'Không giới hạn'})` };
+            }
+            if (endTime && now > endTime) {
+                return { state: 'closed', cls: 'disabled closed', text: `ĐÃ ĐÓNG (Kết thúc: ${formatDateTime(endTime)})` };
+            }
+            if (isCompleted && !allowRetake) {
+                return { state: 'completed', cls: 'disabled completed', text: 'ĐÃ HOÀN THÀNH' };
+            }
+            return { state: 'open', cls: '', text: '' };
+        }
+
+        // Gom các đề cùng môn thành 1 nhóm (mỗi đề trong nhóm là 1 mã đề). Đề chưa gán môn đứng riêng.
+        function buildGroups(tests) {
+            const map = new Map();
+            tests.forEach(t => {
+                const sub = (t.monHoc || '').trim();
+                const key = sub ? 'sub:' + sub.toLowerCase() : 'id:' + t.id;
+                if (!map.has(key)) map.set(key, { key, subject: sub, tests: [] });
+                map.get(key).tests.push(t);
+            });
+            return [...map.values()];
+        }
+
+        // Chọn ngẫu nhiên 1 mã đề cho học sinh, lưu lại để tải lại trang vẫn giữ nguyên mã đã gán
+        function pickVariant(group, candidates) {
+            const who = localStorage.getItem('studentCode') || studentName + '|' + studentClass;
+            const storeKey = `assignedTest_${who}_${group.key}`;
+            const savedId = localStorage.getItem(storeKey);
+            const saved = candidates.find(t => t.id === savedId);
+            if (saved) return saved;
+            const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+            localStorage.setItem(storeKey, chosen.id);
+            return chosen;
+        }
+
+        function computeCards() {
+            const now = new Date();
+            const subjectFilterVal = (document.getElementById('subject-filter')?.value || '').trim().toLowerCase();
+            const groups = buildGroups(allTestsData).filter(g => !subjectFilterVal || g.subject.toLowerCase() === subjectFilterVal);
+
+            return groups.map(group => {
+                const statuses = group.tests.map(t => ({ test: t, st: getTestStatus(t, now) }));
+                const showCode = group.tests.length > 1;   // từ 2 mã đề trở lên mới hiện mã đề
+                const done = statuses.find(x => x.st.state === 'completed');
+                const open = statuses.filter(x => x.st.state === 'open').map(x => x.test);
+
+                let shown, status;
+                if (done) {
+                    shown = done.test; status = done.st;
+                } else if (open.length > 0) {
+                    shown = pickVariant(group, open); status = { state: 'open', cls: '', text: '' };
+                } else {
+                    const pref = statuses.find(x => x.st.state === 'notopen') || statuses[0];
+                    shown = pref.test; status = pref.st;
+                }
+                return { group, test: shown, status, showCode };
+            });
+        }
+
         function renderFilteredTests() {
             const listDiv = document.getElementById('test-list');
             const noTestMessage = document.getElementById('no-test-message');
-            const subjectFilterVal = (document.getElementById('subject-filter')?.value || '').trim().toLowerCase();
-            const currentTime = new Date();
-
             listDiv.innerHTML = '';
             noTestMessage.style.display = 'none';
 
-            const filteredTests = allTestsData.filter(test => {
-                if (!subjectFilterVal) return true;
-                return (test.monHoc || '').trim().toLowerCase() === subjectFilterVal;
-            });
-
+            const cards = computeCards();
+            lastSignature = cards.map(c => c.test.id + ':' + c.status.state).join('|');
             let availableTestsCount = 0;
 
-            filteredTests.forEach(test => {
-                const testId = test.id;
-                const testName = test.tenDe; 
-                const testTime = test.thoiGianLamBai || 15; 
-                const isCompleted = completedTestIdsData.has(testId);
+            cards.forEach(({ group, test, status, showCode }) => {
+                const testTime = test.thoiGianLamBai || 15;
                 const allowRetake = (test.choPhepLamLai === true);
-                
-                let isDisabled = isCompleted && !allowRetake;
-                let statusText = '';
-                let statusClass = '';
+                const isCompleted = completedTestIdsData.has(test.id);
+                const isDisabled = status.state !== 'open';
+                if (!isDisabled) availableTestsCount++;
 
-                const startTime = test.thoiGianMo ? new Date(test.thoiGianMo) : null; 
-                const endTime = test.thoiGianDong ? new Date(test.thoiGianDong) : null; 
-                
-                if (startTime && currentTime < startTime) {
-                    isDisabled = true;
-                    statusClass = 'disabled';
-                    const startStr = formatDateTime(startTime);
-                    const endStr = endTime ? formatDateTime(endTime) : 'Không giới hạn';
-                    statusText = `CHƯA MỞ (Bắt đầu: ${startStr} | Kết thúc: ${endStr})`;
-                } else if (endTime && currentTime > endTime) {
-                    isDisabled = true;
-                    statusClass = 'disabled closed';
-                    const endStr = formatDateTime(endTime);
-                    statusText = `ĐÃ ĐÓNG (Kết thúc: ${endStr})`;
-                } else if (isCompleted && !allowRetake) {
-                    isDisabled = true;
-                    statusClass = 'disabled completed';
-                    statusText = 'ĐÃ HOÀN THÀNH';
-                } else {
-                    isDisabled = false;
-                    availableTestsCount++;
-                }
-                
+                const title = group.subject ? group.subject : test.tenDe;
+
                 const button = document.createElement('button');
-                button.className = `test-item ${statusClass}`;
-                button.dataset.testId = testId; 
-                
+                button.className = `test-item ${status.cls}`;
+                button.dataset.testId = test.id;
+
                 const overlayContent = isDisabled ? `
                     <div class="overlay-status">
-                        <span class="full-status-text">${statusText}</span>
-                    </div>
-                ` : '';
+                        <span class="full-status-text">${status.text}</span>
+                    </div>` : '';
 
-                const subjectBadge = (test.monHoc && test.monHoc.trim())
-                    ? `<span style="display:inline-block; background:rgba(255,255,255,0.22); padding:3px 9px; border-radius:12px; font-size:0.78em; margin-bottom:5px; margin-right:5px; font-weight:600;">📚 Môn: ${escHtml(test.monHoc.trim())}</span>`
-                    : '';
-                const retakeInfoBadge = (isCompleted && allowRetake && !isDisabled)
-                    ? `<span style="display:inline-block; background:rgba(255,255,255,0.28); padding:3px 9px; border-radius:12px; font-size:0.78em; margin-bottom:5px; font-weight:600;">🔁 Đã làm (Cho phép làm lại)</span>`
-                    : '';
-                const topBadges = (subjectBadge || retakeInfoBadge) ? `${subjectBadge}${retakeInfoBadge}<br>` : '';
+                const badge = (css, txt) => `<span style="display:inline-block; background:rgba(255,255,255,0.22); padding:3px 9px; border-radius:12px; font-size:0.78em; margin-bottom:5px; margin-right:5px; font-weight:600;">${txt}</span>`;
+                const subjectBadge = group.subject ? badge('', '📚 Môn học') : '';
+                const codeBadge = (group.subject && showCode) ? badge('', `🔖 Mã đề: ${escHtml(test.maDe || test.tenDe)}`) : '';
+                const retakeBadge = (isCompleted && allowRetake && !isDisabled) ? badge('', '🔁 Đã làm (Cho phép làm lại)') : '';
+                const topBadges = (subjectBadge || codeBadge || retakeBadge) ? `${subjectBadge}${codeBadge}${retakeBadge}<br>` : '';
 
                 button.innerHTML = `
                     <div class="test-item-content">
                         <div>
                             ${topBadges}
-                            <span>${escHtml(testName)}</span>
+                            <span>${escHtml(title)}</span>
                         </div>
                         <span class="time">${testTime} phút</span>
                     </div>
                     ${overlayContent}
                 `;
-                
+
                 if (isDisabled) {
                     button.disabled = true;
                 } else {
                     button.onclick = () => {
-                        localStorage.setItem('selectedTestId', testId);
-                        localStorage.setItem('selectedTestName', testName);
+                        localStorage.setItem('selectedTestId', test.id);
+                        localStorage.setItem('selectedTestName', test.tenDe);
                         localStorage.setItem('selectedTestTime', testTime);
                         localStorage.setItem('selectedTestSubject', test.monHoc || '');
-                        window.location.href = 'rules.html'; 
+                        localStorage.setItem('selectedTestCode', test.maDe || test.tenDe);
+                        localStorage.setItem('selectedTestShowCode', (group.subject && showCode) ? '1' : '0');
+                        window.location.href = 'rules.html';
                     };
                 }
-                
                 listDiv.appendChild(button);
             });
 
-            if (availableTestsCount === 0 && filteredTests.length > 0) {
+            if (availableTestsCount === 0 && cards.length > 0) {
                 noTestMessage.style.display = 'block';
-            } else if (filteredTests.length === 0) {
+            } else if (cards.length === 0) {
                 listDiv.innerHTML = '<p style="text-align:center; color:#6c757d;">Chưa có đề thi nào phù hợp.</p>';
             }
         }
-        
+
+        let lastSignature = '';
+        // Cập nhật trạng thái mở/đóng theo thời gian, chỉ vẽ lại khi có thay đổi
         function updateTestAvailability() {
-            const currentTime = new Date();
-            const testItems = document.querySelectorAll('.test-item');
-
-            testItems.forEach(button => {
-                const testId = button.dataset.testId;
-                if (!testId) return;
-
-                const test = allTestsData.find(function(t) { return t.id === testId; }); 
-                if (!test) return;
-
-                const isCompleted = completedTestIdsData.has(testId);
-                const allowRetake = (test.choPhepLamLai === true);
-                
-                if (isCompleted && !allowRetake) {
-                    return; 
-                }
-
-                let isDisabled = false;
-                let statusText = '';
-                let statusClass = '';
-
-                const startTime = test.thoiGianMo ? new Date(test.thoiGianMo) : null; 
-                const endTime = test.thoiGianDong ? new Date(test.thoiGianDong) : null; 
-
-                if (startTime && currentTime < startTime) {
-                    isDisabled = true;
-                    statusClass = 'disabled';
-                    const startStr = formatDateTime(startTime);
-                    const endStr = endTime ? formatDateTime(endTime) : 'Không giới hạn';
-                    statusText = `CHƯA MỞ (Bắt đầu: ${startStr} | Kết thúc: ${endStr})`;
-                } else if (endTime && currentTime > endTime) {
-                    isDisabled = true;
-                    statusClass = 'disabled closed';
-                    const endStr = formatDateTime(endTime);
-                    statusText = `ĐÃ ĐÓNG (Kết thúc: ${endStr})`;
-                }
-                
-                const overlay = button.querySelector('.overlay-status');
-
-                if (isDisabled) {
-                    if (button.disabled === false) {
-                        button.disabled = true;
-                        button.className = `test-item ${statusClass}`;
-                        
-                        const overlayElement = document.createElement('div');
-                        overlayElement.className = 'overlay-status';
-                        overlayElement.innerHTML = `<span class="full-status-text">${statusText}</span>`;
-                        button.appendChild(overlayElement);
-                    } else {
-                        if (overlay) {
-                             overlay.querySelector('.full-status-text').innerText = statusText;
-                        }
-                    }
-                } else {
-                    if (button.disabled === true) {
-                        button.disabled = false;
-                        button.className = 'test-item';
-                        
-                        if (overlay) {
-                            overlay.remove();
-                        }
-                        
-                        button.onclick = (function(testId, testName, testTime, testSubject) { 
-                            return function() {
-                                localStorage.setItem('selectedTestId', testId);
-                                localStorage.setItem('selectedTestName', testName);
-                                localStorage.setItem('selectedTestTime', testTime); 
-                                localStorage.setItem('selectedTestSubject', testSubject || '');
-                                window.location.href = 'rules.html'; 
-                            };
-                        })(testId, test.tenDe, test.thoiGianLamBai || 15, test.monHoc); 
-                    }
-                }
-            });
+            const sig = computeCards().map(c => c.test.id + ':' + c.status.state).join('|');
+            if (sig !== lastSignature) renderFilteredTests();
         }
 
         loadTestList();

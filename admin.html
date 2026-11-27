@@ -552,6 +552,13 @@
               <input type="text" id="testSubject" placeholder="Ví dụ: Toán, Vật Lý, Hóa Học">
             </div>
           </div>
+          <div style="margin-top: 10px;">
+            <label>Mã đề (Nhập nhiều mã cách nhau bằng dấu phẩy để tạo nhiều mã đề cho môn này):</label>
+            <input type="text" id="testVariantCodes" placeholder="Ví dụ: 101, 102, 103, 104 (để trống = môn chỉ có 1 đề, không hiện mã đề)">
+            <small style="color:#6c757d; display:block; margin-top:3px;">
+              Mỗi mã sẽ tạo thành 1 đề riêng, sau đó vào mục Quản lý đề thi chọn từng mã để up câu hỏi (file Word/dán nội dung). Học sinh sẽ được bốc ngẫu nhiên 1 mã đề; mã chỉ hiển thị khi môn có từ 2 mã đề trở lên.
+            </small>
+          </div>
         </div>
 
         <div class="create-form-section">
@@ -2276,6 +2283,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
           let timeInfo = `<span class="time">⏱️ ${test.thoiGianLamBai || 'N/A'} phút</span>`;
           let extraInfo = [];
           if (test.monHoc) extraInfo.push(`Môn: ${test.monHoc}`);
+          if (test.maDe) extraInfo.push(`Mã đề: ${test.maDe}`);
           if (test.lopApDung) extraInfo.push(`Lớp: ${test.lopApDung}`);
           else extraInfo.push(`Lớp: Tất cả`);
           
@@ -2852,6 +2860,8 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
         const isAntiCheat = document.getElementById('testAntiCheat').checked;
         const isAllowRetake = document.getElementById('testAllowRetake').checked;
         const testSubject = document.getElementById('testSubject').value.trim();
+        const variantCodes = [...new Set(document.getElementById('testVariantCodes').value
+          .split(/[,;\n]/).map(c => c.trim()).filter(Boolean))];
         
         const levelVal = document.getElementById('createTestLevel').value;
         const targetClass = document.getElementById('createTestTargetClassInput').value.trim();
@@ -2859,9 +2869,13 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
         const adminEmail = currentUser.email; 
         if (!testName || !testTime) return;
 
+        if (variantCodes.length > 1 && !testSubject) {
+          alert("Để tạo nhiều mã đề, vui lòng nhập Môn học (các mã đề cùng môn sẽ được gom lại cho học sinh).");
+          return;
+        }
+
         try {
-          await db.collection("dethi").add({ 
-            tenDe: testName, 
+          const baseData = {
             thoiGianLamBai: parseInt(testTime),
             nguoiTao: adminEmail,
             thoiGianMo: startTime || null, 
@@ -2871,10 +2885,21 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
             lopApDung: targetClass,
             chongGianLan: isAntiCheat,
             choPhepLamLai: isAllowRetake
-          });
+          };
+          if (variantCodes.length === 0) {
+            await db.collection("dethi").add(Object.assign({ tenDe: testName, maDe: '' }, baseData));
+          } else {
+            const batch = db.batch();
+            variantCodes.forEach(code => {
+              batch.set(db.collection("dethi").doc(), Object.assign({ tenDe: `${testName} (Mã ${code})`, maDe: code }, baseData));
+            });
+            await batch.commit();
+          }
           createTestForm.reset();
           renderClassBadges();
-          alert("Khởi tạo đề thi mới thành công.");
+          alert(variantCodes.length > 1
+            ? `Đã tạo ${variantCodes.length} mã đề: ${variantCodes.join(', ')}.\nHãy vào Quản lý đề thi, chọn từng mã đề để up câu hỏi.`
+            : "Khởi tạo đề thi mới thành công.");
           navTests.click(); 
         } catch (error) { console.error("Lỗi tạo đề: ", error); }
       });
@@ -3500,6 +3525,8 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
                         <input type="number" id="editTestTime" value="${data.thoiGianLamBai}" required min="1">
                         <label>Môn học:</label>
                         <input type="text" id="editTestSubject" value="${escapeHtml(data.monHoc || '')}">
+                        <label>Mã đề (để trống nếu môn chỉ có 1 đề):</label>
+                        <input type="text" id="editTestCode" value="${escapeHtml(data.maDe || '')}">
                         <label>Lớp áp dụng (phân cách bằng dấu phẩy):</label>
                         <input type="text" id="editTestTargetClass" value="${escapeHtml(data.lopApDung || '')}">
                         <div class="form-grid-2" style="margin-top: 8px;">
@@ -3533,6 +3560,7 @@ d23480201013,Trần Thị B,D23_TH01</code></pre>
             tenDe: updatedName, 
             thoiGianLamBai: parseInt(document.getElementById('editTestTime').value),
             monHoc: document.getElementById('editTestSubject').value.trim(), 
+            maDe: document.getElementById('editTestCode').value.trim(),
             lopApDung: document.getElementById('editTestTargetClass').value.trim(),
             thoiGianMo: document.getElementById('editTestStartTime').value || null,
             thoiGianDong: document.getElementById('editTestEndTime').value || null,

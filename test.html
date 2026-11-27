@@ -478,7 +478,13 @@
         const quizControls = document.getElementById('quiz-controls');
 
         document.getElementById('studentInfo').innerText = `Thí sinh: ${studentName} - Lớp: ${studentClass}`;
-        document.getElementById('testTitle').innerText = selectedTestName || "Bài kiểm tra";
+        const showTestCode = localStorage.getItem('selectedTestShowCode') === '1';
+        const selectedTestCode = localStorage.getItem('selectedTestCode') || selectedTestName;
+        function formatTestTitle(tenDe, monHoc, maDe) {
+            if (showTestCode) return (monHoc ? monHoc + ' - ' : '') + 'Mã đề: ' + (maDe || tenDe);
+            return monHoc || tenDe || "Bài kiểm tra";
+        }
+        document.getElementById('testTitle').innerText = formatTestTitle(selectedTestName, selectedTestSubject, selectedTestCode);
 
         function formatTime(totalSeconds) {
             let minutes = Math.floor(totalSeconds / 60);
@@ -606,7 +612,7 @@
                         selectedTestSubject = cachedTestDocData.monHoc;
                     }
                     if (cachedTestDocData.tenDe) {
-                        document.getElementById('testTitle').innerText = cachedTestDocData.tenDe;
+                        document.getElementById('testTitle').innerText = formatTestTitle(cachedTestDocData.tenDe, cachedTestDocData.monHoc || selectedTestSubject, cachedTestDocData.maDe);
                     }
                 } else {
                     isAntiCheatEnabled = true;
