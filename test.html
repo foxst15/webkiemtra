@@ -270,19 +270,6 @@
             background-color: #dc3545;
         }
 
-        .exam-code-tag {
-            display: inline-block;
-            background: #e7f3ff;
-            color: #0056b3;
-            border: 1px solid #b8daff;
-            border-radius: 6px;
-            padding: 2px 8px;
-            font-size: 0.78em;
-            font-weight: 700;
-            margin-left: 6px;
-            vertical-align: middle;
-        }
-
         @media (max-width: 900px) {
             .page-grid { grid-template-columns: 1fr; padding: 0 10px; }
             .progress-tracker { position: relative; top: 0; margin-top: 20px; }
@@ -365,7 +352,6 @@
         const selectedTestName = localStorage.getItem('selectedTestName');
         const testTimeMinutes = parseInt(localStorage.getItem('selectedTestTime') || 15, 10);
         let selectedTestSubject = localStorage.getItem('selectedTestSubject') || '';
-        let selectedTestCode = localStorage.getItem('selectedTestCode') || '';
 
         if (!studentName || !studentClass) { window.location.href = 'index.html'; }
         if (!selectedTestId) { window.location.href = 'select-test.html'; }
@@ -387,24 +373,6 @@
         let quizLoaded = false;
         let isPageUnloading = false;
         let cachedTestDocData = null;
-
-        function escHtml(val) {
-            return String(val == null ? '' : val).replace(/[&<>"']/g, ch => ({
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#39;'
-            }[ch]));
-        }
-
-        function renderTestHeader(titleText, codeText) {
-            const safeTitle = escHtml(titleText || 'Bài kiểm tra');
-            const cleanCode = String(codeText || '').trim();
-            document.getElementById('testTitle').innerHTML = cleanCode
-                ? `${safeTitle} <span class="exam-code-tag">Mã đề: ${escHtml(cleanCode)}</span>`
-                : safeTitle;
-        }
 
         // Loại bỏ tiền tố "Câu 1.", "Câu 12:", "Bài 3.", "Question 4." khi hiển thị đề đã xáo câu
         function cleanQuestionPrompt(prompt) {
@@ -510,7 +478,7 @@
         const quizControls = document.getElementById('quiz-controls');
 
         document.getElementById('studentInfo').innerText = `Thí sinh: ${studentName} - Lớp: ${studentClass}`;
-        renderTestHeader(selectedTestName || "Bài kiểm tra", selectedTestCode);
+        document.getElementById('testTitle').innerText = selectedTestName || "Bài kiểm tra";
 
         function formatTime(totalSeconds) {
             let minutes = Math.floor(totalSeconds / 60);
@@ -637,12 +605,9 @@
                     if (cachedTestDocData.monHoc) {
                         selectedTestSubject = cachedTestDocData.monHoc;
                     }
-                    const docCode = String((cachedTestDocData.maDe ?? cachedTestDocData.ma_de ?? cachedTestDocData.maCode) || '').trim();
-                    if (docCode) {
-                        selectedTestCode = docCode;
-                        localStorage.setItem('selectedTestCode', selectedTestCode);
+                    if (cachedTestDocData.tenDe) {
+                        document.getElementById('testTitle').innerText = cachedTestDocData.tenDe;
                     }
-                    renderTestHeader(cachedTestDocData.tenDe || selectedTestName || "Bài kiểm tra", selectedTestCode);
                 } else {
                     isAntiCheatEnabled = true;
                 }
@@ -914,7 +879,6 @@
             localStorage.setItem('correctCount', score);
             localStorage.setItem('answeredCount', globalAnsweredCount);
             localStorage.setItem('isAutoSubmit', isAutoSubmit);
-            localStorage.setItem('selectedTestCode', selectedTestCode || '');
 
             localStorage.removeItem('pendingSubmission');
 
@@ -925,7 +889,6 @@
                         hoTen: studentName,
                         lop: studentClass,
                         monHoc: selectedTestSubject || '',
-                        maDe: selectedTestCode || '',
                         diemSo: finalScore.toFixed(2),
                         soCauDung: score,
                         tongSoCau: totalQuestions,
@@ -947,7 +910,6 @@
                             hoTen: studentName,
                             lop: studentClass,
                             monHoc: selectedTestSubject || '',
-                            maDe: selectedTestCode || '',
                             diemSo: finalScore.toFixed(2),
                             soCauDung: score,
                             tongSoCau: totalQuestions,
