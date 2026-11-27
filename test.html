@@ -373,6 +373,21 @@
         let quizLoaded = false;
         let isPageUnloading = false;
         let cachedTestDocData = null;
+        let activeSubmissionDocId = null;
+
+        // Khóa lịch sử trình duyệt để chặn nút Quay lại (Back) khi đang ở phòng thi
+        try {
+            history.pushState({ inExam: true }, '', location.href);
+            window.addEventListener('popstate', function () {
+                if (daNopBai) return;
+                history.pushState({ inExam: true }, '', location.href);
+                if (isAntiCheatEnabled && isQuizReady) {
+                    submitTest(true, "Cố tình bấm nút Quay lại (Back)");
+                } else {
+                    alert("⚠️ Không thể quay lại khi đang trong phòng thi! Vui lòng hoàn thành và bấm Nộp bài.");
+                }
+            });
+        } catch (e) {}
 
         // Loại bỏ tiền tố "Câu 1.", "Câu 12:", "Bài 3.", "Question 4." khi hiển thị đề đã xáo câu
         function cleanQuestionPrompt(prompt) {
@@ -385,6 +400,7 @@
             try {
                 const state = {
                     testId: selectedTestId,
+                    activeDocId: activeSubmissionDocId,
                     questionIds: fullQuestionObjects.map(q => q.id),
                     optionOrders: fullQuestionObjects.reduce((acc, q) => {
                         acc[q.id] = q.shuffledOptions;
@@ -411,6 +427,7 @@
                     clearQuizProgress();
                     return null;
                 }
+                activeSubmissionDocId = parsed.activeDocId || null;
                 return parsed;
             } catch (e) {
                 return null;
@@ -460,10 +477,14 @@
             }
         });
 
-        // Đánh dấu khi tải lại trang (F5) để giữ nguyên bài làm & thời gian, không nộp nhầm
-        window.addEventListener('beforeunload', () => {
+        // Đánh dấu khi tải lại trang (F5) để giữ nguyên bài làm & thời gian, đồng thời cảnh báo nếu đóng/rời trang thi
+        window.addEventListener('beforeunload', (e) => {
             isPageUnloading = true;
             saveQuizProgress();
+            if (!daNopBai && isQuizReady) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
         });
 
         const testForm = document.getElementById('testForm');
@@ -628,7 +649,7 @@
             if (!existingProgress && !allowRetake) {
                 const alreadyDone = await hasAlreadySubmittedTest();
                 if (alreadyDone) {
-                    loadingDiv.innerText = "Bạn đã hoàn thành bài kiểm tra này. Đề thi không cho phép làm lại nhiều lần.";
+                    loadingDiv.innerText = "Bạn đã vào thi hoặc hoàn thành bài kiểm tra này. Đề thi không cho phép làm lại nhiều lần.";
                     errorActionsDiv.style.display = 'block';
                     return;
                 }
@@ -786,6 +807,32 @@
                 showQuestion(initialQIndex);
                 saveQuizProgress();
 
+                // Ghi nhận ngay lượt vào thi lên Firestore để chống thoát ra / mở Tab ẩn danh làm lại từ đầu
+                if (!savedProgress && db) {
+                    try {
+                        const activeDocRef = await db.collection("ketqua").add({
+                            maHS: studentCode,
+                            hoTen: studentName,
+                            lop: studentClass,
+                            monHoc: selectedTestSubject || '',
+                            diemSo: "0.00",
+                            soCauDung: 0,
+                            tongSoCau: loadedQuestions.length,
+                            deThiId: selectedTestId,
+                            tenDeThi: selectedTestName,
+                            thoiGianNop: firebase.firestore.FieldValue.serverTimestamp(),
+                            nopTuDong: true,
+                            lyDoNopTuDong: "Đang làm bài / Thoát giữa chừng",
+                            trangThai: "dang_lam",
+                            answeredCount: 0
+                        });
+                        activeSubmissionDocId = activeDocRef.id;
+                        saveQuizProgress();
+                    } catch (sessionErr) {
+                        console.warn("Không thể tạo phiên thi trên Firestore:", sessionErr);
+                    }
+                }
+
                 if (remainingSeconds <= 0) {
                     document.getElementById('timer').innerText = "HẾT GIỜ";
                     document.getElementById('timer-bar').classList.add('warning');
@@ -889,29 +936,37 @@
             localStorage.removeItem('pendingSubmission');
 
             if (db) {
+                const submissionPayload = {
+                    maHS: studentCode,
+                    hoTen: studentName,
+                    lop: studentClass,
+                    monHoc: selectedTestSubject || '',
+                    diemSo: finalScore.toFixed(2),
+                    soCauDung: score,
+                    tongSoCau: totalQuestions,
+                    deThiId: selectedTestId,
+                    tenDeThi: selectedTestName,
+                    thoiGianNop: firebase.firestore.FieldValue.serverTimestamp(),
+                    nopTuDong: isAutoSubmit,
+                    lyDoNopTuDong: autoSubmitReason,
+                    trangThai: "da_nop",
+                    answeredCount: globalAnsweredCount,
+                    userAnswers: userSelections,
+                    quizData: fullQuestionObjects
+                };
                 try {
-                    const docRef = await db.collection("ketqua").add({
-                        maHS: studentCode,
-                        hoTen: studentName,
-                        lop: studentClass,
-                        monHoc: selectedTestSubject || '',
-                        diemSo: finalScore.toFixed(2),
-                        soCauDung: score,
-                        tongSoCau: totalQuestions,
-                        deThiId: selectedTestId,
-                        tenDeThi: selectedTestName,
-                        thoiGianNop: firebase.firestore.FieldValue.serverTimestamp(),
-                        nopTuDong: isAutoSubmit,
-                        lyDoNopTuDong: autoSubmitReason,
-                        answeredCount: globalAnsweredCount,
-                        userAnswers: userSelections,
-                        quizData: fullQuestionObjects
-                    });
-                    localStorage.setItem('lastSubmissionId', docRef.id);
+                    if (activeSubmissionDocId) {
+                        await db.collection("ketqua").doc(activeSubmissionDocId).update(submissionPayload);
+                        localStorage.setItem('lastSubmissionId', activeSubmissionDocId);
+                    } else {
+                        const docRef = await db.collection("ketqua").add(submissionPayload);
+                        localStorage.setItem('lastSubmissionId', docRef.id);
+                    }
                 } catch (error) {
                     console.error("Lỗi khi lưu kết quả: ", error);
                     try {
                         localStorage.setItem('pendingSubmission', JSON.stringify({
+                            activeDocId: activeSubmissionDocId,
                             maHS: studentCode,
                             hoTen: studentName,
                             lop: studentClass,
@@ -923,6 +978,7 @@
                             tenDeThi: selectedTestName,
                             nopTuDong: isAutoSubmit,
                             lyDoNopTuDong: autoSubmitReason,
+                            trangThai: "da_nop",
                             answeredCount: globalAnsweredCount,
                             userAnswers: userSelections,
                             quizData: fullQuestionObjects

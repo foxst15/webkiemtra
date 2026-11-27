@@ -210,18 +210,25 @@
                 try {
                     const pendingData = JSON.parse(pendingDataString);
                     
+                    const existingDocId = pendingData.activeDocId;
+                    delete pendingData.activeDocId;
+
                     // Thêm thời gian nộp thực tế
                     const submissionData = {
                         ...pendingData,
                         thoiGianNop: firebase.firestore.FieldValue.serverTimestamp()
                     };
 
-                    // Gửi lên Firebase
-                    const docRef = await db.collection("ketqua").add(submissionData);
-                    
-                    // Lưu ID mới để loadReview
-                    lastSubmissionId = docRef.id;
-                    localStorage.setItem('lastSubmissionId', docRef.id);
+                    // Gửi lên Firebase (cập nhật phiên thi đã tạo nếu có)
+                    if (existingDocId) {
+                        await db.collection("ketqua").doc(existingDocId).update(submissionData);
+                        lastSubmissionId = existingDocId;
+                        localStorage.setItem('lastSubmissionId', existingDocId);
+                    } else {
+                        const docRef = await db.collection("ketqua").add(submissionData);
+                        lastSubmissionId = docRef.id;
+                        localStorage.setItem('lastSubmissionId', docRef.id);
+                    }
                     
                     // Xóa khỏi localStorage
                     localStorage.removeItem('pendingSubmission');

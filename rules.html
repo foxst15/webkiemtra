@@ -237,9 +237,9 @@
             <a href="select-test.html" class="btn btn-secondary">
                 &larr; Chọn đề khác
             </a>
-            <a href="test.html" class="btn btn-primary">
+            <button type="button" id="startTestBtn" class="btn btn-primary">
                 Đã hiểu & Bắt đầu thi &rarr;
-            </a>
+            </button>
         </div>
     </div>
 
@@ -247,13 +247,21 @@
         // Lấy thông tin học sinh từ localStorage
         const studentName = localStorage.getItem('studentName');
         const studentClass = localStorage.getItem('studentClass');
+        const selectedTestId = localStorage.getItem('selectedTestId');
 
         // Nếu chưa đăng nhập thì tự động đẩy về trang đăng nhập
         if (!studentName || !studentClass) {
-            window.location.href = 'index.html';
+            window.location.replace('index.html');
+        } else if (!selectedTestId) {
+            window.location.replace('select-test.html');
         } else {
             document.getElementById('studentInfoText').innerText = `${studentName} - Lớp: ${studentClass}`;
         }
+
+        document.getElementById('startTestBtn').addEventListener('click', () => {
+            // Dùng location.replace để xóa trang nội quy khỏi lịch sử, chặn bấm nút Back quay lại
+            window.location.replace('test.html');
+        });
     </script>
 </body>
 
