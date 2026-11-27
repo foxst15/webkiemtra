@@ -233,6 +233,24 @@
         if (!studentName || !studentClass) {
             window.location.href = 'index.html';
         }
+        // Nếu thí sinh đang làm dở bài thi mà cố gõ URL thoát ra ngoài, tự động kéo lại phòng thi
+        (function resumeActiveExamIfAny() {
+            const who = localStorage.getItem('studentCode') || studentName;
+            if (!who) return;
+            const prefix = `quizProgress_${who}_`;
+            for (const key of Object.keys(localStorage)) {
+                if (key.startsWith(prefix)) {
+                    try {
+                        const saved = JSON.parse(localStorage.getItem(key) || 'null');
+                        if (saved && saved.testId) {
+                            localStorage.setItem('selectedTestId', saved.testId);
+                            window.location.replace('test.html');
+                            return;
+                        }
+                    } catch (e) {}
+                }
+            }
+        })();
 
         document.getElementById('studentName').innerText = studentName;
         document.getElementById('studentClass').innerText = studentClass;
