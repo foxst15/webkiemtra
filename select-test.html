@@ -331,6 +331,54 @@
                     subjectFilterBar.style.display = 'none';
                 }
 
+                // Kiểm tra bản nháp trên Firestore (trường hợp máy cũ bị hỏng, học sinh đổi sang máy khác đăng nhập lại)
+                try {
+                    let cloudDraft = null;
+                    if (studentCode) {
+                        const snap = await db.collection("baidanglam").where("maHS", "==", studentCode).get();
+                        snap.forEach(d => {
+                            const data = d.data();
+                            if (data && data.testId && data.endTimeTimestamp) {
+                                if (!cloudDraft || (data.updatedAt || 0) > (cloudDraft.updatedAt || 0)) {
+                                    cloudDraft = data;
+                                }
+                            }
+                        });
+                    }
+                    if (!cloudDraft) {
+                        const snapName = await db.collection("baidanglam")
+                            .where("hoTen", "==", studentName)
+                            .where("lop", "==", studentClass)
+                            .get();
+                        snapName.forEach(d => {
+                            const data = d.data();
+                            if (data && data.testId && data.endTimeTimestamp && (!data.maHS || !studentCode)) {
+                                if (!cloudDraft || (data.updatedAt || 0) > (cloudDraft.updatedAt || 0)) {
+                                    cloudDraft = data;
+                                }
+                            }
+                        });
+                    }
+                    if (cloudDraft) {
+                        const targetTest = allTestsData.find(t => t.id === cloudDraft.testId);
+                        const allowRetake = targetTest && targetTest.choPhepLamLai === true;
+                        if (targetTest && (allowRetake || !completedTestIdsData.has(cloudDraft.testId))) {
+                            const who = studentCode || studentName;
+                            localStorage.setItem(`quizProgress_${who}_${cloudDraft.testId}`, JSON.stringify(cloudDraft));
+                            localStorage.setItem('selectedTestId', cloudDraft.testId);
+                            localStorage.setItem('selectedTestName', cloudDraft.testName || targetTest.tenDe || '');
+                            localStorage.setItem('selectedTestTime', targetTest.thoiGianLamBai || 15);
+                            localStorage.setItem('selectedTestSubject', cloudDraft.testSubject || targetTest.monHoc || '');
+                            localStorage.setItem('selectedTestCode', cloudDraft.testCode || targetTest.maDe || targetTest.tenDe || '');
+                            localStorage.setItem('selectedTestShowCode', cloudDraft.showCode || '0');
+                            window.location.replace('test.html');
+                            return;
+                        }
+                    }
+                } catch (draftErr) {
+                    console.warn("Bỏ qua kiểm tra nháp cloud:", draftErr);
+                }
+
                 renderFilteredTests();
 
                 if (testListUpdateInterval) clearInterval(testListUpdateInterval);

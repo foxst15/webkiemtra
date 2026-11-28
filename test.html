@@ -356,7 +356,10 @@
         if (!studentName || !studentClass) { window.location.href = 'index.html'; }
         if (!selectedTestId) { window.location.href = 'select-test.html'; }
 
+        const SAFE_STUDENT_KEY = (studentCode || studentName || 'unknown').replace(/[^a-zA-Z0-9_-]/g, '_');
         const PROGRESS_STORAGE_KEY = `quizProgress_${studentCode || studentName}_${selectedTestId}`;
+        const CLOUD_DRAFT_DOC_ID = `${SAFE_STUDENT_KEY}_${selectedTestId}`;
+        let cloudSaveTimeout = null;
 
         let correctAnswers = [];
         let fullQuestionObjects = [];
@@ -394,23 +397,52 @@
             return String(prompt).replace(/^\s*(?:Câu|Bài|Question)\s*\d+\s*[\.\:\)\-\–]\s*/i, '').trim();
         }
 
-        function saveQuizProgress() {
+        function buildCurrentProgressState() {
+            return {
+                testId: selectedTestId,
+                testName: selectedTestName || '',
+                testSubject: selectedTestSubject || '',
+                testCode: localStorage.getItem('selectedTestCode') || '',
+                showCode: localStorage.getItem('selectedTestShowCode') || '0',
+                maHS: studentCode,
+                hoTen: studentName,
+                lop: studentClass,
+                questionIds: fullQuestionObjects.map(q => q.id),
+                optionOrders: fullQuestionObjects.reduce((acc, q) => {
+                    acc[q.id] = q.shuffledOptions;
+                    return acc;
+                }, {}),
+                userSelections: userSelections,
+                endTimeTimestamp: quizEndTimeMs,
+                currentQuestionIndex: currentQuestionIndex,
+                updatedAt: Date.now()
+            };
+        }
+
+        function syncCloudDraftNow() {
+            if (daNopBai || !fullQuestionObjects.length || !db) return;
+            try {
+                const state = buildCurrentProgressState();
+                db.collection("baidanglam").doc(CLOUD_DRAFT_DOC_ID).set(state).catch(() => {});
+            } catch (e) {}
+        }
+
+        function saveQuizProgress(immediateCloud = false) {
             if (daNopBai || !fullQuestionObjects.length) return;
             try {
-                const state = {
-                    testId: selectedTestId,
-                    questionIds: fullQuestionObjects.map(q => q.id),
-                    optionOrders: fullQuestionObjects.reduce((acc, q) => {
-                        acc[q.id] = q.shuffledOptions;
-                        return acc;
-                    }, {}),
-                    userSelections: userSelections,
-                    endTimeTimestamp: quizEndTimeMs,
-                    currentQuestionIndex: currentQuestionIndex
-                };
+                const state = buildCurrentProgressState();
                 const serialized = JSON.stringify(state);
                 localStorage.setItem(PROGRESS_STORAGE_KEY, serialized);
                 sessionStorage.setItem(PROGRESS_STORAGE_KEY, serialized);
+
+                if (db) {
+                    clearTimeout(cloudSaveTimeout);
+                    if (immediateCloud) {
+                        syncCloudDraftNow();
+                    } else {
+                        cloudSaveTimeout = setTimeout(syncCloudDraftNow, 600);
+                    }
+                }
             } catch (e) {
                 console.warn("Không thể lưu tiến trình làm bài:", e);
             }
@@ -431,11 +463,33 @@
             }
         }
 
+        async function loadCloudQuizProgress() {
+            if (!db) return null;
+            try {
+                const doc = await db.collection("baidanglam").doc(CLOUD_DRAFT_DOC_ID).get();
+                if (!doc.exists) return null;
+                const parsed = doc.data();
+                if (!parsed || parsed.testId !== selectedTestId || !parsed.endTimeTimestamp) return null;
+                const serialized = JSON.stringify(parsed);
+                localStorage.setItem(PROGRESS_STORAGE_KEY, serialized);
+                sessionStorage.setItem(PROGRESS_STORAGE_KEY, serialized);
+                return parsed;
+            } catch (e) {
+                return null;
+            }
+        }
+
         function clearQuizProgress() {
+            clearTimeout(cloudSaveTimeout);
             try {
                 localStorage.removeItem(PROGRESS_STORAGE_KEY);
                 sessionStorage.removeItem(PROGRESS_STORAGE_KEY);
             } catch (e) {}
+            if (db) {
+                try {
+                    db.collection("baidanglam").doc(CLOUD_DRAFT_DOC_ID).delete().catch(() => {});
+                } catch (e) {}
+            }
         }
 
         // Render công thức Toán - Lý - Hóa (KaTeX) trong DOM
@@ -640,8 +694,11 @@
                 isAntiCheatEnabled = true;
             }
 
-            // Nếu bắt đầu lượt làm mới (không phải F5 tiếp tục bài đang làm) và đề không cho làm lại nhiều lần
-            const existingProgress = loadSavedQuizProgress();
+            // Kiểm tra tiến trình cục bộ; nếu đổi sang máy khác do máy cũ hỏng thì khôi phục từ Firestore (baidanglam)
+            let existingProgress = loadSavedQuizProgress();
+            if (!existingProgress) {
+                existingProgress = await loadCloudQuizProgress();
+            }
             const allowRetake = cachedTestDocData && cachedTestDocData.choPhepLamLai === true;
             if (!existingProgress && !allowRetake) {
                 const alreadyDone = await hasAlreadySubmittedTest();
@@ -802,7 +859,7 @@
                 const remainingSeconds = Math.max(0, Math.ceil((quizEndTimeMs - Date.now()) / 1000));
 
                 showQuestion(initialQIndex);
-                saveQuizProgress();
+                saveQuizProgress(true);
 
                 if (remainingSeconds <= 0) {
                     document.getElementById('timer').innerText = "HẾT GIỜ";
